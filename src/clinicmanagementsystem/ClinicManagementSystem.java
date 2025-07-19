@@ -10,6 +10,7 @@ package clinicmanagementsystem;
  */
 public class ClinicManagementSystem {
 
+    // test
     /**
      * @param args the command line arguments
      */
