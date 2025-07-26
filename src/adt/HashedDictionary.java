@@ -74,6 +74,16 @@ public class HashedDictionary<K, V> implements DictionaryInterface<K, V>, Serial
     @Override
     public V add(K key, V value) {
         V oldValue = null;
+
+        if(isFull()) {
+            rehash();
+        }
+
+        int index = getHashIndex(key);
+
+        if (hashedDictionary[index] == null) {
+
+        }
         return null;
     }
 
@@ -110,6 +120,14 @@ public class HashedDictionary<K, V> implements DictionaryInterface<K, V>, Serial
 
     @Override
     public void clear() {
+    }
+
+    private int getHashIndex(K key) {
+        int hashIndex = key.hashCode() % hashedDictionary.length;
+        if (hashIndex < 0) {
+            hashIndex = hashIndex + hashedDictionary.length;
+        }
+        return hashIndex;
     }
 
     private void rehash() {
