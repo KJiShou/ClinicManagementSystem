@@ -1,11 +1,14 @@
 package control;
 
+//import entity.Doctor;
+//import entity.Patient;
+
 import java.util.UUID;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Consultation {
-    private UUID consultationId;
+    private UUID id;
     private UUID patientId;
     private UUID doctorId;
     private LocalDate consultatonDate;
@@ -14,8 +17,8 @@ public class Consultation {
     private LocalTime endTime;
     private float totalPayment;
 
-    public Consultation(UUID consultationId, UUID patientId, UUID doctorId, LocalDate consultatonDate, String notes, LocalTime startTime, LocalTime endTime, float totalPayment) {
-        this.consultationId = consultationId;
+    public Consultation(UUID id, UUID patientId, UUID doctorId, LocalDate consultatonDate, String notes, LocalTime startTime, LocalTime endTime, float totalPayment) {
+        this.id = id;
         this.patientId = patientId;
         this.doctorId = doctorId;
         this.consultatonDate = consultatonDate;
@@ -26,7 +29,7 @@ public class Consultation {
     }
 
     // Getter
-    public UUID getConsultationId() { return consultationId; }
+    public UUID getId() { return id; }
     public UUID getPatientId() { return patientId; }
     public UUID getDoctorId() { return doctorId; }
     public LocalDate getConsultatonDate() { return consultatonDate; }
@@ -36,9 +39,9 @@ public class Consultation {
     public float getTotalPayment() { return totalPayment; }
 
     // Setter
-    public void setConsultationId(UUID consultationId) { this.consultationId = consultationId; }
-    public void setPatientId(UUID patientId) { this.patientId = patientId; } // change parent.parentId when available
-    public void setDoctorId(UUID doctorId) { this.doctorId = doctorId; }  // same as patient thing
+    public void setId(UUID id) { this.id = id; }
+    public void setPatientId(UUID patientId) { this.patientId = patientId; }
+    public void setDoctorId(UUID doctorId) { this.doctorId = doctorId; }
     public void setConsultatonDate(LocalDate consultatonDate) { this.consultatonDate = consultatonDate; }
     public void setNotes(String notes) { this.notes = notes; }
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
@@ -46,7 +49,7 @@ public class Consultation {
     public void setTotalPayment(float totalPayment) { this.totalPayment = totalPayment; }
 
     public String toString(){
-        return  "Consultation ID : " + consultationId +
+        return  "Consultation ID : " + id +
                 "Patient ID      : " + patientId +
                 "Doctor ID       : " + doctorId +
                 "Date            : " + consultatonDate +
