@@ -1,88 +1,41 @@
 package entity;
 
-import java.util.UUID;
+public class Doctor extends User {
+    private String doctorIC;
+    private String licenseID;
+    private String specializeField;
 
-public class Doctor {
-    private UUID id;
-    private String name;
-    private String description;
-    private String[] dutySchedule;
-    private boolean isAvailable;
-    private int amountDuty;
-
-    // constructor
-    public Doctor(UUID id, String name, String description, boolean isAvailable) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.dutySchedule = new String[15];
-        this.isAvailable = isAvailable;
-        this.amountDuty = 0;
+    public Doctor(String id, String name, String address, String gender, String phone, String email, String dateOfBirth,
+                  String doctorIC, String licenseID, String specializeField) {
+        super(id, name, address, gender, phone, email, dateOfBirth);
+        this.doctorIC = doctorIC;
+        this.licenseID = licenseID;
+        this.specializeField = specializeField;
     }
 
-    // get, set
-    public UUID getId() {
-        return id;
+    // Getters and setters
+    public String getDoctorIC() {
+        return doctorIC;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public void setDoctorIC(String doctorIC) {
+        this.doctorIC = doctorIC;
     }
 
-    public String getName() {
-        return name;
+
+    public String getLicenseID() {
+        return licenseID;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setLicenseID(String licenseID) {
+        this.licenseID = licenseID;
     }
 
-    public String getDescription() {
-        return description;
+    public String getSpecializeField() {
+        return specializeField;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String[] getDutySchedule() {
-        return dutySchedule;
-    }
-
-    public void setDutySchedule(String[] dutySchedule) {
-        this.dutySchedule = dutySchedule;
-    }
-
-    public int getAmountDuty() {
-        return amountDuty;
-    }
-
-    public void setAmountDuty(int amountDuty) {
-        this.amountDuty = amountDuty;
-    }
-
-    public boolean isAvailable() {
-        return isAvailable;
-    }
-
-    public void setAvailable(boolean available) {
-        isAvailable = available;
-    }
-
-    public void addDuty(String duty) {
-        if (amountDuty < dutySchedule.length) {
-            dutySchedule[amountDuty++] = duty;
-        } else {
-            System.out.println("Duty schedule is full for " + name);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "Doctor ID: " + id +
-                "\nName: " + name +
-                "\nDescription: " + description +
-                "\nAvailable: " + isAvailable +
-                "\nDuty Count: " + amountDuty;
+    public void setSpecializeField(String specializeField) {
+        this.specializeField = specializeField;
     }
 }
