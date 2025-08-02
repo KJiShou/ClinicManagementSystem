@@ -1,6 +1,11 @@
 package adt;
 
-public class ConsultationList implements ConsultationInterface {
+public class ConsultationList implements ConsultationInterface<Object> {
+    private Object[] list;
+    private int numberOfEntries;
+    private static final int DEFAULT_CAPACITY = 25;
+    private static final int MAX_CAPACITY = 10000;
+
     @Override
     public boolean add(Object newEntry) {
         return false;
