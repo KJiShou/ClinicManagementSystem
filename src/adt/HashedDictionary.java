@@ -5,8 +5,11 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * A hash‐table based dictionary (chaining) with configurable load factor,
- * Iterable support, and utility methods.
+ * A hash‐table based dictionary keyed by {@code K}, mapping to values of type {@code V}.
+ * Uses separate chaining and resizes itself when load‐factor exceeds threshold.
+ *
+ * @param <K> the type of keys maintained by this dictionary
+ * @param <V> the type of mapped values
  */
 public class HashedDictionary<K, V>
         implements DictionaryInterface<K, V>,
@@ -172,8 +175,8 @@ public class HashedDictionary<K, V>
     }
 
     /**
-     * Allows for‐each iteration over entries:
-     *   for (Map.Entry<K,V> e : dict) { … }
+     * Allows for‐each iteration over entries. Example:
+     * <code>for (Map.Entry&lt;K, V&gt; e : dict) { … }</code>
      */
     @Override
     public Iterator<Map.Entry<K, V>> iterator() {
