@@ -6,12 +6,16 @@ public class SalesItem {
     private UUID id;
     private String name;
     private double price;
+    private String description;
+    private String unit;
     private Company company;
 
-    public SalesItem(UUID id, String name, double price, Company company) {
+    public SalesItem(UUID id, String name, double price, String description, String unit, Company company) {
         this.id = id;
         this.name = name;
         this.price = price;
+        this.description = description;
+        this.unit = unit;
         this.company = company;
     }
 
@@ -45,6 +49,22 @@ public class SalesItem {
 
     public void setCompany(Company company) {
         this.company = company;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     public String toString() {
