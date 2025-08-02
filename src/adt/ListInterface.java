@@ -1,8 +1,10 @@
 package adt;
 
+import java.util.ArrayList;
+
 import entity.Doctor;
 
-public interface DoctorListInterface {
+public interface ListInterface {
 
     void addDoctor(Doctor doctor);
 
