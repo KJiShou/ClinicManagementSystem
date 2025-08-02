@@ -2,7 +2,7 @@ package adt;
 
 import entity.Doctor;
 
-public class DoctorList implements ListInterface{
+public class DoctorList implements ListInterface<Doctor> {
     private Doctor[] doctorArray;   //array to store doctor
     private static final int  MAX_SIZE = 100; //store 100 max doctor
     private int size = 0; //track array hv how many doctor
@@ -13,7 +13,7 @@ public class DoctorList implements ListInterface{
     }
 
     @Override
-    public void addDoctor(Doctor doctor) {
+    public void add(Doctor doctor) {
         if (size >= MAX_SIZE) {
             System.out.println("Doctor list is full.");
             return;
@@ -22,7 +22,7 @@ public class DoctorList implements ListInterface{
     }
 
     @Override
-    public Doctor getDoctor(int index) { //get number (index=1) doctor
+    public Doctor get(int index) { //get number (index=1) doctor
         if (index < 0 || index >= size) {
             System.out.println("Invalid index, please try again.");
             return null;
@@ -31,7 +31,7 @@ public class DoctorList implements ListInterface{
     }
 
     @Override
-    public boolean removeDoctor(int index) {
+    public boolean remove(int index) {
         if (index < 0 || index >= size) {
             System.out.println("Invalid index, please try again.");
             return false;
@@ -45,17 +45,17 @@ public class DoctorList implements ListInterface{
     }
 
     @Override
-    public boolean replaceDoctor(int index, Doctor newDoctor) {
+    public boolean replace(int index, Doctor newElement) {
         if (index < 0 || index >= size) {
             System.out.println("Invalid index.");
             return false;
         }
-        doctorArray[index] = newDoctor;
+        doctorArray[index] = newElement;
         return true;
     }
 
     @Override
-    public int getTotalDoctors() {
+    public int getTotal() {
         return size;
     }
 
@@ -65,14 +65,13 @@ public class DoctorList implements ListInterface{
     }
 
     @Override
-    public void clearAllDoctors() {
+    public void clearAll() {
         for (int i = 0; i < size; i++) {
             doctorArray[i] = null;
         }
         size = 0;
     }
 
-    @Override
     public String[] getDutySchedule() {
         String[] dutyList = new String[size];
         for (int i = 0; i < size; i++) {

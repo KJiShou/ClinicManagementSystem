@@ -1,25 +1,20 @@
 package adt;
 
-import java.util.ArrayList;
+public interface ListInterface<T> {
 
-import entity.Doctor;
+    void add(T newElement);
 
-public interface ListInterface {
+    T get(int x);
 
-    void addDoctor(Doctor doctor);
+    boolean remove(int x);
 
-    Doctor getDoctor(int x);
+    boolean replace(int x, T newElement);
 
-    boolean removeDoctor(int x);
-
-    boolean replaceDoctor(int x, Doctor newDoctor);
-
-    int getTotalDoctors();
+    int getTotal();
 
     boolean isEmpty();
 
-    void clearAllDoctors();
+    void clearAll();
 
-    String[] getDutySchedule();
 }
 
