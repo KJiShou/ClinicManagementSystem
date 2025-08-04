@@ -1,89 +1,74 @@
 package adt;
 
-import entity.Patient;
-import java.io.Serializable;
 import java.util.NoSuchElementException;
 
-public class LinkedQueue implements QueueInterface<Patient>, Serializable {
-    private Node first;
-    private Node last;
+/**
+ * A generic linked-node implementation of the QueueADT interface.
+ */
+public class LinkedQueue<T> implements QueueInterface<T> {
+    private static class Node<E> {
+        E data;
+        Node<E> next;
+        Node(E data) { this.data = data; }
+    }
+
+    private Node<T> front;
+    private Node<T> rear;
     private int size;
 
     public LinkedQueue() {
-        first = null;
-        last = null;
+        front = rear = null;
         size = 0;
-    }
-
-    @Override
-    public void enqueue(Patient newEntry) {
-        Node newNode = new Node(newEntry);
-
-        if (isEmpty()) {
-            first = newNode;
-        } else {
-            last.next = newNode;
-        }
-
-        last = newNode;
-        size++;
-    }
-
-    @Override
-    public Patient dequeue() {
-        if (isEmpty())
-            throw new NoSuchElementException("Queue is empty");
-
-        Patient frontPatient = first.data;
-        first = first.next;
-
-        if (first == null)
-            last = null;
-
-        size--;
-        return frontPatient;
-    }
-
-    @Override
-    public Patient peek() {
-        if (isEmpty())
-            throw new NoSuchElementException("Queue is empty");
-
-        return first.data;
     }
 
     @Override
     public boolean isEmpty() {
-        return first == null;
+        return size == 0;
     }
 
     @Override
-    public void clear() {
-        first = null;
-        last = null;
-        size = 0;
-    }
-
     public int size() {
         return size;
     }
 
-    public void display() {
-        System.out.println("Current Patient Queue:");
-        Node current = first;
-        while (current != null) {
-            System.out.println(current.data);
-            current = current.next;
+    @Override
+    public void enqueue(T item) {
+        Node<T> newNode = new Node<>(item);
+        if (rear != null) {
+            rear.next = newNode;
         }
+        rear = newNode;
+        if (front == null) {
+            front = rear;
+        }
+        size++;
     }
 
-    private static class Node implements Serializable {
-        private Patient data;
-        private Node next;
-
-        private Node(Patient data) {
-            this.data = data;
-            this.next = null;
+    @Override
+    public T dequeue() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Queue is empty");
         }
+        T data = front.data;
+        front = front.next;
+        if (front == null) {
+            rear = null;
+        }
+        size--;
+        return data;
+    }
+
+    @Override
+    public T peek() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Queue is empty");
+        }
+        return front.data;
+    }
+
+    @Override
+    public void clear() {
+        front = rear = null;
+        size = 0;
     }
 }

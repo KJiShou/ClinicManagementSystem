@@ -2,7 +2,8 @@ package adt;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * A hash‐table based dictionary keyed by {@code K}, mapping to values of type {@code V}.
@@ -14,7 +15,7 @@ import java.util.*;
 public class HashedDictionary<K, V>
         implements DictionaryInterface<K, V>,
         Serializable,
-        Iterable<Map.Entry<K, V>> {
+        Iterable<Entry<K, V>> {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -38,19 +39,14 @@ public class HashedDictionary<K, V>
     private int          size;
     private final double loadFactorThreshold;
 
-    private static final int    DEFAULT_CAPACITY   = 11;
+    private static final int    DEFAULT_CAPACITY    = 11;
     private static final double DEFAULT_LOAD_FACTOR = 0.75;
 
-    /** Constructs with default capacity (11) and load factor (0.75). */
+    @SuppressWarnings("unchecked")
     public HashedDictionary() {
         this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
     }
 
-    /**
-     * Constructs with specified initial capacity and load factor.
-     * @param initialCapacity desired minimum bucket count
-     * @param loadFactorThreshold when size/capacity exceeds this, we rehash
-     */
     @SuppressWarnings("unchecked")
     public HashedDictionary(int initialCapacity, double loadFactorThreshold) {
         if (initialCapacity <= 0)
@@ -64,11 +60,9 @@ public class HashedDictionary<K, V>
         this.size = 0;
     }
 
-    /** {@inheritDoc} */
     @Override
     public V add(K key, V value) {
         if (key == null) throw new IllegalArgumentException("Key cannot be null");
-        // Rehash if load factor exceeded
         if (getLoadFactor() > loadFactorThreshold) rehash();
 
         int idx = getHashIndex(key);
@@ -79,30 +73,29 @@ public class HashedDictionary<K, V>
                 return old;
             }
         }
-        // Insert at head for O(1) chaining
+
         table[idx] = new Node<>(key, value, table[idx]);
         size++;
         return null;
     }
 
-    /** {@inheritDoc} */
     @Override
     public V remove(K key) {
         if (key == null) return null;
         int idx = getHashIndex(key);
         Node<K, V> prev = null, cur = table[idx];
         while (cur != null && !cur.key.equals(key)) {
-            prev = cur; cur = cur.next;
+            prev = cur;
+            cur  = cur.next;
         }
         if (cur == null) return null;
-        // unlink
-        if (prev == null) table[idx] = cur.next;
-        else             prev.next = cur.next;
+
+        if (prev == null)        table[idx] = cur.next;
+        else                     prev.next = cur.next;
         size--;
         return cur.value;
     }
 
-    /** {@inheritDoc} */
     @Override
     public V getValue(K key) {
         if (key == null) return null;
@@ -113,134 +106,150 @@ public class HashedDictionary<K, V>
         return null;
     }
 
-    /** {@inheritDoc} */
     @Override
     public boolean contains(K key) {
         return getValue(key) != null;
     }
 
-    /** {@inheritDoc} */
     @Override
     public boolean isEmpty() {
         return size == 0;
     }
 
-    /** Now returns true when loadFactor > threshold. */
     @Override
     public boolean isFull() {
         return getLoadFactor() > loadFactorThreshold;
     }
 
-    /** {@inheritDoc} */
     @Override
     public int getSize() {
         return size;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void clear() {
-        Arrays.fill(table, null);
+        // remove all chains without using java.util.Arrays
+        for (int i = 0; i < table.length; i++) {
+            table[i] = null;
+        }
         size = 0;
     }
 
-    // ——— New utility methods ———
+    // ——— Methods replaced to avoid java.util collections ———
 
-    /** @return current load factor = size / capacity */
-    public double getLoadFactor() {
-        return (double) size / table.length;
-    }
-
-    /** @return number of buckets */
-    public int getCapacity() {
-        return table.length;
-    }
-
-    /** @return a Set of all keys in this dictionary */
-    public Set<K> keySet() {
-        Set<K> keys = new HashSet<>(size);
-        for (Node<K, V> bucket : table)
-            for (Node<K, V> cur = bucket; cur != null; cur = cur.next)
+    /**
+     * @return a dynamic array of all keys in this dictionary
+     */
+    public ArrayList<K> keyList() {
+        ArrayList<K> keys = new ArrayList<>();
+        for (Node<K, V> bucket : table) {
+            for (Node<K, V> cur = bucket; cur != null; cur = cur.next) {
                 keys.add(cur.key);
+            }
+        }
         return keys;
     }
 
-    /** @return a Collection of all values in this dictionary */
-    public Collection<V> values() {
-        List<V> vals = new ArrayList<>(size);
-        for (Node<K, V> bucket : table)
-            for (Node<K, V> cur = bucket; cur != null; cur = cur.next)
+    /**
+     * @return a dynamic array of all values in this dictionary
+     */
+    public ArrayList<V> valueList() {
+        ArrayList<V> vals = new ArrayList<>();
+        for (Node<K, V> bucket : table) {
+            for (Node<K, V> cur = bucket; cur != null; cur = cur.next) {
                 vals.add(cur.value);
+            }
+        }
         return vals;
     }
 
-    /**
-     * Allows for‐each iteration over entries. Example:
-     * <code>for (Map.Entry&lt;K, V&gt; e : dict) { … }</code>
-     */
+    // A minimal Entry implementation so we don’t pull in AbstractMap
+    private static class SimpleEntry<K, V> implements Entry<K, V> {
+        private final K key;
+        private final V value;
+
+        SimpleEntry(K key, V value) {
+            this.key   = key;
+            this.value = value;
+        }
+
+        @Override public K getKey()   { return key; }
+        @Override public V getValue() { return value; }
+        @Override public V setValue(V v) {
+            throw new UnsupportedOperationException("Immutable entry");
+        }
+    }
+
     @Override
-    public Iterator<Map.Entry<K, V>> iterator() {
+    public Iterator<Entry<K, V>> iterator() {
         return new Iterator<>() {
             int bucketIdx = 0;
             Node<K, V> nextNode = null;
 
-            private void advanceToNext() {
-                while ((nextNode == null) && bucketIdx < table.length) {
+            private void advance() {
+                while (nextNode == null && bucketIdx < table.length) {
                     nextNode = table[bucketIdx++];
                 }
             }
 
             @Override
             public boolean hasNext() {
-                advanceToNext();
+                advance();
                 return nextNode != null;
             }
 
             @Override
-            public Map.Entry<K, V> next() {
-                advanceToNext();
+            public Entry<K, V> next() {
+                advance();
                 if (nextNode == null) throw new NoSuchElementException();
                 Node<K, V> curr = nextNode;
-                nextNode = nextNode.next; // move along chain
-                return new AbstractMap.SimpleImmutableEntry<>(curr.key, curr.value);
+                nextNode = curr.next;
+                return new SimpleEntry<>(curr.key, curr.value);
             }
         };
     }
 
-    // ——— Internal helpers ———
+    // ——— Utilities unchanged ———
 
-    /** Double the bucket count (to next prime) and re-insert all entries. */
-    @SuppressWarnings("unchecked")
-    private void rehash() {
-        Node<K, V>[] oldTable = table;
-        int newCapacity = getNextPrime(oldTable.length * 2);
-        table = (Node<K, V>[]) new Node[newCapacity];
-        size = 0;
-        for (Node<K, V> bucket : oldTable)
-            for (Node<K, V> cur = bucket; cur != null; cur = cur.next)
-                add(cur.key, cur.value);
+    public double getLoadFactor() {
+        return (double) size / table.length;
     }
 
-    /** Normalize and non-negative bucket index. */
+    public int getCapacity() {
+        return table.length;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void rehash() {
+        Node<K, V>[] old = table;
+        int newCap = getNextPrime(old.length * 2);
+        table = (Node<K, V>[]) new Node[newCap];
+        size = 0;
+        for (Node<K, V> bucket : old) {
+            for (Node<K, V> cur = bucket; cur != null; cur = cur.next) {
+                add(cur.key, cur.value);
+            }
+        }
+    }
+
     private int getHashIndex(K key) {
         int idx = key.hashCode() % table.length;
         return idx < 0 ? idx + table.length : idx;
     }
 
-    /** Find the next prime ≥ n (odd stepping). */
     private int getNextPrime(int n) {
         if (n % 2 == 0) n++;
         while (!isPrime(n)) n += 2;
         return n;
     }
 
-    /** Simple primality test. */
     private boolean isPrime(int x) {
         if (x <= 1) return false;
         if (x <= 3) return true;
         if (x % 2 == 0) return false;
-        for (int i = 3; i * i <= x; i += 2)
+        for (int i = 3; i * i <= x; i += 2) {
             if (x % i == 0) return false;
+        }
         return true;
     }
 }
