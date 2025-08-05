@@ -4,25 +4,35 @@ import java.util.Date;
 import java.util.UUID;
 
 public class Medicine extends SalesItem{
-    private String brandName;
+    private MedicineKey key;
+    private String brand;
     private String strength;
     private String unit;
     private Date expiryDate;
 
-    public Medicine(UUID id, String name, double price, String description, String unit, Company company, String brandName, String strength, String unit1, Date expiryDate) {
+    public Medicine(UUID id, String name, double price, String description, String unit, Company company, String brand, String strength, String unit1, Date expiryDate) {
         super(id, name, price, description, unit, company);
-        this.brandName = brandName;
+        this.brand = brand;
         this.strength = strength;
         this.unit = unit1;
         this.expiryDate = expiryDate;
+        this.key = new MedicineKey(name, brand, expiryDate);
     }
 
-    public String getBrandName() {
-        return brandName;
+    public MedicineKey getKey() {
+        return key;
     }
 
-    public void setBrandName(String brandName) {
-        this.brandName = brandName;
+    public void setKey(MedicineKey key) {
+        this.key = key;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 
     public String getStrength() {
