@@ -1,17 +1,54 @@
 package adt;
 
+import entity.pharmacyManagement.Medicine;
+import entity.pharmacyManagement.MedicineKey;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 /**
  * A generic, dynamic array implementation of the ListADT interface.
  */
-public class ArrayList<T> implements ListInterface<T> {
+public class ArrayList<T> implements ListInterface<T>, Iterable<T> {
     private T[] elements;
     private int size;
     private static final int DEFAULT_CAPACITY = 10;
 
+    /**
+     * Default constructor - creates empty ArrayList with default capacity
+     */
     @SuppressWarnings("unchecked")
     public ArrayList() {
         elements = (T[]) new Object[DEFAULT_CAPACITY];
         size = 0;
+    }
+
+    /**
+     * Constructor with initial capacity
+     */
+    @SuppressWarnings("unchecked")
+    public ArrayList(int initialCapacity) {
+        if (initialCapacity < 0) {
+            throw new IllegalArgumentException("Initial capacity cannot be negative: " + initialCapacity);
+        }
+        elements = (T[]) new Object[Math.max(initialCapacity, DEFAULT_CAPACITY)];
+        size = 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList(ArrayList<? extends T> other) {
+        if (other == null) {
+            elements = (T[]) new Object[DEFAULT_CAPACITY];
+            size = 0;
+        } else {
+            int capacity = Math.max(other.size(), DEFAULT_CAPACITY);
+            elements = (T[]) new Object[capacity];
+            size = other.size();
+            // Copy elements from the other ArrayList
+            for (int i = 0; i < size; i++) {
+                elements[i] = other.get(i);
+            }
+        }
     }
 
     @Override
@@ -109,6 +146,41 @@ public class ArrayList<T> implements ListInterface<T> {
     private void checkIndexForAdd(int index) {
         if (index < 0 || index > size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+    }
+    /**
+     * Returns an iterator over the elements in this list.
+     */
+    @Override
+    public Iterator<T> iterator() {
+        return new ArrayListIterator();
+    }
+
+    /**
+     * Inner class implementing Iterator for ArrayList
+     */
+    private class ArrayListIterator implements Iterator<T> {
+        private int currentIndex = 0;
+
+        @Override
+        public boolean hasNext() {
+            return currentIndex < size;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            return elements[currentIndex++];
+        }
+
+        @Override
+        public void remove() {
+            if (currentIndex == 0) {
+                throw new IllegalStateException("next() has not been called yet");
+            }
+            ArrayList.this.remove(--currentIndex);
         }
     }
 }
