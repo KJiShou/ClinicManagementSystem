@@ -1,5 +1,6 @@
 package entity.pharmacyManagement;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MedicineKey {
@@ -12,7 +13,6 @@ public class MedicineKey {
         this.brand = brand;
         this.expiry = expiry;
     }
-    // getters omitted
 
     @Override public boolean equals(Object o) {
         if (!(o instanceof MedicineKey)) return false;
@@ -21,6 +21,13 @@ public class MedicineKey {
                 && expiry.equals(k.expiry) && brand.equals(k.brand);
     }
     @Override public int hashCode() {
-        return 31 * name.hashCode() + brand.hashCode() + expiry.hashCode();
+        return 31 * name.hashCode() + brand.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "name='" + name + '\'' +
+                ", brand='" + brand + '\'' +
+                ", expiry=" + expiry;
     }
 }

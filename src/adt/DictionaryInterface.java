@@ -71,4 +71,6 @@ public interface DictionaryInterface<K, V> {
      * Task: Removes all entries from the dictionary.
      */
     void clear();
+
+    public ArrayList<Entry<K,V>> entryList();
 }

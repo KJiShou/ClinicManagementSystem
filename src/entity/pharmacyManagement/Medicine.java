@@ -1,5 +1,6 @@
 package entity.pharmacyManagement;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -9,6 +10,7 @@ public class Medicine extends SalesItem{
     private String strength;
     private String unit;
     private Date expiryDate;
+
 
     public Medicine(UUID id, String name, double price, String description, String unit, Company company, String brand, String strength, String unit1, Date expiryDate) {
         super(id, name, price, description, unit, company);
@@ -59,5 +61,13 @@ public class Medicine extends SalesItem{
 
     public void setExpiryDate(Date expiryDate) {
         this.expiryDate = expiryDate;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() +
+                "brand='" + brand + '\'' +
+                ", expiryDate=" + expiryDate +
+                '}';
     }
 }

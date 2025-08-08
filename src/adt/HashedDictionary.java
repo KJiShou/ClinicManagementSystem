@@ -135,8 +135,6 @@ public class HashedDictionary<K, V>
         size = 0;
     }
 
-    // ——— Methods replaced to avoid java.util collections ———
-
     /**
      * @return a dynamic array of all keys in this dictionary
      */
@@ -163,7 +161,6 @@ public class HashedDictionary<K, V>
         return vals;
     }
 
-    // A minimal Entry implementation so we don’t pull in AbstractMap
     private static class SimpleEntry<K, V> implements Entry<K, V> {
         private final K key;
         private final V value;
@@ -209,7 +206,7 @@ public class HashedDictionary<K, V>
         };
     }
 
-    // ——— Utilities unchanged ———
+    // ——— Utilities ———
 
     public double getLoadFactor() {
         return (double) size / table.length;
@@ -251,5 +248,18 @@ public class HashedDictionary<K, V>
             if (x % i == 0) return false;
         }
         return true;
+    }
+
+    /**
+     * @return an ArrayList of all entries in this dictionary, in hash‐order.
+     */
+    public ArrayList<Entry<K,V>> entryList() {
+        ArrayList<Entry<K,V>> list = new ArrayList<>();
+        for (Node<K,V> bucket : table) {
+            for (Node<K,V> cur = bucket; cur != null; cur = cur.next) {
+                list.add(new SimpleEntry<>(cur.key, cur.value));
+            }
+        }
+        return list;
     }
 }
