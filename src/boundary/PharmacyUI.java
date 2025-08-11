@@ -82,18 +82,18 @@ public class PharmacyUI {
 
         // Header
         System.out.printf("Page %d/%d%n", currentPage, totalPages);
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
-        System.out.printf("| %-3s | %-30s | %-20s | %-30s | %-20s |\n", "No.", "Name", "Price", "Tube Needed", "Lab");
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
+        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
+        System.out.printf("| %-3s | %-30s | %-30s | %-20s | %-20s |\n", "No.", "Name", "Tube Needed", "Price", "Lab");
+        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
 
         // Rows
         for (int i = start; i < end; i++) {
             LabTest labTest = labTests.get(i);
 
-            System.out.printf("| %-3d | %-30s | %-20.2f | %-30s | %-20s |\n", i+1, labTest.getName(), labTest.getPrice(), labTest.getBloodTubes(), labTest.getReferringLab().getName());
+            System.out.printf("| %-3d | %-30s | %-30s | %-20s | %-20.2f |\n", i+1, labTest.getName(), labTest.getBloodTubes(), labTest.getReferringLab().getName(), labTest.getPrice());
         }
 
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
+        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
         System.out.println();  // blank line between pages
     }
 
@@ -107,18 +107,18 @@ public class PharmacyUI {
 
         // Header
         System.out.printf("Page %d/%d%n", currentPage, totalPages);
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+----------------------+");
-        System.out.printf("| %-3s | %-30s | %-20s | %-30s | %-20s | %-20s |\n", "No.", "Name", "Unit", "Expiry Date", "Price", "Cap Colour");
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+----------------------+");
+        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+----------------------+");
+        System.out.printf("| %-3s | %-30s | %-30s | %-20s | %-20s | %-20s |\n", "No.", "Name", "Cap Colour", "Expiry Date", "Unit", "Price");
+        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+----------------------+");
 
         // Rows
         for (int i = start; i < end; i++) {
             BloodTube bloodTube = bloodTubes.get(i);
 
-            System.out.printf("| %-3d | %-30s | %-20s | %-30s | RM %-17.2f | %-20s |\n", i+1, bloodTube.getName(), (bloodTube.getQuantity()), DATE_FMT.format(bloodTube.getExpiryDate()), bloodTube.getPrice(), bloodTube.getCapColor());
+            System.out.printf("| %-3d | %-30s | %-30s | %-20s | %-20s | RM %-17.2f |\n", i+1, bloodTube.getName(), bloodTube.getCapColor(), DATE_FMT.format(bloodTube.getExpiryDate()), (bloodTube.getQuantity()), bloodTube.getPrice());
         }
 
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+----------------------+");
+        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+----------------------+");
         System.out.println();  // blank line between pages
     }
 }
