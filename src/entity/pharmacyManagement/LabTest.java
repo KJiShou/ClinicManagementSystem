@@ -1,19 +1,71 @@
 package entity.pharmacyManagement;
 
+import adt.DictionaryInterface;
+import adt.HashedDictionary;
+
 import java.util.UUID;
 
-public class LabTest extends SalesItem {
+public class LabTest {
+    private UUID id;
+    private String name;
     private String code;
+    private double price;
+    private String description;
+    private Company referringLab;
     private boolean fastingRequired;
     private String patientPrecautions;
-    private double requiredVolumeMl;
+    private String bloodTubes;
 
-    public LabTest(UUID id, String name, double price, String description, String unit, Company company, String code, boolean fastingRequired, String patientPrecautions, double requiredVolumeMl) {
-        super(id, name, price, description, unit, company);
+    public LabTest(UUID id, String name, double price, String description, Company referringLab, String code, boolean fastingRequired, String patientPrecautions,  String bloodTubes) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.referringLab = referringLab;
         this.code = code;
         this.fastingRequired = fastingRequired;
         this.patientPrecautions = patientPrecautions;
-        this.requiredVolumeMl = requiredVolumeMl;
+        this.bloodTubes = bloodTubes;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public Company getReferringLab() {
+        return referringLab;
+    }
+
+    public void setReferringLab(Company referringLab) {
+        this.referringLab = referringLab;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getCode() {
@@ -40,11 +92,11 @@ public class LabTest extends SalesItem {
         this.patientPrecautions = patientPrecautions;
     }
 
-    public double getRequiredVolumeMl() {
-        return requiredVolumeMl;
+    public String getBloodTubes() {
+        return bloodTubes;
     }
 
-    public void setRequiredVolumeMl(double requiredVolumeMl) {
-        this.requiredVolumeMl = requiredVolumeMl;
+    public void setBloodTubes(String bloodTubes) {
+        this.bloodTubes = bloodTubes;
     }
 }

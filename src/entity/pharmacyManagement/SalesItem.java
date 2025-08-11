@@ -1,5 +1,6 @@
 package entity.pharmacyManagement;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class SalesItem {
@@ -7,16 +8,16 @@ public class SalesItem {
     private String name;
     private double price;
     private String description;
-    private String unit;
     private Company company;
+    private Date expiryDate;
 
-    public SalesItem(UUID id, String name, double price, String description, String unit, Company company) {
+    public SalesItem(UUID id, String name, double price, String description, Company company,  Date expiryDate) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.description = description;
-        this.unit = unit;
         this.company = company;
+        this.expiryDate = expiryDate;
     }
 
     public UUID getId() {
@@ -59,12 +60,10 @@ public class SalesItem {
         this.description = description;
     }
 
-    public String getUnit() {
-        return unit;
-    }
+    public Date getExpiryDate() {return  expiryDate;}
 
-    public void setUnit(String unit) {
-        this.unit = unit;
+    public void setExpiryDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
     public String toString() {

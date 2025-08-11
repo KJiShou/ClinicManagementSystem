@@ -72,5 +72,4 @@ public interface DictionaryInterface<K, V> {
      */
     void clear();
 
-    public ArrayList<Entry<K,V>> entryList();
 }
