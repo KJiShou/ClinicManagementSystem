@@ -249,17 +249,4 @@ public class HashedDictionary<K, V>
         }
         return true;
     }
-
-    /**
-     * @return an ArrayList of all entries in this dictionary, in hash‐order.
-     */
-    public ArrayList<Entry<K,V>> entryList() {
-        ArrayList<Entry<K,V>> list = new ArrayList<>();
-        for (Node<K,V> bucket : table) {
-            for (Node<K,V> cur = bucket; cur != null; cur = cur.next) {
-                list.add(new SimpleEntry<>(cur.key, cur.value));
-            }
-        }
-        return list;
-    }
 }
