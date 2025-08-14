@@ -38,7 +38,8 @@ public class Pharmacy {
         while (true) {
             Integer choice = UI.mainMenu();
             switch (choice) {
-                case 1: // View Inventory
+                case 1:
+                    // View Inventory
                     viewInventory();
                     break;
                 case 2:

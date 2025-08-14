@@ -93,7 +93,14 @@ public class GeneratePharmacyData {
                         "Cholesterol-lowering statin", "tablet",
                         c[1],  // GSK
                         "Lipitor", "10 mg",
-                        DATE_FMT.parse("2027-05-31"))
+                        DATE_FMT.parse("2027-05-31")),
+
+                new Medicine(UUID.randomUUID(),
+                        "Atorvastatin", 1,15.00,
+                        "Cholesterol-lowering statin", "tablet",
+                        c[1],  // GSK
+                        "Lipitor", "10 mg",
+                        DATE_FMT.parse("2027-06-30"))
         };
     }
 
