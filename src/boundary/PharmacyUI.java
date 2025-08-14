@@ -124,7 +124,7 @@ public class PharmacyUI {
     public void displayInsufficientMedicines(
             DictionaryInterface<String, Medicine> medicines) {
 
-        HashedDictionary<String, Integer> insufficientMeds = filterInsufficientMedicines(10, medicines);
+        HashedDictionary<String, Medicine> insufficientMeds = filterInsufficientMedicines(10, medicines);
         System.out.println("\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\n=== Insufficient Medicines ===");
         if (insufficientMeds.isEmpty()) {
@@ -143,13 +143,10 @@ public class PharmacyUI {
         for (int i = 0; i < medKeys.size(); i++) {
             String nameKey = medKeys.get(i);
 
-            Medicine medObj = medicines.getValue(nameKey);
-            String company = (medObj.getCompany() == null) ? "-" : medObj.getCompany().getName();
-            int quantity = medObj.getQuantity();
-            double price = medObj.getPrice();
+            Medicine medObj = insufficientMeds.getValue(nameKey);
 
             System.out.printf("| %-3d | %-30s | %-20s | %-20s | RM%-18.2f |\n",
-                    counter++, medObj.getName(), company, quantity + " " + medObj.getUnit(), price);
+                    counter++, medObj.getName(), medObj.getCompany().getName(), medObj.getQuantity() + " " + medObj.getUnit(), medObj.getPrice());
         }
         System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
         System.out.println("Enter to continue...");
@@ -161,7 +158,7 @@ public class PharmacyUI {
     public void displayInsufficientBloodTubes(
             DictionaryInterface<String, BloodTube> bloodTubes) {
 
-        HashedDictionary<String, Integer> insufficientTubes = filterInsufficientBloodTubes(10, bloodTubes);
+        HashedDictionary<String, BloodTube> insufficientTubes = filterInsufficientBloodTubes(10, bloodTubes);
         System.out.println("\n\n\n\n\n\n\n\n\n\n");
         System.out.println("\n=== Insufficient Blood Tubes ===");
         if (insufficientTubes.isEmpty()) {
@@ -179,13 +176,10 @@ public class PharmacyUI {
         int counter = 1;
         for (int i = 0; i < tubeKeys.size(); i++) {
             String nameKey = tubeKeys.get(i);
-
-            BloodTube tubeObj = bloodTubes.getValue(nameKey);
-            String capColor = tubeObj.getCapColor();
-            double price = tubeObj.getPrice();
+            BloodTube tubeObj = insufficientTubes.getValue(nameKey);
 
             System.out.printf("| %-3d | %-30s | %-20s | %-20s | RM%-18.2f |\n",
-                    counter++, tubeObj.getName(), capColor, tubeObj.getQuantity(), price);
+                    counter++, tubeObj.getName(), tubeObj.getCapColor(), tubeObj.getQuantity(), tubeObj.getPrice());
         }
         System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
         System.out.println("Enter to continue...");
@@ -193,56 +187,65 @@ public class PharmacyUI {
         System.out.println();  // blank line between pages
     }
 
-    private HashedDictionary<String, Integer> filterInsufficientMedicines(int threshold, DictionaryInterface<String, Medicine> meds) {
-        HashedDictionary<String, Integer> totals = new HashedDictionary<>();
+    private HashedDictionary<String, Medicine> filterInsufficientMedicines(int threshold, DictionaryInterface<String, Medicine> meds) {
+        HashedDictionary<String, Medicine> totals = new HashedDictionary<>();
         HashedDictionary<String, Medicine> medicineDict =
                 (HashedDictionary<String, Medicine>) meds;
 
         ArrayList<Medicine> medicines = medicineDict.valueList();
         for (int i = 0; i < medicines.size(); i++) {
             Medicine m = medicines.get(i);
-            String groupKey = m.getMedicineKey();
+            String groupKey = m.getName();
 
-            int curr = totals.contains(groupKey) ? totals.getValue(groupKey) : 0;
-            curr += m.getQuantity();
+            Medicine curr;
             if (totals.contains(groupKey)) {
-                totals.remove(groupKey);
+                curr = totals.getValue(groupKey);
+                curr.setQuantity(curr.getQuantity() + m.getQuantity());
+            } else {
+                curr = m;
             }
             totals.add(groupKey, curr);
         }
 
-        return getEntries(threshold, totals);
+        HashedDictionary<String, Medicine> results = new HashedDictionary<>();
+        ArrayList<String> keys = totals.keyList();
+        for (int i = 0; i < keys.size(); i++) {
+            String k = keys.get(i);
+            Medicine bloodTube = totals.getValue(k);
+            if (bloodTube.getQuantity() < threshold) {
+                results.add(k, bloodTube);
+            }
+        }
+        return results;
     }
 
-    private HashedDictionary<String, Integer> filterInsufficientBloodTubes(int threshold, DictionaryInterface<String, BloodTube> bloodTubeInventory) {
-        HashedDictionary<String, Integer> totals = new HashedDictionary<>();
+    private HashedDictionary<String, BloodTube> filterInsufficientBloodTubes(int threshold, DictionaryInterface<String, BloodTube> bloodTubeInventory) {
+        HashedDictionary<String, BloodTube> totals = new HashedDictionary<>();
         HashedDictionary<String, BloodTube> bloodTubesDict =
                 (HashedDictionary<String, BloodTube>) bloodTubeInventory;
 
         ArrayList<BloodTube> bloodTubes = bloodTubesDict.valueList();
         for (int i = 0; i < bloodTubes.size(); i++) {
             BloodTube m = bloodTubes.get(i);
-            String groupKey = m.getBloodTubeKey();
+            String groupKey = m.getName();
 
-            int curr = totals.contains(groupKey) ? totals.getValue(groupKey) : 0;
-            curr += m.getQuantity();
+            BloodTube curr;
             if (totals.contains(groupKey)) {
-                totals.remove(groupKey);
+                curr = totals.getValue(groupKey);
+                curr.setQuantity(curr.getQuantity() + m.getQuantity());
+            } else {
+                curr = m;
             }
             totals.add(groupKey, curr);
         }
 
-        return getEntries(threshold, totals);
-    }
-
-    private HashedDictionary<String, Integer> getEntries(int threshold, HashedDictionary<String, Integer> totals) {
-        HashedDictionary<String, Integer> results = new HashedDictionary<>();
+        HashedDictionary<String, BloodTube> results = new HashedDictionary<>();
         ArrayList<String> keys = totals.keyList();
         for (int i = 0; i < keys.size(); i++) {
             String k = keys.get(i);
-            int sum = totals.getValue(k);
-            if (sum < threshold) {
-                results.add(k, sum);
+            BloodTube bloodTube = totals.getValue(k);
+            if (bloodTube.getQuantity() < threshold) {
+                results.add(k, bloodTube);
             }
         }
         return results;
