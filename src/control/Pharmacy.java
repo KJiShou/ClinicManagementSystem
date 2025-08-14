@@ -4,10 +4,7 @@ import adt.ArrayList;
 import adt.DictionaryInterface;
 import adt.HashedDictionary;
 import boundary.PharmacyUI;
-import entity.pharmacyManagement.BloodTube;
-import entity.pharmacyManagement.LabTest;
-import entity.pharmacyManagement.Medicine;
-import entity.pharmacyManagement.MedicineKey;
+import entity.pharmacyManagement.*;
 import utility.GeneratePharmacyData;
 
 import java.io.IOException;
@@ -19,7 +16,7 @@ public class Pharmacy {
     private static final int PAGE_SIZE = 5;
     private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("yyyy-MM-dd");
 
-    private DictionaryInterface<MedicineKey, Medicine> meds;
+    private DictionaryInterface<String, Medicine> meds;
     private DictionaryInterface<String, LabTest> labTests;
     private DictionaryInterface<String, BloodTube> bloodTubeInventory;
     private PharmacyUI UI;
@@ -41,17 +38,17 @@ public class Pharmacy {
         while (true) {
             Integer choice = UI.mainMenu();
             switch (choice) {
-                case 1: // View Sales Items
+                case 1: // View Inventory
                     viewInventory();
                     break;
                 case 2:
-                    // other features...
+                    // Stock In Item
                     break;
                 case 3:
-                    // other features...
+                    // Update Item details
                     break;
                 case 4:
-                    // other features...
+                    // Stock out Sales Item
                     break;
                 case 999:
                     return;
@@ -66,24 +63,21 @@ public class Pharmacy {
             Integer choice = UI.viewInventory();
             switch (choice) {
                 case 1: // View Medicine
-                    if (meds instanceof HashedDictionary) {
-                        HashedDictionary<MedicineKey, Medicine> hashedMeds = (HashedDictionary<MedicineKey, Medicine>) meds;
+                    if (meds instanceof HashedDictionary<String, Medicine> hashedMeds) {
                         ArrayList<Medicine> medicines = hashedMeds.valueList();
                         medicineList(medicines);
                     }
                     break;
                 case 2:
                     // View Lab Test
-                    if (labTests instanceof HashedDictionary) {
-                        HashedDictionary<String, LabTest> hashedLabTests = (HashedDictionary<String, LabTest>) labTests;
+                    if (labTests instanceof HashedDictionary<String, LabTest> hashedLabTests) {
                         ArrayList<LabTest> labTestList = hashedLabTests.valueList();
                         labTestList(labTestList);
                     }
                     break;
                 case 3:
                     // View Blood Tube Stock
-                    if (bloodTubeInventory instanceof HashedDictionary) {
-                        HashedDictionary<String, BloodTube> hashedBloodTubeInventory = (HashedDictionary<String, BloodTube>) bloodTubeInventory;
+                    if (bloodTubeInventory instanceof HashedDictionary<String, BloodTube> hashedBloodTubeInventory) {
                         ArrayList<BloodTube> bloodTubeList = hashedBloodTubeInventory.valueList();
                         bloodTubeList(bloodTubeList);
                     }
@@ -192,7 +186,7 @@ public class Pharmacy {
 
             UI.displayMedicineList(currentView, totalItems, currentPage, totalPages, searchQuery);
 
-            System.out.println("Press: [A] Previous | [D] Next | [S] Search | [R] Reset | [Q] Quit");
+            System.out.println("Press: [A] Previous | [D] Next | [S] Search | [I] Insufficient Stock | [R] Reset | [Q] Quit");
             System.out.print("Enter your choice: ");
             String input = scanner.nextLine().trim().toLowerCase();
 
@@ -231,6 +225,9 @@ public class Pharmacy {
                     }
                     break;
 
+                case "i":
+                    UI.displayInsufficientMedicines(meds);
+
                 case "r":
                     // Reset back to full list from hashed store
                     currentView = originalView;
@@ -264,7 +261,7 @@ public class Pharmacy {
 
             UI.displayBloodTubeList(currentView, totalItems, currentPage, totalPages, searchQuery);
 
-            System.out.println("Press: [A] Previous | [D] Next | [S] Search | [R] Reset | [Q] Quit");
+            System.out.println("Press: [A] Previous | [D] Next | [S] Search | [I] insufficient Stock | [R] Reset | [Q] Quit");
             System.out.print("Enter your choice: ");
             String input = scanner.nextLine().trim().toLowerCase();
 
@@ -303,6 +300,9 @@ public class Pharmacy {
                         currentPage = 1; // reset to first page of new results
                     }
                     break;
+
+                case "i":
+                    UI.displayInsufficientBloodTubes(bloodTubeInventory);
 
                 case "r":
                     // Reset back to full list from hashed store
@@ -412,11 +412,11 @@ public class Pharmacy {
         return (s == null) ? "" : s.toLowerCase();
     }
 
-    public DictionaryInterface<MedicineKey, Medicine> getMeds() {
+    public DictionaryInterface<String, Medicine> getMeds() {
         return meds;
     }
 
-    public void setMeds(DictionaryInterface<MedicineKey, Medicine> meds) {
+    public void setMeds(DictionaryInterface<String, Medicine> meds) {
         this.meds = meds;
     }
 

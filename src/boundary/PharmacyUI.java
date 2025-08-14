@@ -1,13 +1,9 @@
 package boundary;
 
-import adt.ArrayList;
-import adt.Entry;
-import adt.LinkedQueue;
-import adt.QueueInterface;
+import adt.*;
 import entity.pharmacyManagement.BloodTube;
 import entity.pharmacyManagement.LabTest;
 import entity.pharmacyManagement.Medicine;
-import entity.pharmacyManagement.MedicineKey;
 import utility.MessageUI;
 
 import java.io.IOException;
@@ -50,6 +46,7 @@ public class PharmacyUI {
     public void displayMedicineList(ArrayList<Medicine> medicines, int totalItems, int currentPage, int totalPages, String searchQuery) {
         int start = (currentPage - 1) * pageSize;
         int end   = Math.min(totalItems, start + pageSize);
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
 
         if(!(searchQuery == null || searchQuery.isEmpty())) {
             System.out.println("Search query: " + searchQuery);
@@ -75,6 +72,7 @@ public class PharmacyUI {
     public void displayLabTestList(ArrayList<LabTest> labTests, int totalItems, int currentPage, int totalPages, String searchQuery) {
         int start = (currentPage - 1) * pageSize;
         int end   = Math.min(totalItems, start + pageSize);
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
 
         if(!(searchQuery == null || searchQuery.isEmpty())) {
             System.out.println("Search query: " + searchQuery);
@@ -100,6 +98,7 @@ public class PharmacyUI {
     public void displayBloodTubeList(ArrayList<BloodTube> bloodTubes, int totalItems, int currentPage, int totalPages, String searchQuery) {
         int start = (currentPage - 1) * pageSize;
         int end   = Math.min(totalItems, start + pageSize);
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
 
         if(!(searchQuery == null || searchQuery.isEmpty())) {
             System.out.println("Search query: " + searchQuery);
@@ -120,5 +119,132 @@ public class PharmacyUI {
 
         System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+----------------------+");
         System.out.println();  // blank line between pages
+    }
+
+    public void displayInsufficientMedicines(
+            DictionaryInterface<String, Medicine> medicines) {
+
+        HashedDictionary<String, Integer> insufficientMeds = filterInsufficientMedicines(10, medicines);
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\n=== Insufficient Medicines ===");
+        if (insufficientMeds.isEmpty()) {
+            System.out.println("No Insufficient Medicines Found");
+            System.out.println("Enter to continue...");
+            scanner.nextLine();
+            return;
+        }
+        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
+        System.out.printf("| %-3s | %-30s | %-20s | %-20s | %-20s |\n",
+                "No.", "Name", "Company", "Quantity", "Price");
+        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
+
+        ArrayList<String> medKeys = insufficientMeds.keyList();
+        int counter = 1;
+        for (int i = 0; i < medKeys.size(); i++) {
+            String nameKey = medKeys.get(i);
+
+            Medicine medObj = medicines.getValue(nameKey);
+            String company = (medObj.getCompany() == null) ? "-" : medObj.getCompany().getName();
+            int quantity = medObj.getQuantity();
+            double price = medObj.getPrice();
+
+            System.out.printf("| %-3d | %-30s | %-20s | %-20s | RM%-18.2f |\n",
+                    counter++, medObj.getName(), company, quantity + " " + medObj.getUnit(), price);
+        }
+        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
+        System.out.println("Enter to continue...");
+        scanner.nextLine();
+        System.out.println();  // blank line between pages
+
+    }
+
+    public void displayInsufficientBloodTubes(
+            DictionaryInterface<String, BloodTube> bloodTubes) {
+
+        HashedDictionary<String, Integer> insufficientTubes = filterInsufficientBloodTubes(10, bloodTubes);
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
+        System.out.println("\n=== Insufficient Blood Tubes ===");
+        if (insufficientTubes.isEmpty()) {
+            System.out.println("No Insufficient Blood Tubes Found");
+            System.out.println("Enter to continue...");
+            scanner.nextLine();
+            return;
+        }
+        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
+        System.out.printf("| %-3s | %-30s | %-20s | %-20s | %-20s |\n",
+                "No.", "Name", "Cap Colour", "Quantity", "Price");
+        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
+
+        ArrayList<String> tubeKeys = insufficientTubes.keyList();
+        int counter = 1;
+        for (int i = 0; i < tubeKeys.size(); i++) {
+            String nameKey = tubeKeys.get(i);
+
+            BloodTube tubeObj = bloodTubes.getValue(nameKey);
+            String capColor = tubeObj.getCapColor();
+            double price = tubeObj.getPrice();
+
+            System.out.printf("| %-3d | %-30s | %-20s | %-20s | RM%-18.2f |\n",
+                    counter++, tubeObj.getName(), capColor, tubeObj.getQuantity(), price);
+        }
+        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
+        System.out.println("Enter to continue...");
+        scanner.nextLine();
+        System.out.println();  // blank line between pages
+    }
+
+    private HashedDictionary<String, Integer> filterInsufficientMedicines(int threshold, DictionaryInterface<String, Medicine> meds) {
+        HashedDictionary<String, Integer> totals = new HashedDictionary<>();
+        HashedDictionary<String, Medicine> medicineDict =
+                (HashedDictionary<String, Medicine>) meds;
+
+        ArrayList<Medicine> medicines = medicineDict.valueList();
+        for (int i = 0; i < medicines.size(); i++) {
+            Medicine m = medicines.get(i);
+            String groupKey = m.getMedicineKey();
+
+            int curr = totals.contains(groupKey) ? totals.getValue(groupKey) : 0;
+            curr += m.getQuantity();
+            if (totals.contains(groupKey)) {
+                totals.remove(groupKey);
+            }
+            totals.add(groupKey, curr);
+        }
+
+        return getEntries(threshold, totals);
+    }
+
+    private HashedDictionary<String, Integer> filterInsufficientBloodTubes(int threshold, DictionaryInterface<String, BloodTube> bloodTubeInventory) {
+        HashedDictionary<String, Integer> totals = new HashedDictionary<>();
+        HashedDictionary<String, BloodTube> bloodTubesDict =
+                (HashedDictionary<String, BloodTube>) bloodTubeInventory;
+
+        ArrayList<BloodTube> bloodTubes = bloodTubesDict.valueList();
+        for (int i = 0; i < bloodTubes.size(); i++) {
+            BloodTube m = bloodTubes.get(i);
+            String groupKey = m.getBloodTubeKey();
+
+            int curr = totals.contains(groupKey) ? totals.getValue(groupKey) : 0;
+            curr += m.getQuantity();
+            if (totals.contains(groupKey)) {
+                totals.remove(groupKey);
+            }
+            totals.add(groupKey, curr);
+        }
+
+        return getEntries(threshold, totals);
+    }
+
+    private HashedDictionary<String, Integer> getEntries(int threshold, HashedDictionary<String, Integer> totals) {
+        HashedDictionary<String, Integer> results = new HashedDictionary<>();
+        ArrayList<String> keys = totals.keyList();
+        for (int i = 0; i < keys.size(); i++) {
+            String k = keys.get(i);
+            int sum = totals.getValue(k);
+            if (sum < threshold) {
+                results.add(k, sum);
+            }
+        }
+        return results;
     }
 }
