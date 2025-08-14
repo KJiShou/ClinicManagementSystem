@@ -1,28 +1,40 @@
 package entity.pharmacyManagement;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
 public class Medicine extends SalesItem{
-    private String brandName;
+    private MedicineKey key;
+    private String brand;
     private String strength;
+    private int quantity;
     private String unit;
-    private Date expiryDate;
 
-    public Medicine(UUID id, String name, double price, String description, String unit, Company company, String brandName, String strength, String unit1, Date expiryDate) {
-        super(id, name, price, description, unit, company);
-        this.brandName = brandName;
+
+    public Medicine(UUID id, String name, int quantity, double price, String description, String unit, Company company, String brand, String strength, Date expiryDate) {
+        super(id, name, price, description, company, expiryDate);
+        this.quantity = quantity;
+        this.brand = brand;
         this.strength = strength;
-        this.unit = unit1;
-        this.expiryDate = expiryDate;
+        this.unit = unit;
+        this.key = new MedicineKey(name, brand, expiryDate);
     }
 
-    public String getBrandName() {
-        return brandName;
+    public MedicineKey getKey() {
+        return key;
     }
 
-    public void setBrandName(String brandName) {
-        this.brandName = brandName;
+    public void setKey(MedicineKey key) {
+        this.key = key;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 
     public String getStrength() {
@@ -33,21 +45,27 @@ public class Medicine extends SalesItem{
         this.strength = strength;
     }
 
-    @Override
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     public String getUnit() {
         return unit;
     }
 
-    @Override
     public void setUnit(String unit) {
         this.unit = unit;
     }
 
-    public Date getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Date expiryDate) {
-        this.expiryDate = expiryDate;
+    @Override
+    public String toString() {
+        return super.toString() +
+                "brand='" + brand + '\'' +
+                ", expiryDate=" + super.getExpiryDate() +
+                '}';
     }
 }
