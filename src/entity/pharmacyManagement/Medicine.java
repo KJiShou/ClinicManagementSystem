@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.UUID;
 
 public class Medicine extends SalesItem{
-    private MedicineKey key;
     private String brand;
     private String strength;
     private int quantity;
@@ -18,15 +17,6 @@ public class Medicine extends SalesItem{
         this.brand = brand;
         this.strength = strength;
         this.unit = unit;
-        this.key = new MedicineKey(name, brand, expiryDate);
-    }
-
-    public MedicineKey getKey() {
-        return key;
-    }
-
-    public void setKey(MedicineKey key) {
-        this.key = key;
     }
 
     public String getBrand() {
@@ -67,5 +57,9 @@ public class Medicine extends SalesItem{
                 "brand='" + brand + '\'' +
                 ", expiryDate=" + super.getExpiryDate() +
                 '}';
+    }
+
+    public String getMedicineKey() {
+        return getName() + "|"  + getStrength() + "|" + getExpiryDate();
     }
 }

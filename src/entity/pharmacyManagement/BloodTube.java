@@ -48,4 +48,8 @@ public class BloodTube extends SalesItem{
     public void setCapColor(String capColor) {
         this.capColor = capColor;
     }
+
+    public String getBloodTubeKey() {
+        return getName() + "|" + getCompany().getName() + "|" + getExpiryDate();
+    }
 }

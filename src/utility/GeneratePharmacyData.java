@@ -89,7 +89,7 @@ public class GeneratePharmacyData {
                         DATE_FMT.parse("2026-09-30")),
 
                 new Medicine(UUID.randomUUID(),
-                        "Atorvastatin", 100,15.00,
+                        "Atorvastatin", 1,15.00,
                         "Cholesterol-lowering statin", "tablet",
                         c[1],  // GSK
                         "Lipitor", "10 mg",
@@ -100,6 +100,7 @@ public class GeneratePharmacyData {
     public static HashedDictionary<String, BloodTube> createBloodTubeInventory() throws ParseException {
         HashedDictionary<String, BloodTube> inventory = new HashedDictionary<>();
         Company[] c = createSampleCompanies();
+
         BloodTube edtaPurpleTube = new BloodTube(UUID.randomUUID(),
                 "EDTA Purple Tube 4ml",
                 0.75, 500,
@@ -107,20 +108,43 @@ public class GeneratePharmacyData {
                 c[2],
                 DATE_FMT.parse("2026-01-01"),
                 4.0, "Purple", "EDTA K2");
-        BloodTube sodiumCitrateBlueTube = new BloodTube(UUID.randomUUID(), "Sodium Citrate Blue Tube 2.7ml",
-        0.75, 300, "Used for Coagulation profile (PT/APTT). Contains Sodium Citrate.",
-                c[2], DATE_FMT.parse("2025-09-10"), 2.7, "Blue", "Sodium Citrate");
-        BloodTube serumRedTube = new BloodTube(UUID.randomUUID(), "Serum Red Tube 5ml", 0.65, 400,
+
+        BloodTube sodiumCitrateBlueTube = new BloodTube(UUID.randomUUID(),
+                "Sodium Citrate Blue Tube 2.7ml",
+                0.75, 300,
+                "Used for Coagulation profile (PT/APTT). Contains Sodium Citrate.",
+                c[2], DATE_FMT.parse("2025-09-10"),
+                2.7, "Blue", "Sodium Citrate");
+
+        BloodTube serumRedTube = new BloodTube(UUID.randomUUID(),
+                "Serum Red Tube 5ml", 0.65, 400,
                 "Used for LFT, RFT, Lipid profile. Contains clot activator.",
-                 c[2], DATE_FMT.parse("2025-08-20"),5.0,
-                "Red", "Clot Activator");
-        BloodTube fluorideGreyTube = new BloodTube(UUID.randomUUID(), "Fluoride Grey Tube 2ml", 0.70,250,
-                "Used for Glucose (FBS/RBS). Contains Sodium Fluoride/Potassium Oxalate.", c[2], DATE_FMT.parse("2026-01-10"), 2.0,
-                "Grey", "Sodium Fluoride/Potassium Oxalate");
-        inventory.add(edtaPurpleTube.getName(), edtaPurpleTube);
-        inventory.add(sodiumCitrateBlueTube.getName(), sodiumCitrateBlueTube);
-        inventory.add(serumRedTube.getName(), serumRedTube);
-        inventory.add(fluorideGreyTube.getName(), fluorideGreyTube);
+                c[2], DATE_FMT.parse("2025-08-20"),
+                5.0, "Red", "Clot Activator");
+
+        BloodTube fluorideGreyTube = new BloodTube(UUID.randomUUID(),
+                "Fluoride Grey Tube 2ml", 0.70, 2,
+                "Used for Glucose (FBS/RBS). Contains Sodium Fluoride/Potassium Oxalate.",
+                c[2], DATE_FMT.parse("2026-01-10"),
+                2.0, "Grey", "Sodium Fluoride/Potassium Oxalate");
+
+        inventory.add(
+                edtaPurpleTube.getBloodTubeKey(),
+                edtaPurpleTube
+        );
+        inventory.add(
+                sodiumCitrateBlueTube.getBloodTubeKey(),
+                sodiumCitrateBlueTube
+        );
+        inventory.add(
+                serumRedTube.getBloodTubeKey(),
+                serumRedTube
+        );
+        inventory.add(
+                fluorideGreyTube.getBloodTubeKey(),
+                fluorideGreyTube
+        );
+
         return inventory;
     }
 
@@ -169,11 +193,11 @@ public class GeneratePharmacyData {
      * Public utility method.
      * Builds and returns a HashDictionary keyed by MedicineKey.
      */
-    public static HashedDictionary<MedicineKey, Medicine> createMedicineTable()
+    public static HashedDictionary<String, Medicine> createMedicineTable()
             throws ParseException {
-        HashedDictionary<MedicineKey, Medicine> table = new HashedDictionary<>();
+        HashedDictionary<String, Medicine> table = new HashedDictionary<>();
         for (Medicine m : createSampleMedicines()) {
-            table.add(m.getKey(), m);
+            table.add(m.getMedicineKey(), m);
         }
         return table;
     }

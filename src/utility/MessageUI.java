@@ -41,6 +41,7 @@ public class MessageUI {
 
     public Integer mainUI(String title, QueueInterface<String> choiceQueue) {
         int size = choiceQueue.size();
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
         System.out.println("+------------------------------------------------------+");
         System.out.printf("| %-52s |\n", center(title, 52));
         System.out.println("+------------------------------------------------------+");
