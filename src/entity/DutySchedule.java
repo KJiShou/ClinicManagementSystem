@@ -10,8 +10,8 @@ public class DutySchedule {
     private int year;
 
     public DutySchedule(LocalTime startTime, LocalTime endTime, int day, int month, int year) {
-        this.startTime = LocalTime.now();
-        this.endTime = LocalTime.now();
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.day = day;
         this.month = month;
         this.year = year;
@@ -59,7 +59,9 @@ public class DutySchedule {
 
     @Override
     public String toString() {
-        return day + " " + startTime + " - " + endTime;
+        return String.format("%02d/%02d/%d %s - %s",
+                day, month, year, startTime, endTime);
     }
+
 
 }
