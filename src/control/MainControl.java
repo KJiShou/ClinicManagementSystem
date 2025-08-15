@@ -29,5 +29,8 @@ public class MainControl {
 
         //PatientControl patient = new PatientControl();
         //patient.main();
+
+//        Consultation consultation = new Consultation();
+//        consultation.main();
     }
 }
