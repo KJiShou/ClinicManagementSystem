@@ -1,11 +1,25 @@
 package control;
 
-public class Consultation {
-    /**
-     * @param args the command line arguments
-     */
+import adt.HashedDictionary;
+import adt.ListInterface;
+import adt.ArrayList;
+import boundary.ConsultationUI;
 
-    public static void main(String[] args) {
-        // TODO code application logic here
+public class Consultation {
+    ListInterface<ConsultationUI> consultationList;
+    ConsultationUI UI;
+
+    Consultation() {
+        try {
+            ArrayList<ConsultationUI> consultationList = new ArrayList();
+            UI = new ConsultationUI();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void main() {
+        Integer choice = UI.menu();
+        System.out.println(choice);
     }
 }

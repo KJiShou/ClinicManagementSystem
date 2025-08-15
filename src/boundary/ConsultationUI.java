@@ -1,19 +1,25 @@
 package boundary;
 
-import java.util.Scanner;
+import adt.QueueInterface;
+import adt.LinkedQueue;
+import utility.MessageUI;
 
 public class ConsultationUI {
-    Scanner scanner = new Scanner(System.in);
+    QueueInterface<String> choiceQueue;
+    MessageUI UI;
 
-    public int getMenuChoice() {
-        System.out.println("1. Add Consultation");
-        System.out.println("2. View Consultation");
-        System.out.println("3. Update Consultation");
-        System.out.println("4. Delete Consultation");
-        System.out.println("5. Search Consultation");
-        System.out.println("6. Exit");
-        int choice = scanner.nextInt();
-        System.out.println();
-        return choice;
+    public ConsultationUI() {
+        choiceQueue = new LinkedQueue<String>();
+        UI = new MessageUI();
+    }
+
+    public int menu() {
+        choiceQueue.enqueue("View Consultation");
+        choiceQueue.enqueue("Add Consultation");
+        choiceQueue.enqueue("Update Consultation");
+        choiceQueue.enqueue("Delete Consultation");
+        choiceQueue.enqueue("Search Consultation");
+
+        return UI.mainUI("Welcome to Consultation Menu", choiceQueue);
     }
 }
