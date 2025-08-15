@@ -26,5 +26,8 @@ public class MainControl {
         // pharmacy module
         Pharmacy pharmacy = new Pharmacy(medicines, labTests, bloodTubes);
         pharmacy.main();
+
+        //PatientControl patient = new PatientControl();
+        //patient.main();
     }
 }
