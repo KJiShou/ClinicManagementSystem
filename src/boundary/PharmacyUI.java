@@ -33,6 +33,15 @@ public class PharmacyUI {
         return UI.mainUI("Welcome to Pharmacy Management System", choiceQueue);
     }
 
+    public Integer stockInSelectionUI() throws IOException {
+        // choice 1
+        choiceQueue.enqueue("Medicine");
+        choiceQueue.enqueue("Lab Test");
+        choiceQueue.enqueue("BloodTube");
+
+        return UI.mainUI("Select Item to stock in", choiceQueue);
+    }
+
     public Integer viewInventory() throws IOException {
         // choice 1
         choiceQueue.enqueue("Medicine");
@@ -81,14 +90,14 @@ public class PharmacyUI {
         // Header
         System.out.printf("Page %d/%d%n", currentPage, totalPages);
         System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
-        System.out.printf("| %-3s | %-30s | %-30s | %-20s | %-20s |\n", "No.", "Name", "Tube Needed", "Price", "Lab");
+        System.out.printf("| %-3s | %-30s | %-30s | %-20s | %-20s |\n", "No.", "Name", "Tube Needed", "Lab", "Price");
         System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
 
         // Rows
         for (int i = start; i < end; i++) {
             LabTest labTest = labTests.get(i);
 
-            System.out.printf("| %-3d | %-30s | %-30s | %-20s | %-20.2f |\n", i+1, labTest.getName(), labTest.getBloodTubes(), labTest.getReferringLab().getName(), labTest.getPrice());
+            System.out.printf("| %-3d | %-30s | %-30s | %-20s | RM %-17.2f |\n", i+1, labTest.getName(), labTest.getBloodTubes(), labTest.getReferringLab().getName(), labTest.getPrice());
         }
 
         System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
