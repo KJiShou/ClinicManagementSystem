@@ -46,32 +46,83 @@ public class PatientUI {
         System.out.println("\n=== REGISTER NEW PATIENT ===");
 
         UUID id = UUID.randomUUID();
-        System.out.print("Name: ");
-        String name = scanner.nextLine();
 
-        System.out.print("Address: ");
-        String address = scanner.nextLine();
+        // Name validation
+        String name;
+        do {
+            System.out.print("Name: ");
+            name = scanner.nextLine().trim();
+            if (name.isEmpty()) {
+                System.out.println("Error: Name cannot be empty");
+            }
+        } while (name.isEmpty());
 
-        System.out.print("Gender (M/F): ");
-        String gender = scanner.nextLine().toUpperCase();
+        // Address validation
+        String address;
+        do {
+            System.out.print("Address: ");
+            address = scanner.nextLine().trim();
+            if (address.isEmpty()) {
+                System.out.println("Error: Address cannot be empty");
+            }
+        } while (address.isEmpty());
 
-        System.out.print("Phone: ");
-        String phone = scanner.nextLine();
+        // Gender validation
+        String gender;
+        do {
+            System.out.print("Gender (M/F): ");
+            gender = scanner.nextLine().trim().toUpperCase();
+            if (!gender.equals("M") && !gender.equals("F")) {
+                System.out.println("Error: Gender must be 'M' or 'F'");
+                gender = "";
+            }
+        } while (gender.isEmpty());
 
-        System.out.print("Email: ");
-        String email = scanner.nextLine();
+        // Phone validation
+        String phone;
+        do {
+            System.out.print("Phone: ");
+            phone = scanner.nextLine().trim();
+            if (!phone.matches("\\d+")) {
+                System.out.println("Error: Phone must contain only digits");
+                phone = "";
+            }
+        } while (phone.isEmpty());
 
-        System.out.print("Date of Birth (YYYY-MM-DD): ");
-        String dob = scanner.nextLine();
+        // Email validation
+        String email;
+        do {
+            System.out.print("Email: ");
+            email = scanner.nextLine().trim();
+            if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+                System.out.println("Error: Invalid email format");
+                email = "";
+            }
+        } while (email.isEmpty());
 
+        // Date of Birth validation
+        String dob;
+        do {
+            System.out.print("Date of Birth (YYYY-MM-DD): ");
+            dob = scanner.nextLine().trim();
+            if (!dob.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                System.out.println("Error: Date must be in YYYY-MM-DD format");
+                dob = "";
+            }
+        } while (dob.isEmpty());
+
+        // Optional fields
         System.out.print("Patient IC (leave blank if none): ");
-        String patientIC = scanner.nextLine();
+        String patientIC = scanner.nextLine().trim();
+        if (!patientIC.isEmpty() && !patientIC.matches("\\d{12}")) {
+            System.out.println("Warning: IC should be 12 digits. Storing as entered.");
+        }
 
         System.out.print("Patient Passport (leave blank if none): ");
-        String patientPassport = scanner.nextLine();
+        String patientPassport = scanner.nextLine().trim();
 
         System.out.print("Student ID (leave blank if none): ");
-        String studentID = scanner.nextLine();
+        String studentID = scanner.nextLine().trim();
 
         return new Patient(
                 id, name, address, gender, phone, email, dob,
