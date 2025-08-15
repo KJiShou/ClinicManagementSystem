@@ -6,7 +6,7 @@ import adt.QueueInterface;
 import java.util.Scanner;
 
 public class MessageUI {
-    Scanner scanner;
+    static Scanner scanner;
     Integer choice;
     public MessageUI() {
         scanner = new Scanner(System.in);
@@ -41,6 +41,7 @@ public class MessageUI {
 
     public Integer mainUI(String title, QueueInterface<String> choiceQueue) {
         int size = choiceQueue.size();
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
         System.out.println("+------------------------------------------------------+");
         System.out.printf("| %-52s |\n", center(title, 52));
         System.out.println("+------------------------------------------------------+");
@@ -54,4 +55,35 @@ public class MessageUI {
         getChoice(size);
         return choice;
     }
+
+    /**
+     * Utility method to ask for a positive integer from user
+     */
+    public static int askPositiveInt(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String s = scanner.nextLine().trim();
+            try {
+                int v = Integer.parseInt(s);
+                if (v > 0) return v;
+            } catch (Exception ignored) {}
+            System.out.println("Please enter a positive integer.");
+        }
+    }
+
+    /**
+     * Utility method to ask for a positive double from user
+     */
+    public static double askPositiveDouble(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String s = scanner.nextLine().trim();
+            try {
+                double v = Double.parseDouble(s);
+                if (v > 0) return v;
+            } catch (Exception ignored) {}
+            System.out.println("Please enter a positive number.");
+        }
+    }
+
 }

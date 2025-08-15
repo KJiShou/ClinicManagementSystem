@@ -1,41 +1,36 @@
 package entity;
+import java.util.UUID;
 
 public class Doctor extends User {
-    private String doctorIC;
-    private String licenseID;
-    private String specializeField;
+    private String specialization;
+    private String licenseNumber;
 
-    public Doctor(String id, String name, String address, String gender, String phone, String email, String dateOfBirth,
-                  String doctorIC, String licenseID, String specializeField) {
+    public Doctor(UUID id, String name, String address, Gender gender, String phone, String email, String dateOfBirth,
+                  String specialization, String licenseNumber) {
         super(id, name, address, gender, phone, email, dateOfBirth);
-        this.doctorIC = doctorIC;
-        this.licenseID = licenseID;
-        this.specializeField = specializeField;
+        this.specialization = specialization;
+        this.licenseNumber = licenseNumber;
     }
 
-    // Getters and setters
-    public String getDoctorIC() {
-        return doctorIC;
+    // Getters & Setters
+    public String getSpecialization() {
+        return specialization;
+    }
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
     }
 
-    public void setDoctorIC(String doctorIC) {
-        this.doctorIC = doctorIC;
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
     }
 
-
-    public String getLicenseID() {
-        return licenseID;
-    }
-
-    public void setLicenseID(String licenseID) {
-        this.licenseID = licenseID;
-    }
-
-    public String getSpecializeField() {
-        return specializeField;
-    }
-
-    public void setSpecializeField(String specializeField) {
-        this.specializeField = specializeField;
+    @Override
+    public String toString() {
+        return super.toString() + "\n" +
+                "Specialization: " + specialization + "\n" +
+                "License Number: " + licenseNumber;
     }
 }

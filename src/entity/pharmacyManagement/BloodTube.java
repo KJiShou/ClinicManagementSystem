@@ -8,6 +8,7 @@ public class BloodTube extends SalesItem{
     private String additive;
     private int quantity;
     private double volumeMl;
+    private static final java.text.SimpleDateFormat KEY_DATE_FMT = new java.text.SimpleDateFormat("yyyy-MM-dd");
 
     public BloodTube(UUID id, String name, double price, int quantity, String description, Company company, Date expiryDate, double volumeMl, String capColor, String additive) {
         super(id, name, price, description, company, expiryDate);
@@ -47,5 +48,10 @@ public class BloodTube extends SalesItem{
 
     public void setCapColor(String capColor) {
         this.capColor = capColor;
+    }
+
+    public String getBloodTubeKey() {
+        String exp = (getExpiryDate() == null) ? "-" : KEY_DATE_FMT.format(getExpiryDate());
+        return getName() + "|" + getCompany().getName() + "|" + exp;
     }
 }
