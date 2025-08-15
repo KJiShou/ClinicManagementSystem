@@ -10,5 +10,8 @@ public class MainControl {
         // pharmacy module
         Pharmacy pharmacy = new Pharmacy();
         pharmacy.main();
+
+        //PatientControl patient = new PatientControl();
+        //patient.main();
     }
 }
