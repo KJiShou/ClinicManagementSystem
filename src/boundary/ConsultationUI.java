@@ -2,24 +2,121 @@ package boundary;
 
 import adt.QueueInterface;
 import adt.LinkedQueue;
+import adt.ArrayList;
+import entity.Patient;
+import entity.Doctor;
+import entity.User;
 import utility.MessageUI;
 
+import entity.Consultation;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Scanner;
+import java.util.UUID;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class ConsultationUI {
-    QueueInterface<String> choiceQueue;
-    MessageUI UI;
+    private QueueInterface<String> choiceQueue;
+    private MessageUI UI;
+    private int pageSize;
+    private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("yyyy-MM-dd");
+    private Scanner scanner;
 
     public ConsultationUI() {
         choiceQueue = new LinkedQueue<String>();
         UI = new MessageUI();
+        pageSize = 5;
+        scanner = new Scanner(System.in);
     }
 
-    public int menu() {
+    public Integer mainMenu() throws IOException {
         choiceQueue.enqueue("View Consultation");
         choiceQueue.enqueue("Add Consultation");
         choiceQueue.enqueue("Update Consultation");
         choiceQueue.enqueue("Delete Consultation");
-        choiceQueue.enqueue("Search Consultation");
 
         return UI.mainUI("Welcome to Consultation Menu", choiceQueue);
+    }
+
+    public Integer viewConsultationMenu() throws IOException {
+        choiceQueue.enqueue("View All Consultation");
+        choiceQueue.enqueue("Sort by Status");
+        choiceQueue.enqueue("Sort by Date");
+        choiceQueue.enqueue("Sort by Payment");
+
+        return UI.mainUI("View Consultation Selection", choiceQueue);
+    }
+
+    public void displayConsultationList(ArrayList<Consultation> consultation, int totalItems, int currentPage, int totalPages) {
+        int start = (currentPage - 1) * pageSize;
+        int end = Math.min(totalItems, start + pageSize);
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
+
+        System.out.printf("Page %d/%d\n", currentPage, totalPages);
+        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+");
+        System.out.printf("| %-3s | %-30s | %-30s | %-10s | %-11s | %-9s |\n", "No.", "Patient Name", "Doctor Name", "Date", "Status", "Payment");
+        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+");
+
+        for (int i = start; i < end; i++) {
+            Consultation cons = consultation.get(i);
+
+            System.out.printf("| %-3d | %-30s | %-30s | %-10s | %-11s | %-9s |\n",
+                    i + 1,
+                    cons.getPatient().getName(),
+                    cons.getDoctor().getName(),
+                    cons.getConsultatonDate(),
+                    cons.status.toString(),
+                    cons.getTotalPayment());
+        }
+        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+\n\n");
+    }
+    
+    public Consultation addConsultation() throws IOException {
+        System.out.println("\n=== ADD NEW CONSULTATION ===");
+
+        UUID id = UUID.randomUUID();
+
+        //placeholder
+        Patient patient = new Patient( null, null, null, (User.Gender) null, null, null, null, null, null, (String) null);
+        Doctor doctor = new Doctor(null, null, null, null, null, null, null, null, null);
+
+        System.out.println("Consultation Date: ");
+        LocalDate consultationDate = LocalDate.parse(scanner.nextLine());
+
+        System.out.println("Enter Notes: ");
+        String notes = scanner.nextLine();
+
+        System.out.println("Enter Start Time: ");
+        LocalTime startTime = LocalTime.parse(scanner.nextLine());
+
+        System.out.println("Enter End Time: ");
+        LocalTime endTime = LocalTime.parse(scanner.nextLine());
+
+        System.out.println("Enter Total Payment: ");
+        float totalPayment = scanner.nextFloat();
+
+        return new Consultation(
+                id, patient, doctor, consultationDate, Consultation.Status.BILLING,
+                notes, startTime, endTime, totalPayment
+        );
+    }
+
+    public void displayConsultationDetails(Consultation consultation) {
+        System.out.println("\n=== CONSULTATION DETAILS ===");
+        System.out.println("+--------------------------------+--------------------------------+");
+        System.out.printf("| %-30s | %-30s |\n", "Field", "Value");
+        System.out.println("+--------------------------------+--------------------------------+");
+        System.out.printf("| %-30s | %-30s |\n", "Consultation ID", consultation.getId());
+        System.out.printf("| %-30s | %-30s |\n", "Patient ID", consultation.getPatientId());
+        System.out.printf("| %-30s | %-30s |\n", "Doctor ID", consultation.getDoctorId());
+        System.out.printf("| %-30s | %-30s |\n", "Date", consultation.getConsultatonDate());
+        System.out.printf("| %-30s | %-30s |\n", "Status", consultation.status.toString());
+        System.out.printf("| %-30s | %-30s |\n", "Start Time", consultation.getStartTime());
+        System.out.printf("| %-30s | %-30s |\n", "End Time", consultation.getEndTime());
+        System.out.printf("| %-30s | %-30s |\n", "Total Payment", String.format("%.2f", consultation.getTotalPayment()));
+        System.out.printf("| %-30s | %-30s |\n", "Notes", consultation.getNotes());
+        System.out.println("+--------------------------------+--------------------------------+");
     }
 }
