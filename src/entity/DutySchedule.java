@@ -26,7 +26,7 @@ public class DutySchedule {
         }
     }
 
-    // 原有的getter方法（返回LocalDate/LocalTime对象）
+    //get set
     public LocalTime getStartTimeObject() { return startTime; }
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
 
@@ -36,7 +36,7 @@ public class DutySchedule {
     public LocalDate getDateObject() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
 
-    // 新增的getter方法（返回String格式，供UI使用）
+
     public String getDate() {
         return date != null ? date.format(DATE_FMT) : "Invalid Date";
     }
@@ -49,7 +49,7 @@ public class DutySchedule {
         return endTime != null ? endTime.format(TIME_FMT) : "Invalid Time";
     }
 
-    // 检查是否有效
+
     public boolean isValid() {
         return date != null && startTime != null && endTime != null;
     }
