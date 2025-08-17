@@ -80,8 +80,8 @@ public class ConsultationUI {
         UUID id = UUID.randomUUID();
 
         //placeholder
-        Patient patient = new Patient( null, null, null, (User.Gender) null, null, null, null, null, null, (String) null);
-        Doctor doctor = new Doctor(null, null, null, null, null, null, null, null, null);
+        Patient patient = null;
+        Doctor doctor = null;
 
         Date date;
         do {
