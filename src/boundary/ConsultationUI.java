@@ -12,6 +12,7 @@ import entity.Consultation;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.UUID;
 import java.time.LocalDate;
@@ -82,20 +83,53 @@ public class ConsultationUI {
         Patient patient = new Patient( null, null, null, (User.Gender) null, null, null, null, null, null, (String) null);
         Doctor doctor = new Doctor(null, null, null, null, null, null, null, null, null);
 
-        System.out.println("Consultation Date: ");
-        LocalDate consultationDate = LocalDate.parse(scanner.nextLine());
+        Date date;
+        do {
+            try {
+                System.out.print("Consultation Date (YYYY-MM-DD): ");
+                date = DATE_FMT.parse(scanner.nextLine().trim());
 
-        System.out.println("Enter Notes: ");
+            } catch (Exception e) {
+                System.out.println("Invalid date format, try again.\n");
+                date = new Date();
+            }
+        } while (date == null);
+        LocalDate consultationDate = LocalDate.parse(date.toString());
+
+        System.out.print("Enter Notes: ");
         String notes = scanner.nextLine();
 
-        System.out.println("Enter Start Time: ");
-        LocalTime startTime = LocalTime.parse(scanner.nextLine());
+        LocalTime startTime;
+        do {
+            try {
+                System.out.print("Enter Start Time (HH:MM, 24H format): ");
+                startTime = LocalTime.parse(scanner.nextLine());
+            } catch (Exception e) {
+                System.out.println("Invalid time format, try again.\n");
+                startTime = null;
+            }
+        } while (startTime == null);
 
-        System.out.println("Enter End Time: ");
-        LocalTime endTime = LocalTime.parse(scanner.nextLine());
+        LocalTime endTime;
+        do {
+            try {
+                System.out.print("Enter Start Time (HH:MM, 24H format): ");
+                endTime = LocalTime.parse(scanner.nextLine());
+            } catch (Exception e) {
+                System.out.println("Invalid time format, try again.\n");
+                endTime = null;
+            }
+        } while (endTime == null);
 
-        System.out.println("Enter Total Payment: ");
-        float totalPayment = scanner.nextFloat();
+        float totalPayment = 0;
+        do {
+            try {
+                System.out.print("Enter Total Payment: RM");
+                totalPayment = scanner.nextFloat();
+            } catch (Exception e) {
+                System.out.println("Invalid amount, try again.\n");
+            }
+        } while (totalPayment <= 0);
 
         return new Consultation(
                 id, patient, doctor, consultationDate, Consultation.Status.BILLING,
