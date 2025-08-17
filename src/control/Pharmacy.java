@@ -8,7 +8,9 @@ import utility.MessageUI;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
+import java.util.UUID;
 
 import static utility.MessageUI.askPositiveDouble;
 import static utility.MessageUI.askPositiveInt;
@@ -87,9 +89,6 @@ public class Pharmacy {
                         ArrayList<BloodTube> bloodTubeList = hashedBloodTubeInventory.valueList();
                         bloodTubeList(bloodTubeList);
                     }
-                    break;
-                case 4:
-                    // View Insufficient Stock
                     break;
                 case 999:
                     return;
@@ -477,17 +476,17 @@ public class Pharmacy {
         Company company = selectOrCreateCompany();
 
         System.out.print("Expiry date (yyyy-MM-dd): ");
-        java.util.Date expiry;
+        Date expiry;
         try {
             expiry = DATE_FMT.parse(scanner.nextLine().trim());
         } catch (Exception e) {
             System.out.println("Invalid date format, using today.");
-            expiry = new java.util.Date();
+            expiry = new Date();
         }
 
         // Build a temporary Medicine to generate the key (name|strength|expiry-YYYY-MM-DD)
         Medicine temp = new Medicine(
-                java.util.UUID.randomUUID(), name, addQty, price, desc, unit,
+                UUID.randomUUID(), name, addQty, price, desc, unit,
                 company, brand, strength, expiry
         );
         String key = temp.getMedicineKey();
@@ -579,7 +578,7 @@ public class Pharmacy {
         System.out.print("Phone (optional): ");
         String phone = scanner.nextLine().trim();
 
-        return new Company(java.util.UUID.randomUUID(), name,
+        return new Company(UUID.randomUUID(), name,
                 address.isEmpty() ? "-" : address,
                 email.isEmpty() ? "-" : email,
                 phone.isEmpty() ? "-" : phone);
@@ -616,7 +615,7 @@ public class Pharmacy {
         BloodTube bloodTubes = pickBloodTubesFromInventory();
 
         LabTest test = new LabTest(
-                java.util.UUID.randomUUID(),
+                UUID.randomUUID(),
                 name,
                 price,
                 desc,
@@ -659,7 +658,6 @@ public class Pharmacy {
         }
 
         ArrayList<BloodTube> labels = new ArrayList<>(unique.valueList());
-        ArrayList<String> typeKeys = new ArrayList<>(unique.keyList());
         while (true) {
             System.out.println("\nSelect Blood Tube required for this test:");
             for (int i = 0; i < labels.size(); i++) {
@@ -733,17 +731,17 @@ public class Pharmacy {
         String desc = scanner.nextLine().trim();
 
         System.out.print("Expiry date (yyyy-MM-dd): ");
-        java.util.Date expiry;
+        Date expiry;
         try {
             expiry = DATE_FMT.parse(scanner.nextLine().trim());
         } catch (Exception e) {
             System.out.println("Invalid date format, using today.");
-            expiry = new java.util.Date();
+            expiry = new Date();
         }
 
         // Create new object
         BloodTube tube = new BloodTube(
-                java.util.UUID.randomUUID(),
+                UUID.randomUUID(),
                 name,
                 price,
                 addQty,
