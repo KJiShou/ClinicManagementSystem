@@ -1,65 +1,81 @@
 package entity;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class DutySchedule {
     private LocalTime startTime;
     private LocalTime endTime;
-    private int day;
-    private int month;
-    private int year;
+    private LocalDate date;
 
-    public DutySchedule(LocalTime startTime, LocalTime endTime, int day, int month, int year) {
-        this.startTime = LocalTime.now();
-        this.endTime = LocalTime.now();
-        this.day = day;
-        this.month = month;
-        this.year = year;
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
+
+    public DutySchedule(String dateStr, String start, String end) {
+        try {
+            this.date = LocalDate.parse(dateStr, DATE_FMT);
+            this.startTime = LocalTime.parse(start, TIME_FMT);
+            this.endTime = LocalTime.parse(end, TIME_FMT);
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid date or time format. Use YYYY-MM-DD and HH:MM.");
+            this.date = null;
+            this.startTime = null;
+            this.endTime = null;
+        }
     }
 
-    public LocalTime getStartTime() {
-        return startTime;
+    //get set
+    public LocalTime getStartTimeObject() { return startTime; }
+    public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
+
+    public LocalTime getEndTimeObject() { return endTime; }
+    public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+
+    public LocalDate getDateObject() { return date; }
+    public void setDate(LocalDate date) { this.date = date; }
+
+
+    public String getDate() {
+        return date != null ? date.format(DATE_FMT) : "Invalid Date";
     }
 
-    public void setStartTime(LocalTime startTime) {
-        this.startTime = startTime;
+    public String getStartTime() {
+        return startTime != null ? startTime.format(TIME_FMT) : "Invalid Time";
     }
 
-    public LocalTime getEndTime() {
-        return endTime;
+    public String getEndTime() {
+        return endTime != null ? endTime.format(TIME_FMT) : "Invalid Time";
     }
 
-    public void setEndTime(LocalTime endTime) {
-        this.endTime = endTime;
+
+    public boolean isValid() {
+        return date != null && startTime != null && endTime != null;
     }
 
-    public int getDay() {
-        return day;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DutySchedule other = (DutySchedule) obj;
+        return date != null && date.equals(other.date) &&
+                startTime != null && startTime.equals(other.startTime) &&
+                endTime != null && endTime.equals(other.endTime);
     }
 
-    public void setDay(int day) {
-        this.day = day;
-    }
-
-    public int getMonth() {
-        return month;
-    }
-
-    public void setMonth(int month) {
-        this.month = month;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public void setYear(int year) {
-        this.year = year;
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(date, startTime, endTime);
     }
 
     @Override
     public String toString() {
-        return day + " " + startTime + " - " + endTime;
+        if (date == null || startTime == null || endTime == null) {
+            return "Invalid DutySchedule";
+        }
+        return date.format(DATE_FMT) + " " +
+                startTime.format(TIME_FMT) + " - " +
+                endTime.format(TIME_FMT);
     }
-
 }
