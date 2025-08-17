@@ -12,9 +12,6 @@ public class Doctor extends User {
         this.licenseNumber = licenseNumber;
     }
 
-    public Doctor(UUID id, String name, String address, String male, String phone, String mail, String date, String specialization, String l0001, String cardiology) {
-    }
-
 
     // Getters & Setters
     public String getSpecialization() {
