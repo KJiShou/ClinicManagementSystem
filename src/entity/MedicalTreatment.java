@@ -1,7 +1,5 @@
 package entity;
 
-// Change up for Pull Request
-
 public class MedicalTreatment {
     private String treatmentID;
     private String appointmentID;
