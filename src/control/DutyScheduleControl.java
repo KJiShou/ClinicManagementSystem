@@ -46,7 +46,10 @@ public class DutyScheduleControl {
                         deleteDuty();
                         break;
                     case 4:
-                        viewDoctorSchedule();
+                        viewClinicWeekGrid();
+                        break;
+                    case 5:
+                        viewDoctorScheduleGrid();
                         break;
                     case 999:
                         System.out.println("Exiting Duty Schedule Management...");
@@ -231,5 +234,46 @@ public class DutyScheduleControl {
     private boolean isTimeOverlapping(LocalTime start1, LocalTime end1, LocalTime start2, LocalTime end2) {
         return start1.isBefore(end2) && start2.isBefore(end1);
     }
+
+    private void viewClinicWeekGrid() {
+        try {
+            if (doctors == null || doctors.isEmpty()) {
+                ui.displayMessage("No doctors data.");
+                return;
+            }
+            if (schedules == null || schedules.isEmpty()) {
+                ui.displayMessage("No schedules data.");
+                return;
+            }
+
+            LocalDate today = LocalDate.now();
+            LocalDate monday = today.with(java.time.DayOfWeek.MONDAY);
+
+            ui.viewClinicWeekGridStarsInteractive(
+                    doctors,
+                    schedules
+            );
+
+        } catch (Exception e) {
+            ui.displayMessage("Error viewing clinic grid: " + e.getMessage());
+        }
+    }
+
+    private void viewDoctorScheduleGrid() {
+        try {
+            Doctor doctor = ui.selectDoctor(doctors);
+            if (doctor == null) return;
+
+            ListInterface<DutySchedule> doctorSchedules = schedules.getValue(doctor.getUserID());
+            if (doctorSchedules == null || doctorSchedules.isEmpty()) {
+                ui.displayMessage("No schedules found for " + doctor.getName());
+                return;
+            }
+            ui.viewDoctorWeekGridStarsInteractive(doctor, doctorSchedules);
+        } catch (Exception e) {
+            ui.displayMessage("Error viewing doctor grid: " + e.getMessage());
+        }
+    }
+
 
 }
