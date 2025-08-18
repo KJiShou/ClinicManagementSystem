@@ -8,7 +8,9 @@ import utility.MessageUI;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
+import java.util.UUID;
 
 import static utility.MessageUI.askPositiveDouble;
 import static utility.MessageUI.askPositiveInt;
@@ -52,9 +54,278 @@ public class Pharmacy {
                     break;
                 case 3:
                     // Update Item details
+                    updateItemDetails();
                     break;
                 case 4:
                     // Stock out Sales Item
+                    stockOutItem();
+                    break;
+                case 999:
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private void stockOutItem() throws IOException {
+        while (true) {
+            Integer choice = UI.stockOutItem();
+
+            if (choice == 999) return;
+
+            switch (choice) {
+                case 1:
+                    if (meds instanceof HashedDictionary<String, Medicine> hashedMeds) {
+                        stockOutMedicine(hashedMeds);
+                    } else {
+                        System.out.println("Medicine store not available.");
+                        pause();
+                    }
+                    break;
+                case 2:
+                    if (bloodTubeInventory instanceof HashedDictionary<String, BloodTube> hashedTubes) {
+                        stockOutBloodTube(hashedTubes);
+                    } else {
+                        System.out.println("Blood tube store not available.");
+                        pause();
+                    }
+                    break;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private void stockOutMedicine(HashedDictionary<String, Medicine> dict) {
+        if (dict == null || dict.isEmpty()) {
+            System.out.println("No medicines available.");
+            pause();
+            return;
+        }
+
+        ArrayList<Medicine> originalView = dict.valueList();
+        ArrayList<Medicine> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = Math.max(1, (totalItems + PAGE_SIZE - 1) / PAGE_SIZE);
+
+            UI.displayMedicineList(currentView, totalItems, currentPage, totalPages, searchQuery);
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [O] Stock Out | [Q] Quit");
+            System.out.print("Enter your choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--;
+                    else { System.out.println("This is the first page."); pause(); }
+                    break;
+                case "d":
+                    if (currentPage < totalPages) currentPage++;
+                    else { System.out.println("This is the last page."); pause(); }
+                    break;
+                case "s": {
+                    System.out.print("Enter search (Name/Brand/Company): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<Medicine> filtered = filterMedicines(dict.valueList(), searchQuery);
+                    if (filtered.isEmpty()) { System.out.println("No results found for: " + searchQuery); pause(); }
+                    else { currentView = filtered; currentPage = 1; }
+                    break;
+                }
+                case "r":
+                    originalView = dict.valueList();
+                    currentView = new ArrayList<>(originalView);
+                    searchQuery = ""; currentPage = 1;
+                    break;
+                case "o": {
+                    if (currentView.isEmpty()) { System.out.println("No items on this page."); pause(); break; }
+
+                    int start = (currentPage - 1) * PAGE_SIZE;
+                    int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
+                    int visibleCount = endExclusive - start;
+
+                    System.out.printf("Select item [1-%d] on this page to stock out: ", visibleCount);
+                    String raw = scanner.nextLine().trim();
+                    int pick;
+                    try { pick = Integer.parseInt(raw); } catch (NumberFormatException ex) { System.out.println("Invalid number."); pause(); break; }
+                    if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
+
+                    Medicine chosen = currentView.get(start + (pick - 1));
+                    String key = chosen.getMedicineKey();
+
+                    System.out.printf("Current qty: %d. Enter quantity to stock out: ", chosen.getQuantity());
+                    int outQty;
+                    try { outQty = Integer.parseInt(scanner.nextLine().trim()); }
+                    catch (NumberFormatException ex) { System.out.println("Invalid quantity."); pause(); break; }
+
+                    if (outQty <= 0) { System.out.println("Quantity must be positive."); pause(); break; }
+
+                    int available = chosen.getQuantity();
+                    if (outQty > available) {
+                        System.out.printf("Insufficient stock. Available: %d. Stock out all available instead? (y/n): ", available);
+                        if (!askYesNo("")) { pause(); break; }
+                        outQty = available;
+                    }
+
+                    int newQty = available - outQty;
+                    chosen.setQuantity(Math.max(0, newQty));
+
+                    System.out.printf("Stocked out %d of %s. New qty: %d%n", outQty, chosen.getName(), chosen.getQuantity());
+
+                    if (chosen.getQuantity() == 0) {
+                        System.out.print("Quantity is 0. Remove this lot from inventory? (y/n): ");
+                        if (askYesNo("")) {
+                            if (dict.contains(key)) dict.remove(key);
+                            System.out.println("Removed from inventory.");
+                        }
+                    }
+
+                    // refresh views
+                    originalView = dict.valueList();
+                    currentView = searchQuery.isEmpty() ? new ArrayList<>(originalView) : filterMedicines(originalView, searchQuery);
+                    int newTotal = currentView.size();
+                    int newPages = Math.max(1, (newTotal + PAGE_SIZE - 1) / PAGE_SIZE);
+                    currentPage = Math.min(currentPage, newPages);
+
+                    pause();
+                    break;
+                }
+                case "q":
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private void stockOutBloodTube(HashedDictionary<String, BloodTube> dict) {
+        if (dict == null || dict.isEmpty()) {
+            System.out.println("No blood tubes available.");
+            pause();
+            return;
+        }
+
+        ArrayList<BloodTube> originalView = dict.valueList();
+        ArrayList<BloodTube> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = Math.max(1, (totalItems + PAGE_SIZE - 1) / PAGE_SIZE);
+
+            UI.displayBloodTubeList(currentView, totalItems, currentPage, totalPages, searchQuery);
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [O] Stock Out | [Q] Quit");
+            System.out.print("Enter your choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--;
+                    else { System.out.println("This is the first page."); pause(); }
+                    break;
+                case "d":
+                    if (currentPage < totalPages) currentPage++;
+                    else { System.out.println("This is the last page."); pause(); }
+                    break;
+                case "s": {
+                    System.out.print("Enter search (Name/Cap color): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<BloodTube> filtered = filterBloodTube(dict.valueList(), searchQuery);
+                    if (filtered.isEmpty()) { System.out.println("No results found for: " + searchQuery); pause(); }
+                    else { currentView = filtered; currentPage = 1; }
+                    break;
+                }
+                case "r":
+                    originalView = dict.valueList();
+                    currentView = new ArrayList<>(originalView);
+                    searchQuery = ""; currentPage = 1;
+                    break;
+                case "o": {
+                    if (currentView.isEmpty()) { System.out.println("No items on this page."); pause(); break; }
+
+                    int start = (currentPage - 1) * PAGE_SIZE;
+                    int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
+                    int visibleCount = endExclusive - start;
+
+                    System.out.printf("Select item [1-%d] on this page to stock out: ", visibleCount);
+                    String raw = scanner.nextLine().trim();
+                    int pick;
+                    try { pick = Integer.parseInt(raw); } catch (NumberFormatException ex) { System.out.println("Invalid number."); pause(); break; }
+                    if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
+
+                    BloodTube chosen = currentView.get(start + (pick - 1));
+                    String key = chosen.getBloodTubeKey();
+
+                    System.out.printf("Current qty: %d. Enter quantity to stock out: ", chosen.getQuantity());
+                    int outQty;
+                    try { outQty = Integer.parseInt(scanner.nextLine().trim()); }
+                    catch (NumberFormatException ex) { System.out.println("Invalid quantity."); pause(); break; }
+
+                    if (outQty <= 0) { System.out.println("Quantity must be positive."); pause(); break; }
+
+                    int available = chosen.getQuantity();
+                    if (outQty > available) {
+                        System.out.printf("Insufficient stock. Available: %d. Stock out all available instead? (y/n): ", available);
+                        if (!askYesNo("")) { pause(); break; }
+                        outQty = available;
+                    }
+
+                    int newQty = available - outQty;
+                    chosen.setQuantity(Math.max(0, newQty));
+
+                    System.out.printf("Stocked out %d of %s (%.1f ml, %s, %s). New qty: %d%n",
+                            outQty, chosen.getName(), chosen.getVolumeMl(), chosen.getCapColor(), chosen.getAdditive(), chosen.getQuantity());
+
+                    if (chosen.getQuantity() == 0) {
+                        System.out.print("Quantity is 0. Remove this lot from inventory? (y/n): ");
+                        if (askYesNo("")) {
+                            if (dict.contains(key)) dict.remove(key);
+                            System.out.println("Removed from inventory.");
+                        }
+                    }
+
+                    // refresh views
+                    originalView = dict.valueList();
+                    currentView = searchQuery.isEmpty() ? new ArrayList<>(originalView) : filterBloodTube(originalView, searchQuery);
+                    int newTotal = currentView.size();
+                    int newPages = Math.max(1, (newTotal + PAGE_SIZE - 1) / PAGE_SIZE);
+                    currentPage = Math.min(currentPage, newPages);
+
+                    pause();
+                    break;
+                }
+                case "q":
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    public void updateItemDetails() throws IOException {
+        while (true) {
+            Integer choice = UI.updateItem();
+            switch (choice) {
+                case 1: // View Medicine
+                    if (meds instanceof HashedDictionary<String, Medicine> hashedMeds) {
+                        updateMedicine(hashedMeds);
+                    }
+                    break;
+                case 2:
+                    // View Lab Test
+                    if (labTests instanceof HashedDictionary<String, LabTest> hashedLabTests) {
+                        updateLabTest(hashedLabTests);
+                    }
+                    break;
+                case 3:
+                    // View Blood Tube Stock
+                    if (bloodTubeInventory instanceof HashedDictionary<String, BloodTube> hashedBloodTubeInventory) {
+                        updateBloodTube(hashedBloodTubeInventory);
+                    }
                     break;
                 case 999:
                     return;
@@ -88,9 +359,6 @@ public class Pharmacy {
                         bloodTubeList(bloodTubeList);
                     }
                     break;
-                case 4:
-                    // View Insufficient Stock
-                    break;
                 case 999:
                     return;
                 default:
@@ -98,6 +366,614 @@ public class Pharmacy {
             }
         }
     }
+
+    public void updateMedicine(HashedDictionary<String, Medicine> dict) {
+        if (dict == null || dict.isEmpty()) {
+            System.out.println("No medicines to update.");
+            return;
+        }
+
+        ArrayList<Medicine> originalView = dict.valueList();
+        ArrayList<Medicine> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
+            if (totalPages == 0) totalPages = 1;
+
+            UI.displayMedicineList(currentView, totalItems, currentPage, totalPages, searchQuery);
+
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [E] Edit item | [Q] Quit");
+            System.out.print("Enter your choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--;
+                    else { System.out.println("This is the first page."); pause(); }
+                    break;
+
+                case "d":
+                    if (currentPage < totalPages) currentPage++;
+                    else { System.out.println("This is the last page."); pause(); }
+                    break;
+
+                case "s":
+                    System.out.print("Enter search (Name/Brand/Company): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<Medicine> filtered = filterMedicines(originalView, searchQuery);
+                    if (filtered.isEmpty()) {
+                        System.out.println("No results found for: " + searchQuery);
+                        pause();
+                    } else {
+                        currentView = filtered;
+                        currentPage = 1;
+                    }
+                    break;
+
+                case "r":
+                    currentView = originalView = dict.valueList();
+                    searchQuery = "";
+                    currentPage = 1;
+                    break;
+
+                case "e": {
+                    if (currentView.isEmpty()) {
+                        System.out.println("No items to edit.");
+                        pause();
+                        break;
+                    }
+                    // compute indices for current page
+                    int start = (currentPage - 1) * PAGE_SIZE;
+                    int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
+                    int visibleCount = endExclusive - start;
+
+                    System.out.printf("Select item [1-%d] on this page to edit: ", visibleCount);
+                    String raw = scanner.nextLine().trim();
+                    int pick;
+                    try {
+                        pick = Integer.parseInt(raw);
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Invalid number.");
+                        pause();
+                        break;
+                    }
+                    if (pick < 1 || pick > visibleCount) {
+                        System.out.println("Out of range.");
+                        pause();
+                        break;
+                    }
+                    Medicine toEdit = currentView.get(start + (pick - 1));
+                    String oldKey = toEdit.getMedicineKey();
+                    editMedicineInPlace(toEdit);
+
+                    String newKey = toEdit.getMedicineKey();
+                    if (!oldKey.equals(newKey)) {
+                        if (dict.contains(oldKey)) dict.remove(oldKey);
+
+                        if (dict.contains(newKey)) {
+                            Medicine target = dict.getValue(newKey);
+                            target.setQuantity(target.getQuantity() + toEdit.getQuantity());
+                            target.setName(toEdit.getName());
+                            target.setBrand(toEdit.getBrand());
+                            target.setStrength(toEdit.getStrength());
+                            target.setUnit(toEdit.getUnit());
+                            target.setPrice(toEdit.getPrice());
+                            target.setDescription(toEdit.getDescription());
+                            target.setCompany(toEdit.getCompany());
+                            target.setExpiryDate(toEdit.getExpiryDate());
+                            System.out.println("Key collision detected; merged quantities into existing entry.");
+                        } else {
+                            dict.add(newKey, toEdit);
+                        }
+                    } else {
+                        if (!dict.contains(oldKey)) dict.add(oldKey, toEdit);
+                    }
+
+                    originalView = dict.valueList();
+                    if (searchQuery.isEmpty()) {
+                        currentView = new ArrayList<>(originalView);
+                    } else {
+                        currentView = filterMedicines(originalView, searchQuery);
+                        totalItems = currentView.size();
+                        totalPages = Math.max(1, (totalItems + PAGE_SIZE - 1) / PAGE_SIZE);
+                        currentPage = Math.min(currentPage, totalPages);
+                    }
+
+                    System.out.println("Item updated.");
+                    pause();
+                    break;
+                }
+
+                case "q":
+                    return;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    public void updateBloodTube(HashedDictionary<String, BloodTube> dict) {
+        if (dict == null || dict.isEmpty()) {
+            System.out.println("No blood tubes to update.");
+            return;
+        }
+
+        ArrayList<BloodTube> originalView = dict.valueList();
+        ArrayList<BloodTube> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = Math.max(1, (totalItems + PAGE_SIZE - 1) / PAGE_SIZE);
+
+            UI.displayBloodTubeList(currentView, totalItems, currentPage, totalPages, searchQuery);
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [E] Edit item | [Q] Quit");
+            System.out.print("Enter your choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--; else { System.out.println("This is the first page."); pause(); }
+                    break;
+
+                case "d":
+                    if (currentPage < totalPages) currentPage++; else { System.out.println("This is the last page."); pause(); }
+                    break;
+
+                case "s": {
+                    System.out.print("Enter search (Name/Cap color): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<BloodTube> filtered = filterBloodTube(dict.valueList(), searchQuery);
+                    if (filtered.isEmpty()) { System.out.println("No results found for: " + searchQuery); pause(); }
+                    else { currentView = filtered; currentPage = 1; }
+                    break;
+                }
+
+                case "r":
+                    originalView = dict.valueList();
+                    currentView = new ArrayList<>(originalView);
+                    searchQuery = ""; currentPage = 1;
+                    break;
+
+                case "e": {
+                    if (currentView.isEmpty()) { System.out.println("No items to edit."); pause(); break; }
+
+                    int start = (currentPage - 1) * PAGE_SIZE;
+                    int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
+                    int visibleCount = endExclusive - start;
+
+                    System.out.printf("Select item [1-%d] on this page to edit: ", visibleCount);
+                    String raw = scanner.nextLine().trim();
+                    int pick;
+                    try { pick = Integer.parseInt(raw); } catch (NumberFormatException ex) { System.out.println("Invalid number."); pause(); break; }
+                    if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
+
+                    BloodTube toEdit = currentView.get(start + (pick - 1));
+                    String oldKey = toEdit.getBloodTubeKey();
+                    editBloodTubeInPlace(toEdit);
+
+                    String newKey = toEdit.getBloodTubeKey();
+                    if (!oldKey.equals(newKey)) {
+                        if (dict.contains(oldKey)) dict.remove(oldKey);
+                        if (dict.contains(newKey)) {
+                            BloodTube target = dict.getValue(newKey);
+                            target.setQuantity(target.getQuantity() + toEdit.getQuantity());
+                            target.setName(toEdit.getName());
+                            target.setPrice(toEdit.getPrice());
+                            target.setDescription(toEdit.getDescription());
+                            target.setCompany(toEdit.getCompany());
+                            target.setExpiryDate(toEdit.getExpiryDate());
+                            target.setVolumeMl(toEdit.getVolumeMl());
+                            target.setCapColor(toEdit.getCapColor());
+                            target.setAdditive(toEdit.getAdditive());
+                            System.out.println("Key collision detected; merged quantities into existing entry.");
+                        } else {
+                            dict.add(newKey, toEdit);
+                        }
+                    } else {
+                        if (!dict.contains(oldKey)) dict.add(oldKey, toEdit);
+                    }
+
+                    // refresh views
+                    originalView = dict.valueList();
+                    currentView = searchQuery.isEmpty() ? new ArrayList<>(originalView) : filterBloodTube(originalView, searchQuery);
+                    int newTotal = currentView.size();
+                    int newPages = Math.max(1, (newTotal + PAGE_SIZE - 1) / PAGE_SIZE);
+                    currentPage = Math.min(currentPage, newPages);
+
+                    System.out.println("Blood tube updated.");
+                    pause();
+                    break;
+                }
+
+                case "q":
+                    return;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private void editBloodTubeInPlace(BloodTube t) {
+        while (true) {
+            System.out.println("\n=== Edit Blood Tube ===");
+            System.out.println("1) Name:                " + t.getName());
+            System.out.println("2) Company:             " + (t.getCompany() == null ? "-" : t.getCompany().getName()));
+            System.out.println("3) Volume (ml):         " + t.getVolumeMl());
+            System.out.println("4) Cap Color:           " + t.getCapColor());
+            System.out.println("5) Additive:            " + t.getAdditive());
+            System.out.println("6) Price (RM):          " + t.getPrice());
+            System.out.println("7) Description:         " + (t.getDescription() == null ? "-" : t.getDescription()));
+            System.out.println("8) Expiry (yyyy-MM-dd): " + DATE_FMT.format(t.getExpiryDate()));
+            System.out.println("9) Quantity:            " + t.getQuantity());
+            System.out.println("999) Done");
+            System.out.print("Choose a field to edit: ");
+
+            String raw = scanner.nextLine().trim();
+            int choice;
+            try { choice = Integer.parseInt(raw); } catch (NumberFormatException e) { System.out.println("Invalid."); continue; }
+            if (choice == 999) return;
+
+            switch (choice) {
+                case 1:
+                    System.out.print("New Name: ");
+                    String n = scanner.nextLine().trim();
+                    if (!n.isEmpty()) t.setName(n);
+                    break;
+                case 2: {
+                    Company c = selectOrCreateCompany();
+                    if (c != null) t.setCompany(c);
+                    break;
+                }
+                case 3: {
+                    double v = askPositiveDouble(scanner, "New Volume (ml): ");
+                    t.setVolumeMl(v);
+                    break;
+                }
+                case 4:
+                    System.out.print("New Cap Color: ");
+                    String c = scanner.nextLine().trim();
+                    if (!c.isEmpty()) t.setCapColor(c);
+                    break;
+                case 5:
+                    System.out.print("New Additive: ");
+                    String a = scanner.nextLine().trim();
+                    if (!a.isEmpty()) t.setAdditive(a);
+                    break;
+                case 6: {
+                    double p = askPositiveDouble(scanner, "New Price (RM): ");
+                    t.setPrice(p);
+                    break;
+                }
+                case 7:
+                    System.out.print("New Description (blank to keep): ");
+                    String d = scanner.nextLine().trim();
+                    if (!d.isEmpty()) t.setDescription(d);
+                    break;
+                case 8:
+                    System.out.print("New Expiry date (yyyy-MM-dd): ");
+                    try {
+                        Date de = DATE_FMT.parse(scanner.nextLine().trim());
+                        t.setExpiryDate(de);
+                    } catch (Exception e) {
+                        System.out.println("Invalid date; keeping previous.");
+                    }
+                    break;
+                case 9: {
+                    System.out.println("1) Set absolute quantity");
+                    System.out.println("2) Add to quantity");
+                    System.out.println("3) Subtract from quantity");
+                    System.out.print("Choose: ");
+                    String opt = scanner.nextLine().trim();
+                    switch (opt) {
+                        case "1": {
+                            int q = askPositiveInt(scanner, "New absolute quantity: ");
+                            t.setQuantity(q);
+                            break;
+                        }
+                        case "2": {
+                            int delta = askPositiveInt(scanner, "Add quantity: ");
+                            t.setQuantity(t.getQuantity() + delta);
+                            break;
+                        }
+                        case "3": {
+                            int delta = askPositiveInt(scanner, "Subtract quantity: ");
+                            int newQ = t.getQuantity() - delta;
+                            if (newQ < 0) { System.out.println("Cannot go below zero. Setting to 0."); newQ = 0; }
+                            t.setQuantity(newQ);
+                            break;
+                        }
+                        default:
+                            System.out.println("Invalid option.");
+                    }
+                    break;
+                }
+                default:
+                    System.out.println("Invalid selection.");
+            }
+        }
+    }
+
+
+    private void editMedicineInPlace(Medicine m) {
+        while (true) {
+            System.out.println("\n=== Edit Medicine ===");
+            System.out.println("1) Name:          " + m.getName());
+            System.out.println("2) Brand:         " + m.getBrand());
+            System.out.println("3) Strength:      " + m.getStrength());
+            System.out.println("4) Unit:          " + m.getUnit());
+            System.out.println("5) Price (RM):    " + m.getPrice());
+            System.out.println("6) Description:   " + (m.getDescription() == null ? "-" : m.getDescription()));
+            System.out.println("7) Company:       " + (m.getCompany() == null ? "-" : m.getCompany().getName()));
+            System.out.println("8) Expiry (yyyy-MM-dd): " + DATE_FMT.format(m.getExpiryDate()));
+            System.out.println("9) Quantity:      " + m.getQuantity());
+            System.out.println("999) Done");
+            System.out.print("Choose a field to edit: ");
+            String raw = scanner.nextLine().trim();
+
+            int choice;
+            try { choice = Integer.parseInt(raw); } catch (NumberFormatException e) { System.out.println("Invalid."); continue; }
+            if (choice == 999) return;
+
+            switch (choice) {
+                case 1: {
+                    System.out.print("New Name: ");
+                    String v = scanner.nextLine().trim();
+                    if (!v.isEmpty()) m.setName(v);
+                    break;
+                }
+                case 2: {
+                    System.out.print("New Brand: ");
+                    String v = scanner.nextLine().trim();
+                    if (!v.isEmpty()) m.setBrand(v);
+                    break;
+                }
+                case 3: {
+                    System.out.print("New Strength (e.g., 500mg): ");
+                    String v = scanner.nextLine().trim();
+                    if (!v.isEmpty()) m.setStrength(v);
+                    break;
+                }
+                case 4: {
+                    // Validate to the same allowed set you used in stockInMedicine
+                    while (true) {
+                        System.out.print("New Unit (tablet/ml/capsule): ");
+                        String v = scanner.nextLine().trim();
+                        if (v.equalsIgnoreCase("tablet") || v.equalsIgnoreCase("ml") || v.equalsIgnoreCase("capsule")) {
+                            m.setUnit(v);
+                            break;
+                        }
+                        System.out.println("Invalid unit.");
+                    }
+                    break;
+                }
+                case 5: {
+                    double p = askPositiveDouble(scanner, "New Price (RM): ");
+                    m.setPrice(p);
+                    break;
+                }
+                case 6: {
+                    System.out.print("New Description (blank to keep): ");
+                    String v = scanner.nextLine().trim();
+                    if (!v.isEmpty()) m.setDescription(v);
+                    break;
+                }
+                case 7: {
+                    Company c = selectOrCreateCompany();
+                    if (c != null) m.setCompany(c);
+                    break;
+                }
+                case 8: {
+                    System.out.print("New Expiry date (yyyy-MM-dd): ");
+                    try {
+                        Date d = DATE_FMT.parse(scanner.nextLine().trim());
+                        m.setExpiryDate(d);
+                    } catch (Exception e) {
+                        System.out.println("Invalid date; keeping previous.");
+                    }
+                    break;
+                }
+                case 9: {
+                    System.out.println("1) Set absolute quantity");
+                    System.out.println("2) Add to quantity");
+                    System.out.println("3) Subtract from quantity");
+                    System.out.print("Choose: ");
+                    String opt = scanner.nextLine().trim();
+                    switch (opt) {
+                        case "1": {
+                            int q = askPositiveInt(scanner, "New absolute quantity: ");
+                            m.setQuantity(q);
+                            break;
+                        }
+                        case "2": {
+                            int delta = askPositiveInt(scanner, "Add quantity: ");
+                            m.setQuantity(m.getQuantity() + delta);
+                            break;
+                        }
+                        case "3": {
+                            int delta = askPositiveInt(scanner, "Subtract quantity: ");
+                            int newQ = m.getQuantity() - delta;
+                            if (newQ < 0) {
+                                System.out.println("Cannot go below zero. Setting to 0.");
+                                newQ = 0;
+                            }
+                            m.setQuantity(newQ);
+                            break;
+                        }
+                        default:
+                            System.out.println("Invalid option.");
+                    }
+                    break;
+                }
+                default:
+                    System.out.println("Invalid selection.");
+            }
+        }
+    }
+
+    public void updateLabTest(HashedDictionary<String, LabTest> dict) {
+        if (dict == null || dict.isEmpty()) {
+            System.out.println("No lab tests to update.");
+            return;
+        }
+
+        ArrayList<LabTest> originalView = dict.valueList();
+        ArrayList<LabTest> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = Math.max(1, (totalItems + PAGE_SIZE - 1) / PAGE_SIZE);
+
+            UI.displayLabTestList(currentView, totalItems, currentPage, totalPages, searchQuery);
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [E] Edit item | [Q] Quit");
+            System.out.print("Enter your choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--; else { System.out.println("This is the first page."); pause(); }
+                    break;
+
+                case "d":
+                    if (currentPage < totalPages) currentPage++; else { System.out.println("This is the last page."); pause(); }
+                    break;
+
+                case "s": {
+                    System.out.print("Enter search (Name/Tube Needed/Lab): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<LabTest> filtered = filterLabTest(dict.valueList(), searchQuery);
+                    if (filtered.isEmpty()) { System.out.println("No results found for: " + searchQuery); pause(); }
+                    else { currentView = filtered; currentPage = 1; }
+                    break;
+                }
+
+                case "r":
+                    originalView = dict.valueList();
+                    currentView = new ArrayList<>(originalView);
+                    searchQuery = ""; currentPage = 1;
+                    break;
+
+                case "e": {
+                    if (currentView.isEmpty()) { System.out.println("No items to edit."); pause(); break; }
+
+                    int start = (currentPage - 1) * PAGE_SIZE;
+                    int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
+                    int visibleCount = endExclusive - start;
+
+                    System.out.printf("Select item [1-%d] on this page to edit: ", visibleCount);
+                    String raw = scanner.nextLine().trim();
+                    int pick;
+                    try { pick = Integer.parseInt(raw); } catch (NumberFormatException ex) { System.out.println("Invalid number."); pause(); break; }
+                    if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
+
+                    LabTest toEdit = currentView.get(start + (pick - 1));
+                    String oldKey = toEdit.getName(); // you currently key by name
+                    editLabTestInPlace(toEdit);
+
+                    String newKey = toEdit.getName();
+                    if (!oldKey.equals(newKey)) {
+                        if (dict.contains(oldKey)) dict.remove(oldKey);
+                        // For lab tests, “overwrite” behavior is typical.
+                        dict.add(newKey, toEdit);
+                    } else {
+                        if (!dict.contains(oldKey)) dict.add(oldKey, toEdit);
+                    }
+
+                    // refresh views
+                    originalView = dict.valueList();
+                    currentView = searchQuery.isEmpty() ? new ArrayList<>(originalView) : filterLabTest(originalView, searchQuery);
+                    int newTotal = currentView.size();
+                    int newPages = Math.max(1, (newTotal + PAGE_SIZE - 1) / PAGE_SIZE);
+                    currentPage = Math.min(currentPage, newPages);
+
+                    System.out.println("Lab test updated.");
+                    pause();
+                    break;
+                }
+
+                case "q":
+                    return;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private void editLabTestInPlace(LabTest t) {
+        while (true) {
+            System.out.println("\n=== Edit Lab Test ===");
+            System.out.println("1) Name:               " + t.getName());
+            System.out.println("2) Code:               " + (t.getCode() == null ? "-" : t.getCode()));
+            System.out.println("3) Price (RM):         " + t.getPrice());
+            System.out.println("4) Description:        " + (t.getDescription() == null ? "-" : t.getDescription()));
+            System.out.println("5) Referring Lab:      " + (t.getReferringLab() == null ? "-" : t.getReferringLab().getName()));
+            System.out.println("6) Fasting Required:   " + (t.isFastingRequired() ? "Yes" : "No"));
+            System.out.println("7) Patient Precautions:" + (t.getPatientPrecautions() == null ? "-" : t.getPatientPrecautions()));
+            System.out.println("8) Blood Tube Needed:  " + (t.getBloodTubes() == null ? "-" : t.getBloodTubes()));
+            System.out.println("999) Done");
+            System.out.print("Choose a field to edit: ");
+
+            String raw = scanner.nextLine().trim();
+            int choice;
+            try { choice = Integer.parseInt(raw); } catch (NumberFormatException e) { System.out.println("Invalid."); continue; }
+            if (choice == 999) return;
+
+            switch (choice) {
+                case 1:
+                    System.out.print("New Name: ");
+                    String name = scanner.nextLine().trim();
+                    if (!name.isEmpty()) t.setName(name);
+                    break;
+                case 2:
+                    System.out.print("New Code (blank to clear): ");
+                    String code = scanner.nextLine().trim();
+                    t.setCode(code.isEmpty() ? null : code);
+                    break;
+                case 3: {
+                    double p = askPositiveDouble(scanner, "New Price (RM): ");
+                    t.setPrice(p);
+                    break;
+                }
+                case 4:
+                    System.out.print("New Description (blank to keep): ");
+                    String d = scanner.nextLine().trim();
+                    if (!d.isEmpty()) t.setDescription(d);
+                    break;
+                case 5: {
+                    Company lab = selectOrCreateCompany();
+                    if (lab != null) t.setReferringLab(lab);
+                    break;
+                }
+                case 6: {
+                    boolean f = askYesNo("Fasting required? (y/n): ");
+                    t.setFastingRequired(f);
+                    break;
+                }
+                case 7:
+                    System.out.print("New Patient Precautions (blank to keep): ");
+                    String pp = scanner.nextLine().trim();
+                    if (!pp.isEmpty()) t.setPatientPrecautions(pp);
+                    break;
+                case 8: {
+                    BloodTube pick = pickBloodTubesFromInventory();
+                    if (pick != null) t.setBloodTubes(pick.getName()); // your LabTest stores tube name as String
+                    break;
+                }
+                default:
+                    System.out.println("Invalid selection.");
+            }
+        }
+    }
+
 
     public void labTestList(ArrayList<LabTest> originalView) {
         if (originalView == null || originalView.isEmpty()) {
@@ -477,17 +1353,17 @@ public class Pharmacy {
         Company company = selectOrCreateCompany();
 
         System.out.print("Expiry date (yyyy-MM-dd): ");
-        java.util.Date expiry;
+        Date expiry;
         try {
             expiry = DATE_FMT.parse(scanner.nextLine().trim());
         } catch (Exception e) {
             System.out.println("Invalid date format, using today.");
-            expiry = new java.util.Date();
+            expiry = new Date();
         }
 
         // Build a temporary Medicine to generate the key (name|strength|expiry-YYYY-MM-DD)
         Medicine temp = new Medicine(
-                java.util.UUID.randomUUID(), name, addQty, price, desc, unit,
+                UUID.randomUUID(), name, addQty, price, desc, unit,
                 company, brand, strength, expiry
         );
         String key = temp.getMedicineKey();
@@ -579,7 +1455,7 @@ public class Pharmacy {
         System.out.print("Phone (optional): ");
         String phone = scanner.nextLine().trim();
 
-        return new Company(java.util.UUID.randomUUID(), name,
+        return new Company(UUID.randomUUID(), name,
                 address.isEmpty() ? "-" : address,
                 email.isEmpty() ? "-" : email,
                 phone.isEmpty() ? "-" : phone);
@@ -616,7 +1492,7 @@ public class Pharmacy {
         BloodTube bloodTubes = pickBloodTubesFromInventory();
 
         LabTest test = new LabTest(
-                java.util.UUID.randomUUID(),
+                UUID.randomUUID(),
                 name,
                 price,
                 desc,
@@ -659,7 +1535,6 @@ public class Pharmacy {
         }
 
         ArrayList<BloodTube> labels = new ArrayList<>(unique.valueList());
-        ArrayList<String> typeKeys = new ArrayList<>(unique.keyList());
         while (true) {
             System.out.println("\nSelect Blood Tube required for this test:");
             for (int i = 0; i < labels.size(); i++) {
@@ -733,17 +1608,17 @@ public class Pharmacy {
         String desc = scanner.nextLine().trim();
 
         System.out.print("Expiry date (yyyy-MM-dd): ");
-        java.util.Date expiry;
+        Date expiry;
         try {
             expiry = DATE_FMT.parse(scanner.nextLine().trim());
         } catch (Exception e) {
             System.out.println("Invalid date format, using today.");
-            expiry = new java.util.Date();
+            expiry = new Date();
         }
 
         // Create new object
         BloodTube tube = new BloodTube(
-                java.util.UUID.randomUUID(),
+                UUID.randomUUID(),
                 name,
                 price,
                 addQty,
