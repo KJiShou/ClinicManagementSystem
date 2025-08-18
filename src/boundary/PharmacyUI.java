@@ -43,12 +43,26 @@ public class PharmacyUI {
     }
 
     public Integer viewInventory() throws IOException {
-        // choice 1
         choiceQueue.enqueue("Medicine");
         choiceQueue.enqueue("Lab Test");
         choiceQueue.enqueue("Blood Tube");
 
         return UI.mainUI("Pharmacy Inventory", choiceQueue);
+    }
+
+    public Integer updateItem() throws IOException {
+        choiceQueue.enqueue("Medicine");
+        choiceQueue.enqueue("Lab Test");
+        choiceQueue.enqueue("Blood Tube");
+
+        return UI.mainUI("Pharmacy Inventory", choiceQueue);
+    }
+
+    public Integer stockOutItem() throws IOException {
+        choiceQueue.enqueue("Medicine");
+        choiceQueue.enqueue("Blood Tube");
+
+        return UI.mainUI("Stock Out", choiceQueue);
     }
 
     public void displayMedicineList(ArrayList<Medicine> medicines, int totalItems, int currentPage, int totalPages, String searchQuery) {
