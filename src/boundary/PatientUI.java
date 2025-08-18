@@ -143,28 +143,29 @@ public class PatientUI {
 
         // Header
         System.out.printf("Page %d/%d%n", currentPage, totalPages);
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
-        System.out.printf("| %-3s | %-30s | %-20s | %-30s | %-20s |\n",
-                "No.", "Name", "Gender", "Contact", "Identifier");
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
+        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+------------------------------------------+");
+        System.out.printf("| %-3s | %-30s | %-20s | %-30s | %-40s |\n",
+                "No.", "Name", "Gender", "Contact", "IC");
+        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+------------------------------------------+");
 
         // Rows
         for (int i = start; i < end; i++) {
             Patient patient = patients.get(i);
             String identifier = patient.getPatientIC() != null ? patient.getPatientIC() :
-                    (patient.getPatientPassport() != null ? "Passport" : "-");
+                    (patient.getPatientPassport() != null ? patient.getPatientPassport() : patient.getEmail());
 
-            System.out.printf("| %-3d | %-30s | %-20s | %-30s | %-20s |\n",
+            System.out.printf("| %-3d | %-30s | %-20s | %-30s | %-40s |\n",
                     i+1,
                     patient.getName(),
                     patient.getGender(),
-                    patient.getPhone() + "\n" + patient.getEmail(),
+                    patient.getPhone(),
                     identifier);
         }
 
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
+        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+------------------------------------------+");
         System.out.println();  // blank line between pages
     }
+
 
     public void displayPatientDetails(Patient patient) {
         System.out.println("\n=== PATIENT DETAILS ===");

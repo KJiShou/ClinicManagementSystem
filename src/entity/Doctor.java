@@ -12,6 +12,7 @@ public class Doctor extends User {
         this.licenseNumber = licenseNumber;
     }
 
+
     // Getters & Setters
     public String getSpecialization() {
         return specialization;

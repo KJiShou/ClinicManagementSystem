@@ -47,7 +47,7 @@ public class MessageUI {
         System.out.println("+------------------------------------------------------+");
         int count = 0;
         while (!choiceQueue.isEmpty()) {
-            System.out.printf("| [ %d ] %-46s |\n", ++count, choiceQueue.dequeue());
+            System.out.printf("| [ %-2d ] %-45s |\n", ++count, choiceQueue.dequeue());
             System.out.println("+------------------------------------------------------+");
         }
         System.out.println("| [999] Exit                                           |");

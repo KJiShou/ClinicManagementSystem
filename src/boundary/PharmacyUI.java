@@ -43,13 +43,26 @@ public class PharmacyUI {
     }
 
     public Integer viewInventory() throws IOException {
-        // choice 1
         choiceQueue.enqueue("Medicine");
         choiceQueue.enqueue("Lab Test");
         choiceQueue.enqueue("Blood Tube");
-        choiceQueue.enqueue("Insufficient Stock");
 
         return UI.mainUI("Pharmacy Inventory", choiceQueue);
+    }
+
+    public Integer updateItem() throws IOException {
+        choiceQueue.enqueue("Medicine");
+        choiceQueue.enqueue("Lab Test");
+        choiceQueue.enqueue("Blood Tube");
+
+        return UI.mainUI("Pharmacy Inventory", choiceQueue);
+    }
+
+    public Integer stockOutItem() throws IOException {
+        choiceQueue.enqueue("Medicine");
+        choiceQueue.enqueue("Blood Tube");
+
+        return UI.mainUI("Stock Out", choiceQueue);
     }
 
     public void displayMedicineList(ArrayList<Medicine> medicines, int totalItems, int currentPage, int totalPages, String searchQuery) {
@@ -63,18 +76,18 @@ public class PharmacyUI {
 
         // Header
         System.out.printf("Page %d/%d%n", currentPage, totalPages);
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
-        System.out.printf("| %-3s | %-30s | %-20s | %-30s | %-20s |\n", "No.", "Name", "Unit", "Expiry Date", "Price");
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
+        System.out.println("+-----+------------------------------------------+----------------------+--------------------------------+----------------------+");
+        System.out.printf("| %-3s | %-40s | %-20s | %-30s | %-20s |\n", "No.", "Name", "Unit", "Expiry Date", "Price");
+        System.out.println("+-----+------------------------------------------+----------------------+--------------------------------+----------------------+");
 
         // Rows
         for (int i = start; i < end; i++) {
             Medicine medicine = medicines.get(i);
 
-            System.out.printf("| %-3d | %-30s | %-20s | %-30s | RM %-17.2f |\n", i+1, medicine.getName(), (medicine.getQuantity() + " " + medicine.getUnit()), DATE_FMT.format(medicine.getExpiryDate()), medicine.getPrice());
+            System.out.printf("| %-3d | %-40s | %-20s | %-30s | RM %-17.2f |\n", i+1, medicine.getName(), (medicine.getQuantity() + " " + medicine.getUnit()), DATE_FMT.format(medicine.getExpiryDate()), medicine.getPrice());
         }
 
-        System.out.println("+-----+--------------------------------+----------------------+--------------------------------+----------------------+");
+        System.out.println("+-----+------------------------------------------+----------------------+--------------------------------+----------------------+");
         System.out.println();  // blank line between pages
     }
 
@@ -89,18 +102,18 @@ public class PharmacyUI {
 
         // Header
         System.out.printf("Page %d/%d%n", currentPage, totalPages);
-        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
-        System.out.printf("| %-3s | %-30s | %-30s | %-20s | %-20s |\n", "No.", "Name", "Tube Needed", "Lab", "Price");
-        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
+        System.out.println("+-----+------------------------------------------+------------------------------------------+--------------------------------+----------------------+");
+        System.out.printf("| %-3s | %-40s | %-40s | %-30s | %-20s |\n", "No.", "Name", "Tube Needed", "Lab", "Price");
+        System.out.println("+-----+------------------------------------------+------------------------------------------+--------------------------------+----------------------+");
 
         // Rows
         for (int i = start; i < end; i++) {
             LabTest labTest = labTests.get(i);
 
-            System.out.printf("| %-3d | %-30s | %-30s | %-20s | RM %-17.2f |\n", i+1, labTest.getName(), labTest.getBloodTubes(), labTest.getReferringLab().getName(), labTest.getPrice());
+            System.out.printf("| %-3d | %-40s | %-40s | %-30s | RM %-17.2f |\n", i+1, labTest.getName(), labTest.getBloodTubes(), labTest.getReferringLab().getName(), labTest.getPrice());
         }
 
-        System.out.println("+-----+--------------------------------+--------------------------------+----------------------+----------------------+");
+        System.out.println("+-----+------------------------------------------+------------------------------------------+--------------------------------+----------------------+");
         System.out.println();  // blank line between pages
     }
 
@@ -142,10 +155,10 @@ public class PharmacyUI {
             scanner.nextLine();
             return;
         }
-        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
-        System.out.printf("| %-3s | %-30s | %-20s | %-20s | %-20s |\n",
+        System.out.println("+-----+------------------------------------------+--------------------------------+----------------------+----------------------+");
+        System.out.printf("| %-3s | %-40s | %-30s | %-20s | %-20s |\n",
                 "No.", "Name", "Company", "Quantity", "Price");
-        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
+        System.out.println("+-----+------------------------------------------+--------------------------------+----------------------+----------------------+");
 
         ArrayList<String> medKeys = insufficientMeds.keyList();
         int counter = 1;
@@ -154,10 +167,10 @@ public class PharmacyUI {
 
             Medicine medObj = insufficientMeds.getValue(nameKey);
 
-            System.out.printf("| %-3d | %-30s | %-20s | %-20s | RM%-18.2f |\n",
+            System.out.printf("| %-3d | %-40s | %-20s | %-20s | RM%-18.2f |\n",
                     counter++, medObj.getName(), medObj.getCompany().getName(), medObj.getQuantity() + " " + medObj.getUnit(), medObj.getPrice());
         }
-        System.out.println("+-----+--------------------------------+----------------------+----------------------+----------------------+");
+        System.out.println("+-----+------------------------------------------+----------------------+----------------------+----------------------+");
         System.out.println("Enter to continue...");
         scanner.nextLine();
         System.out.println();  // blank line between pages
