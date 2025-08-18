@@ -20,6 +20,7 @@ import java.util.UUID;
 import static utility.GeneratePharmacyData.createBloodTubeInventory;
 
 public class MainControl {
+
     static DictionaryInterface<String, Medicine> medicines;
     static DictionaryInterface<String, LabTest> labTests;
     static DictionaryInterface<String, BloodTube> bloodTubes;
@@ -42,8 +43,7 @@ public class MainControl {
         //PatientControl patient = new PatientControl();
         //patient.main();
 
-        DutyScheduleControl scheduleControl = new DutyScheduleControl(doctors, schedules);
-        scheduleControl.main();
-
+        //DutyScheduleControl scheduleControl = new DutyScheduleControl(doctors, schedules);
+        //scheduleControl.main();
     }
 }
