@@ -21,6 +21,12 @@ public class PatientControl {
         patientQueue = new LinkedQueue<>();
         ui = new PatientUI();
         scanner = new Scanner(System.in);
+
+        // Load 5 sample patients into the queue at startup
+        adt.ArrayList<Patient> samplePatients = utility.GeneratePatientData.createSamplePatients();
+        for (int i = 0; i < samplePatients.size(); i++) {
+            patientQueue.enqueue(samplePatients.get(i));
+        }
     }
 
     public void main() throws IOException {
