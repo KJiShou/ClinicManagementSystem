@@ -66,4 +66,14 @@ public class MedicalTreatment {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public String toString() {
+        return "** Medical Treatment ** \n" +
+                "Treatment ID       : " + treatmentID + "\n" +
+                "Appointment ID     : " + appointmentID + "\n" +
+                "PrescriptionID     : " + prescriptionID + "\n" +
+                "MedicalRecord ID   : " + medicalRecordID + "\n" +
+                "Treatment Type     : " + treatmentType + "\n" +
+                "Description        : " + description + "\n";
+    }
 }

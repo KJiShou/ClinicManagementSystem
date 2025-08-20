@@ -79,5 +79,16 @@ public class MedicalRecord {
     public void setNote(String note) {
         this.note = note;
     }
+
+    public String toString() {
+        return "** MedicalRecord Details **\n" +
+                "Medical Record ID  : " + medicalRecordID + "\n" +
+                "Treatment ID       : " + treatmentID + "\n" +
+                "Start Time         : " + startTime + "\n" +
+                "End Time           : " + endTime + "\n" +
+                "Date               : " + date + "\n" +
+                "Diagnosis          : " + diagnosis + "\n" +
+                "Note               : " + note + "\n";
+    }
 }
 
