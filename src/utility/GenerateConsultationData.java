@@ -2,6 +2,7 @@ package utility;
 
 import adt.ArrayList;
 import adt.ListInterface;
+import entity.Consultation;
 import entity.Doctor;
 import entity.Patient;
 import entity.User;
