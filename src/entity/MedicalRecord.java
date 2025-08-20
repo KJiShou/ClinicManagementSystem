@@ -71,7 +71,7 @@ public class MedicalRecord {
     }
 
     public String toString() {
-        return "** MedicalRecord Details **\n" +
+        return "** MedicalRecord Details ** \n" +
                 "Medical Record ID  : " + medicalRecordID + "\n" +
                 "Start Time         : " + startTime + "\n" +
                 "End Time           : " + endTime + "\n" +
