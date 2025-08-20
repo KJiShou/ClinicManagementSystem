@@ -88,7 +88,7 @@ public class MedicalRecord {
                 "End Time           : " + endTime + "\n" +
                 "Date               : " + date + "\n" +
                 "Diagnosis          : " + diagnosis + "\n" +
-                "Note               : " + note + "\n";
+                "Note               : " + note + "\n"; //
     }
 }
 

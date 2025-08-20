@@ -74,6 +74,6 @@ public class MedicalTreatment {
                 "PrescriptionID     : " + prescriptionID + "\n" +
                 "MedicalRecord ID   : " + medicalRecordID + "\n" +
                 "Treatment Type     : " + treatmentType + "\n" +
-                "Description        : " + description + "\n";
+                "Description        : " + description + "\n"; //
     }
 }
