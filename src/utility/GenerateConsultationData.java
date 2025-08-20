@@ -18,11 +18,11 @@ public class GenerateConsultationData {
                 UUID.randomUUID(),
                 null, //patient
                 null, //doctor
-                "2025-05-19",
+                LocalDate.parse("2025-05-19"),
                 Consultation.Status.COMPLETED,
                 "Fever, cough",
-                "10:00",
-                "11:30",
+                LocalTime.parse("10:00"),
+                LocalTime.parse("11:30"),
                 200.00
         ));
 
