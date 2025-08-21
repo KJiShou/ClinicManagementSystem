@@ -2,18 +2,11 @@ package entity;
 
 public class MedicalTreatment {
     private String treatmentID;
-    private String appointmentID;
-    private String prescriptionID;
-    private String medicalRecordID;
     private String treatmentType;
     private String description;
 
-    public MedicalTreatment(String treatmentID, String appointmentID, String prescriptionID,
-                            String medicalRecordID, String treatmentType, String description) {
+    public MedicalTreatment(String treatmentID, String treatmentType, String description) {
         this.treatmentID = treatmentID;
-        this.appointmentID = appointmentID;
-        this.prescriptionID = prescriptionID;
-        this.medicalRecordID = medicalRecordID;
         this.treatmentType = treatmentType;
         this.description = description;
     }
@@ -25,30 +18,6 @@ public class MedicalTreatment {
 
     public void setTreatmentID(String treatmentID) {
         this.treatmentID = treatmentID;
-    }
-
-    public String getAppointmentID() {
-        return appointmentID;
-    }
-
-    public void setAppointmentID(String appointmentID) {
-        this.appointmentID = appointmentID;
-    }
-
-    public String getPrescriptionID() {
-        return prescriptionID;
-    }
-
-    public void setPrescriptionID(String prescriptionID) {
-        this.prescriptionID = prescriptionID;
-    }
-
-    public String getMedicalRecordID() {
-        return medicalRecordID;
-    }
-
-    public void setMedicalRecordID(String medicalRecordID) {
-        this.medicalRecordID = medicalRecordID;
     }
 
     public String getTreatmentType() {
@@ -65,5 +34,12 @@ public class MedicalTreatment {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String toString() {
+        return "** Medical Treatment **\n" +
+                "Treatment ID       : " + treatmentID + "\n" +
+                "Treatment Type     : " + treatmentType + "\n" +
+                "Description        : " + description + "\n";
     }
 }

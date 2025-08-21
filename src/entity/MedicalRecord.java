@@ -5,17 +5,15 @@ import java.time.LocalTime;
 
 public class MedicalRecord {
     private String medicalRecordID;
-    private String treatmentID;
     private LocalTime startTime;
     private LocalTime endTime;
     private LocalDate date;
     private String diagnosis;
     private String note;
 
-    public MedicalRecord(String medicalRecordID, String treatmentID, LocalTime startTime,
+    public MedicalRecord(String medicalRecordID, LocalTime startTime,
                          LocalTime endTime, LocalDate date, String diagnosis, String note) {
         this.medicalRecordID = medicalRecordID;
-        this.treatmentID = treatmentID;
         this.startTime = startTime;
         this.endTime = endTime;
         this.date = date;
@@ -30,14 +28,6 @@ public class MedicalRecord {
 
     public void setMedicalRecordID(String medicalRecordID) {
         this.medicalRecordID = medicalRecordID;
-    }
-
-    public String getTreatmentID() {
-        return treatmentID;
-    }
-
-    public void setTreatmentID(String treatmentID) {
-        this.treatmentID = treatmentID;
     }
 
     public LocalTime getStartTime() {
@@ -78,6 +68,16 @@ public class MedicalRecord {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public String toString() {
+        return "** MedicalRecord Details ** \n" +
+                "Medical Record ID  : " + medicalRecordID + "\n" +
+                "Start Time         : " + startTime + "\n" +
+                "End Time           : " + endTime + "\n" +
+                "Date               : " + date + "\n" +
+                "Diagnosis          : " + diagnosis + "\n" +
+                "Note               : " + note + "\n"; //
     }
 }
 
