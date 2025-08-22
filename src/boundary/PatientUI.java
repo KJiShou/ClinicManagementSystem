@@ -26,9 +26,8 @@ public class PatientUI {
     public Integer mainMenu() {
         choiceQueue.enqueue("Register New Patient");
         choiceQueue.enqueue("View All Patients");
-        choiceQueue.enqueue("Search Patients");
-        choiceQueue.enqueue("View Patient Details");
-        choiceQueue.enqueue("Process Registration Queue");
+        choiceQueue.enqueue("Edit Patient Details");
+        choiceQueue.enqueue("Delete Patient Details");
 
         return messageUI.mainUI("Patient Management System", choiceQueue);
     }
@@ -165,6 +164,63 @@ public class PatientUI {
         System.out.println("+-----+--------------------------------+----------------------+--------------------------------+------------------------------------------+");
         System.out.println();  // blank line between pages
     }
+
+    public int selectPatientForEdit(ArrayList<Patient> patients) {
+        System.out.println("\n=== EDIT PATIENT ===");
+        displayPatientList(patients, patients.size(), 1, 1, null); // reuse your table format
+        System.out.print("Enter patient number to edit (0 to cancel): ");
+        try {
+            int choice = Integer.parseInt(scanner.nextLine().trim());
+            return choice;
+        } catch (NumberFormatException e) {
+            return -1; // invalid input
+        }
+    }
+
+    public int selectPatientForDelete(ArrayList<Patient> patients) {
+        int currentPage = 1;
+        int totalItems = patients.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+
+        while (true) {
+            System.out.println("\n=== DELETE PATIENT ===");
+            displayPatientList(patients, totalItems, currentPage, totalPages, null);
+
+            System.out.println("[N] Next Page  [P] Previous Page  [0] Cancel");
+            System.out.print("Enter patient number to delete: ");
+            String input = scanner.nextLine().trim();
+
+            // Cancel → go back
+            if (input.equals("0")) {
+                return 0;
+            }
+
+            // Page navigation
+            if (input.equalsIgnoreCase("N") && currentPage < totalPages) {
+                currentPage++;
+                continue;
+            } else if (input.equalsIgnoreCase("P") && currentPage > 1) {
+                currentPage--;
+                continue;
+            }
+
+            // Number selection
+            try {
+                int choice = Integer.parseInt(input);
+                int start = (currentPage - 1) * pageSize + 1;
+                int end = Math.min(totalItems, currentPage * pageSize);
+
+                if (choice >= start && choice <= end) {
+                    return choice; // valid patient number
+                } else {
+                    System.out.println("Invalid choice. Please try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number, N, P, or 0.");
+            }
+        }
+    }
+
 
 
     public void displayPatientDetails(Patient patient) {

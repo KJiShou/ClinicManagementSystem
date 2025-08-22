@@ -33,17 +33,17 @@ public class PatientControl {
         while (true) {
             Integer choice = ui.mainMenu();
             switch (choice) {
-                case 1: // View Sales Items
+                case 1:
                     registerPatient();
                     break;
                 case 2:
                     displayPatient();
                     break;
                 case 3:
-                    // other features...
+                    editPatient();
                     break;
                 case 4:
-                    // other features...
+                    deletePatient();
                     break;
                 case 999:
                     return;
@@ -60,6 +60,63 @@ public class PatientControl {
         System.out.println("Patient registered successfully!");
     }
 
+    // Edit patient with pagination & search
+    public void editPatient() {
+        if (patientQueue.isEmpty()) {
+            ui.displayError("No patients available to edit.");
+            return;
+        }
+
+        ArrayList<Patient> patients = queueToList();
+
+        int choice = selectPatient(patients, "edit");
+        if (choice == 0) return;
+
+        Patient p = patients.get(choice - 1);
+
+        System.out.print("New Name (" + p.getName() + "): ");
+        String name = scanner.nextLine().trim();
+        if (!name.isEmpty()) p.setName(name);
+
+        System.out.print("New Phone (" + p.getPhone() + "): ");
+        String phone = scanner.nextLine().trim();
+        if (!phone.isEmpty()) p.setPhone(phone);
+
+        System.out.print("New Email (" + p.getEmail() + "): ");
+        String email = scanner.nextLine().trim();
+        if (!email.isEmpty()) p.setEmail(email);
+
+        ui.displaySuccess("Patient updated successfully!");
+    }
+
+    // Delete patient with pagination & search
+    public void deletePatient() {
+        if (patientQueue.isEmpty()) {
+            ui.displayError("No patients available to delete.");
+            return;
+        }
+
+        ArrayList<Patient> patients = queueToList();
+
+        int choice = selectPatient(patients, "delete");
+        if (choice == 0) return;
+
+        Patient p = patients.get(choice - 1);
+        System.out.print("Are you sure you want to delete " + p.getName() + "? (Y/N): ");
+        String confirm = scanner.nextLine().trim().toUpperCase();
+
+        if (confirm.equals("Y")) {
+            patients.remove(choice - 1);
+            patientQueue = new LinkedQueue<>();
+            for (int i = 0; i < patients.size(); i++) {
+                patientQueue.enqueue(patients.get(i));
+            }
+            ui.displaySuccess("Patient deleted successfully!");
+        } else {
+            ui.displayMessage("Delete cancelled.");
+        }
+    }
+
     // Display patient list with pagination + search
     public void displayPatient() {
         if (patientQueue.isEmpty()) {
@@ -67,18 +124,9 @@ public class PatientControl {
             return;
         }
 
-        // Convert Queue to ArrayList for easy pagination
-        ArrayList<Patient> originalView = new ArrayList<>();
-        while (!patientQueue.isEmpty()) {
-            Patient p = patientQueue.dequeue();
-            originalView.add(p);
-        }
-        // Refill queue so data isn't lost
-        for (int i = 0; i < originalView.size(); i++) {
-            patientQueue.enqueue(originalView.get(i));
-        }
-
+        ArrayList<Patient> originalView = queueToList();
         ArrayList<Patient> currentView = new ArrayList<>(originalView);
+
         int currentPage = 1;
         String searchQuery = "";
 
@@ -95,46 +143,104 @@ public class PatientControl {
 
             switch (input) {
                 case "a":
-                    if (currentPage > 1) currentPage--;
-                    else {
-                        System.out.println("This is the first page.");
-                        pause();
-                    }
+                    if (currentPage > 1) currentPage--; else System.out.println("This is the first page.");
                     break;
-
                 case "d":
-                    if (currentPage < totalPages) currentPage++;
-                    else {
-                        System.out.println("This is the last page.");
-                        pause();
-                    }
+                    if (currentPage < totalPages) currentPage++; else System.out.println("This is the last page.");
                     break;
-
                 case "s":
                     System.out.print("Enter search (Name/IC/Phone): ");
                     searchQuery = scanner.nextLine().trim();
                     ArrayList<Patient> filtered = filterPatients(originalView, searchQuery);
-
-                    if (filtered.isEmpty()) {
-                        System.out.println("No results found for: " + searchQuery);
-                        pause();
-                    } else {
+                    if (!filtered.isEmpty()) {
                         currentView = filtered;
                         currentPage = 1;
+                    } else {
+                        System.out.println("No results found for: " + searchQuery);
+                        pause();
                     }
                     break;
-
                 case "r":
                     currentView = originalView;
                     searchQuery = "";
                     currentPage = 1;
                     break;
-
                 case "q":
                     return;
-
                 default:
                     System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    // Helper: Convert queue -> ArrayList
+    private ArrayList<Patient> queueToList() {
+        ArrayList<Patient> patients = new ArrayList<>();
+        while (!patientQueue.isEmpty()) {
+            patients.add(patientQueue.dequeue());
+        }
+        for (int i = 0; i < patients.size(); i++) {
+            patientQueue.enqueue(patients.get(i));
+        }
+        return patients;
+    }
+
+    // Reusable patient selector (pagination + search)
+    private int selectPatient(ArrayList<Patient> originalView, String actionLabel) {
+        ArrayList<Patient> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
+            if (totalPages == 0) totalPages = 1;
+
+            ui.displayPatientList(currentView, totalItems, currentPage, totalPages, searchQuery);
+
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset |");
+            System.out.println("Or enter patient number to " + actionLabel + " | [Q] Cancel");
+            System.out.print("Choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--; else System.out.println("This is the first page.");
+                    break;
+                case "d":
+                    if (currentPage < totalPages) currentPage++; else System.out.println("This is the last page.");
+                    break;
+                case "s":
+                    System.out.print("Enter search (Name/IC/Phone): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<Patient> filtered = filterPatients(originalView, searchQuery);
+                    if (!filtered.isEmpty()) {
+                        currentView = filtered;
+                        currentPage = 1;
+                    } else {
+                        System.out.println("No results found for: " + searchQuery);
+                        pause();
+                    }
+                    break;
+                case "r":
+                    currentView = originalView;
+                    searchQuery = "";
+                    currentPage = 1;
+                    break;
+                case "q":
+                    return 0; // cancel
+                default:
+                    try {
+                        int choice = Integer.parseInt(input);
+                        int index = choice - 1;
+                        if (index >= 0 && index < currentView.size()) {
+                            return originalView.indexOf(currentView.get(index)) + 1;
+                        } else {
+                            System.out.println("Invalid choice.");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input.");
+                    }
             }
         }
     }
@@ -148,11 +254,9 @@ public class PatientControl {
 
         for (int i = 0; i < source.size(); i++) {
             Patient p = source.get(i);
-
             String name = safeLower(p.getName());
             String ic = safeLower(p.getPatientIC());
             String phone = safeLower(p.getPhone());
-
             if (name.contains(q) || ic.contains(q) || phone.contains(q)) {
                 results.add(p);
             }
