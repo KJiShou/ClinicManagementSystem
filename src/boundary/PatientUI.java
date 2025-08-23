@@ -27,6 +27,7 @@ public class PatientUI {
         choiceQueue.enqueue("Register New Patient");
         choiceQueue.enqueue("View All Patients");
         choiceQueue.enqueue("Edit Patient Details");
+        choiceQueue.enqueue("Register Consultation");
         choiceQueue.enqueue("Delete Patient Details");
 
         return messageUI.mainUI("Patient Management System", choiceQueue);
@@ -43,6 +44,7 @@ public class PatientUI {
 
     public Patient getPatientDetails() {
         System.out.println("\n=== REGISTER NEW PATIENT ===");
+        System.out.println("Type 'CANCEL' at any time to stop and return to Main Menu.");
 
         UUID id = UUID.randomUUID();
 
@@ -51,6 +53,7 @@ public class PatientUI {
         do {
             System.out.print("Name: ");
             name = scanner.nextLine().trim();
+            if (name.equalsIgnoreCase("CANCEL")) return null;
             if (name.isEmpty()) {
                 System.out.println("Error: Name cannot be empty");
             }
@@ -61,6 +64,7 @@ public class PatientUI {
         do {
             System.out.print("Address: ");
             address = scanner.nextLine().trim();
+            if (address.equalsIgnoreCase("CANCEL")) return null;
             if (address.isEmpty()) {
                 System.out.println("Error: Address cannot be empty");
             }
@@ -71,6 +75,7 @@ public class PatientUI {
         do {
             System.out.print("Gender (M/F): ");
             gender = scanner.nextLine().trim().toUpperCase();
+            if (gender.equalsIgnoreCase("CANCEL")) return null;
             if (!gender.equals("M") && !gender.equals("F")) {
                 System.out.println("Error: Gender must be 'M' or 'F'");
                 gender = "";
@@ -82,6 +87,7 @@ public class PatientUI {
         do {
             System.out.print("Phone: ");
             phone = scanner.nextLine().trim();
+            if (phone.equalsIgnoreCase("CANCEL")) return null;
             if (!phone.matches("\\d+")) {
                 System.out.println("Error: Phone must contain only digits");
                 phone = "";
@@ -93,6 +99,7 @@ public class PatientUI {
         do {
             System.out.print("Email: ");
             email = scanner.nextLine().trim();
+            if (email.equalsIgnoreCase("CANCEL")) return null;
             if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
                 System.out.println("Error: Invalid email format");
                 email = "";
@@ -104,6 +111,7 @@ public class PatientUI {
         do {
             System.out.print("Date of Birth (YYYY-MM-DD): ");
             dob = scanner.nextLine().trim();
+            if (dob.equalsIgnoreCase("CANCEL")) return null;
             if (!dob.matches("\\d{4}-\\d{2}-\\d{2}")) {
                 System.out.println("Error: Date must be in YYYY-MM-DD format");
                 dob = "";
@@ -113,15 +121,18 @@ public class PatientUI {
         // Optional fields
         System.out.print("Patient IC (leave blank if none): ");
         String patientIC = scanner.nextLine().trim();
+        if (patientIC.equalsIgnoreCase("CANCEL")) return null;
         if (!patientIC.isEmpty() && !patientIC.matches("\\d{12}")) {
             System.out.println("Warning: IC should be 12 digits. Storing as entered.");
         }
 
         System.out.print("Patient Passport (leave blank if none): ");
         String patientPassport = scanner.nextLine().trim();
+        if (patientPassport.equalsIgnoreCase("CANCEL")) return null;
 
         System.out.print("Student ID (leave blank if none): ");
         String studentID = scanner.nextLine().trim();
+        if (studentID.equalsIgnoreCase("CANCEL")) return null;
 
         return new Patient(
                 id, name, address, gender, phone, email, dob,
@@ -220,8 +231,6 @@ public class PatientUI {
             }
         }
     }
-
-
 
     public void displayPatientDetails(Patient patient) {
         System.out.println("\n=== PATIENT DETAILS ===");

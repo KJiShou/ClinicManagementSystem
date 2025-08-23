@@ -43,6 +43,9 @@ public class PatientControl {
                     editPatient();
                     break;
                 case 4:
+                    registerConsultation();
+                    break;
+                case 5:
                     deletePatient();
                     break;
                 case 999:
@@ -54,13 +57,22 @@ public class PatientControl {
     }
 
     // Register new patient
-    public void registerPatient() {
-        Patient newPatient = ui.getPatientDetails();
+    public Patient registerPatient() {
+        Patient newPatient = ui.getPatientDetails(); // returns null if user typed CANCEL
+
+        if (newPatient == null) {
+            ui.displayMessage("Registration cancelled. Returning to Main Menu...");
+            pause();
+            return null;
+        }
+
         patientQueue.enqueue(newPatient);
-        System.out.println("Patient registered successfully!");
+        ui.displaySuccess("Patient registered successfully!");
+        pause();
+        return newPatient;
     }
 
-    // Edit patient with pagination & search
+    // Edit patient
     public void editPatient() {
         if (patientQueue.isEmpty()) {
             ui.displayError("No patients available to edit.");
@@ -89,7 +101,130 @@ public class PatientControl {
         ui.displaySuccess("Patient updated successfully!");
     }
 
-    // Delete patient with pagination & search
+    // Register Consultant
+    public void registerConsultation() {
+        System.out.println("\n=== REGISTER CONSULTATION LOOKUP ===");
+
+        String key;
+        while (true) {
+            System.out.print("Enter IC (12 digits) / Passport (min 6 alphanumeric) (or type CANCEL): ");
+            key = scanner.nextLine().trim();
+
+            if (key.equalsIgnoreCase("CANCEL")) {
+                ui.displayMessage("Cancelled. Returning to Main Menu...");
+                pause();
+                return;
+            }
+
+            // Validation
+            boolean isIC = key.matches("\\d{12}");
+            boolean isPassport = key.matches("[A-Za-z0-9]{6,}");
+
+            if (!isIC && !isPassport) {
+                System.out.println("❌ Invalid input. Please enter a valid IC (12 digits) or Passport (min 6 alphanumeric).");
+                continue; // re-prompt
+            }
+
+            break; // valid input
+        }
+
+        // Lookup patient
+        Patient p = findPatientByICOrPassport(key);
+
+        if (p == null) {
+            System.out.println("No patient found with that IC/Passport.");
+            System.out.print("Create a new patient now? (Y/N): ");
+            String ans = scanner.nextLine().trim();
+            if (ans.equalsIgnoreCase("Y")) {
+                Patient created = registerPatient(); // may return null if cancelled
+                if (created == null) return;         // cancelled during registration
+                p = created;                         // proceed with new patient
+            } else {
+                ui.displayMessage("Operation cancelled. Returning to Main Menu...");
+                pause();
+                return;
+            }
+        }
+
+        // p is guaranteed non-null here
+        showConsultationMenu(p);
+    }
+
+
+    // Helper: Find patient by IC or Passport
+    private Patient findPatientByICOrPassport(String keyword) {
+        ArrayList<Patient> patients = new ArrayList<>();
+        while (!patientQueue.isEmpty()) {
+            patients.add(patientQueue.dequeue());
+        }
+        for (int i = 0; i < patients.size(); i++) {
+            patientQueue.enqueue(patients.get(i)); // restore queue
+        }
+
+        for (int i = 0; i < patients.size(); i++) {
+            Patient p = patients.get(i);
+            if ((p.getPatientIC() != null && p.getPatientIC().equals(keyword)) ||
+                    (p.getPatientPassport() != null && p.getPatientPassport().equals(keyword))) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private void showConsultationMenu(Patient p) {
+        if (p == null) {
+            ui.displayError("Internal error: patient is null.");
+            pause();
+            return;
+        }
+
+        while (true) {
+            System.out.println("\n----------------------------------------");
+            System.out.println("Patient Found:");
+            System.out.println("Name       : " + p.getName());
+            System.out.println("IC         : " + (p.getPatientIC() != null ? p.getPatientIC() : "-"));
+            System.out.println("Passport   : " + (p.getPatientPassport() != null ? p.getPatientPassport() : "-"));
+            System.out.println("Student ID : " + (p.getStudentID() != null ? p.getStudentID() : "-"));
+            System.out.println("Gender     : " + p.getGender());
+            System.out.println("Phone      : " + p.getPhone());
+            System.out.println("Email      : " + p.getEmail());
+            System.out.println("Address    : " + p.getAddress());
+            System.out.println("DOB        : " + p.getDateOfBirth());
+            System.out.println("----------------------------------------");
+
+            System.out.println("[1] Register Consultation");
+            System.out.println("[2] Edit Patient");
+            System.out.println("[3] View Consultation History");
+            System.out.println("[4] Delete Patient");
+            System.out.println("[Q] Back to Main Menu");
+            System.out.print("Choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "1":
+                    System.out.println("Register Consultation");
+                    pause();
+                    break;
+                case "2":
+                    editPatient();
+                    break;
+                case "3":
+                    System.out.println("View Consultation");
+                    pause();
+                    break;
+                case "4":
+                    deletePatient();
+                    break;
+                case "q":
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+                    pause();
+            }
+        }
+    }
+
+    // Delete patient
     public void deletePatient() {
         if (patientQueue.isEmpty()) {
             ui.displayError("No patients available to delete.");
@@ -117,7 +252,7 @@ public class PatientControl {
         }
     }
 
-    // Display patient list with pagination + search
+    // Display patient list
     public void displayPatient() {
         if (patientQueue.isEmpty()) {
             System.out.println("No patients found.");
@@ -185,7 +320,7 @@ public class PatientControl {
         return patients;
     }
 
-    // Reusable patient selector (pagination + search)
+    // Reusable patient selector
     private int selectPatient(ArrayList<Patient> originalView, String actionLabel) {
         ArrayList<Patient> currentView = new ArrayList<>(originalView);
         int currentPage = 1;
