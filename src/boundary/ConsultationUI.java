@@ -240,8 +240,8 @@ public class ConsultationUI {
         System.out.printf("| %-30s | %-30s |\n", "Doctor Name", doctorName);
         System.out.printf("| %-30s | %-30s |\n", "Date", consultation.getConsultatonDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
         System.out.printf("| %-30s | %-30s |\n", "Status", consultation.status == Consultation.Status.IN_PROGRESS ? "IN PROGRESS":consultation.status.toString());
-        System.out.printf("| %-30s | %-30s |\n", "Start Time", consultation.getStartTime().format(ARRIVAL_FMT));
-        System.out.printf("| %-30s | %-30s |\n", "End Time", consultation.getEndTime().format(ARRIVAL_FMT));
+        System.out.printf("| %-30s | %-30s |\n", "Start Time", consultation.getStartTime() != null ? consultation.getStartTime().format(ARRIVAL_FMT) : "-");
+        System.out.printf("| %-30s | %-30s |\n", "End Time", consultation.getEndTime() != null ? consultation.getEndTime().format(ARRIVAL_FMT) : "-");
         System.out.printf("| %-30s | %-30s |\n", "Medical Treatment", consultation.getMedicalTreatment());
         System.out.printf("| %-30s | %-30s |\n", "Total Payment", String.format("RM %.2f", consultation.getTotalPayment()));
         String notes = consultation.getNotes();

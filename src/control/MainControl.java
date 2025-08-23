@@ -1,20 +1,19 @@
 package control;
 
+import adt.ArrayList;
 import adt.DictionaryInterface;
 import adt.HashedDictionary;
 import adt.ListInterface;
 import boundary.MainUI;
 import entity.Consultation;
+import entity.Patient;
 import entity.pharmacyManagement.BloodTube;
 import entity.pharmacyManagement.LabTest;
 import entity.pharmacyManagement.Medicine;
 import entity.DutySchedule;
 import entity.Doctor;
 
-import utility.GenerateConsultationData;
-import utility.GeneratePharmacyData;
-import utility.GenerateDoctorData;
-import utility.GenerateDutyScheduleData;
+import utility.*;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -25,6 +24,7 @@ public class MainControl {
     static DictionaryInterface<String, Medicine> medicines;
     static DictionaryInterface<String, LabTest> labTests;
     static DictionaryInterface<String, BloodTube> bloodTubes;
+    static ArrayList<Patient> patients;
     static ListInterface<Doctor> doctors;
     static ListInterface<Consultation> consultations;
     static HashedDictionary<UUID, ListInterface<DutySchedule>> schedules;
@@ -36,6 +36,7 @@ public class MainControl {
         labTests = GeneratePharmacyData.createLabTests();
         bloodTubes = GeneratePharmacyData.createBloodTubeInventory();
         consultations = GenerateConsultationData.createSampleConsultation();
+        patients = GeneratePatientData.createSamplePatients();
         doctors = GenerateDoctorData.createSampleDoctors();
         schedules = GenerateDutyScheduleData.createSampleDutySchedulesDictionary(doctors);
         UI = new MainUI();
@@ -44,8 +45,8 @@ public class MainControl {
         PharmacyControl pharmacy = new PharmacyControl(medicines, labTests, bloodTubes);
         //pharmacy.main();
 
-        PatientControl patient = new PatientControl();
-        //patient.main();
+        PatientControl patient = new PatientControl(patients, consultations, doctors);
+        patient.main();
 
         DutyScheduleControl scheduleControl = new DutyScheduleControl(doctors, schedules);
         //scheduleControl.main();
