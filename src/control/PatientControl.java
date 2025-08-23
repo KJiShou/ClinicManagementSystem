@@ -1,31 +1,40 @@
 package control;
 
 import adt.ArrayList;
+import adt.ListInterface;
 import adt.QueueInterface;
 import adt.LinkedQueue;
 import boundary.PatientUI;
+import entity.Consultation;
+import entity.Doctor;
 import entity.Patient;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class PatientControl {
 
     private static final int PAGE_SIZE = 5;
 
     private QueueInterface<Patient> patientQueue;
+    private ListInterface<Consultation> consultationList;
+    private ListInterface<Doctor> doctors;
     private PatientUI ui;
     private Scanner scanner;
 
-    public PatientControl() {
+    public PatientControl(ArrayList<Patient> patients, ListInterface<Consultation> consultationList, ListInterface<Doctor> doctors) {
         patientQueue = new LinkedQueue<>();
         ui = new PatientUI();
         scanner = new Scanner(System.in);
+        this.consultationList = consultationList;
+        this.doctors = doctors;
 
         // Load 5 sample patients into the queue at startup
-        adt.ArrayList<Patient> samplePatients = utility.GeneratePatientData.createSamplePatients();
-        for (int i = 0; i < samplePatients.size(); i++) {
-            patientQueue.enqueue(samplePatients.get(i));
+        for (int i = 0; i < patients.size(); i++) {
+            patientQueue.enqueue(patients.get(i));
         }
     }
 
@@ -202,8 +211,8 @@ public class PatientControl {
 
             switch (input) {
                 case "1":
-                    System.out.println("Register Consultation");
-                    pause();
+                    // register consultation
+                    registerConsultation(p);
                     break;
                 case "2":
                     editPatient();
@@ -222,6 +231,33 @@ public class PatientControl {
                     pause();
             }
         }
+    }
+
+    private void registerConsultation(Patient p) {
+        // Step 1: Choose a doctor
+        System.out.println("Available Doctors:");
+        for (int i = 0; i < doctors.size(); i++) {
+            Doctor doctor = doctors.get(i);
+            System.out.println("[" + (i + 1) + "] " + doctor.getName());
+        }
+        System.out.print("Select doctor (1-" + doctors.size() + "): ");
+        int doctorChoice = Integer.parseInt(scanner.nextLine().trim());
+
+        if (doctorChoice < 1 || doctorChoice > doctors.size()) {
+            System.out.println("Invalid doctor selection.");
+            return;
+        }
+        Doctor selectedDoctor = doctors.get(doctorChoice - 1);
+
+        // Step 2: Enter the consultation note
+        System.out.print("Enter the consultation issue/notes: ");
+        String consultationNote = scanner.nextLine().trim();
+
+        // Step 3: Create the consultation and add it to the consultation list
+        Consultation newConsultation = new Consultation(UUID.randomUUID(), p, selectedDoctor, LocalDate.now(), Consultation.Status.WAITING, consultationNote, LocalTime.now(), null, 0, "", null);
+        consultationList.add(newConsultation);
+        System.out.println("Consultation registered successfully.");
+        pause();
     }
 
     // Delete patient
