@@ -1,5 +1,9 @@
 package entity;
 
+import adt.ArrayList;
+import entity.pharmacyManagement.Prescription;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,10 +18,12 @@ public class Consultation {
     private LocalTime startTime;
     private LocalTime endTime;
     private float totalPayment;
+    private String medicalTreatment;
+    private ArrayList<Prescription> prescription;
 
     public Consultation() {}
 
-    public Consultation(UUID id, Patient patient, Doctor doctor, LocalDate consultatonDate, Status status, String notes, LocalTime startTime, LocalTime endTime, float totalPayment) {
+    public Consultation(UUID id, Patient patient, Doctor doctor, LocalDate consultatonDate, Status status, String notes, LocalTime startTime, LocalTime endTime, float totalPayment, String medicalTreatment,ArrayList<Prescription> prescription) {
         this.id = id;
         this.patient = patient;
         this.doctor = doctor;
@@ -27,6 +33,8 @@ public class Consultation {
         this.startTime = startTime;
         this.endTime = endTime;
         this.totalPayment = totalPayment;
+        this.medicalTreatment = medicalTreatment;
+        this.prescription = prescription;
     }
 
     // Getter
@@ -40,6 +48,18 @@ public class Consultation {
     public LocalTime getStartTime() { return startTime; }
     public LocalTime getEndTime() { return endTime; }
     public float getTotalPayment() { return totalPayment; }
+    public Status getStatus() {
+        return status;
+    }
+    public ArrayList<Prescription> getPrescription() {
+        return prescription;
+    }
+
+    public String getMedicalTreatment() {
+        return medicalTreatment;
+    }
+
+
 
     // Setter
     public void setId(UUID id) { this.id = id; }
@@ -50,6 +70,15 @@ public class Consultation {
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
     public void setTotalPayment(float totalPayment) { this.totalPayment = totalPayment; }
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+    public void setPrescription(ArrayList<Prescription> prescription) {
+        this.prescription = prescription;
+    }
+    public void setMedicalTreatment(String medicalTreatment) {
+        this.medicalTreatment = medicalTreatment;
+    }
 
     public String toString(){
         return  "Consultation ID : " + id +
@@ -64,9 +93,9 @@ public class Consultation {
     }
 
     public enum Status {
-        BILLING,
         WAITING,
         IN_PROGRESS,
+        BILLING,
         COMPLETED
     }
 }
