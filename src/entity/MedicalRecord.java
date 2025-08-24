@@ -2,6 +2,7 @@ package entity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 public class MedicalRecord {
     private String medicalRecordID;
@@ -80,4 +81,3 @@ public class MedicalRecord {
                 "Note               : " + note + "\n"; //
     }
 }
-

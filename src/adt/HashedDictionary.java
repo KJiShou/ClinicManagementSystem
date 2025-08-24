@@ -161,6 +161,17 @@ public class HashedDictionary<K, V>
         return vals;
     }
 
+    public ArrayList<Entry<K, V>> entryList() {
+        ArrayList<Entry<K, V>> entries = new ArrayList<>();
+        for (int i = 0; i < table.length; i++) {
+            Node<K, V> bucket = table[i];
+            for (Node<K, V> cur = bucket; cur != null; cur = cur.next) {
+                entries.add((Entry<K, V>) cur);
+            }
+        }
+        return entries;
+    }
+
     private static class SimpleEntry<K, V> implements Entry<K, V> {
         private final K key;
         private final V value;
