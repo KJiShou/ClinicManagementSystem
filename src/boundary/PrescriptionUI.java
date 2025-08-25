@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 import adt.*;
 import entity.pharmacyManagement.Prescription;
-import entity.pharmacyManagement.SalesItem; //
+import entity.pharmacyManagement.SalesItem;
 import utility.MessageUI;
 
 public class PrescriptionUI {

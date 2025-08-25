@@ -3,7 +3,7 @@ package control;
 import adt.*;
 import boundary.PrescriptionUI;
 import entity.pharmacyManagement.*;
-import utility.MessageUI; //test
+import utility.MessageUI;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -212,8 +212,7 @@ public class PrescriptionControl {
         System.out.println("Prescription updated successfully!");
 
         // Press Enter to continue...
-        System.out.print("\nPress Enter to continue...");
-        scanner.nextLine(); // Waits for Enter key
+        pause();
     }
 
     private void deletePrescription() {
