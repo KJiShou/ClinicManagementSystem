@@ -6,16 +6,18 @@ import java.util.UUID;
 public class Prescription {
     private UUID id;
     private String description;
-    private float dosagePerDay; // Pills as unit
+    private float dosagePerTime;
+    private int timesPerDay;
     private int days;
-    private SalesItem salesItem;
+    private Medicine medicine;
 
-    public Prescription(UUID id, String description, float dosagePerDay, int days, SalesItem salesItem) {
+    public Prescription(UUID id, String description, float dosagePerTime, int timesPerDay,int days, Medicine medicine) {
         this.id = id;
         this.description = description;
-        this.dosagePerDay = dosagePerDay;
+        this.dosagePerTime = dosagePerTime;
+        this.timesPerDay = timesPerDay;
         this.days = days;
-        this.salesItem = salesItem;
+        this.medicine = medicine;
     }
 
     public UUID getId() {
@@ -34,17 +36,9 @@ public class Prescription {
         this.description = description;
     }
 
-    public float getDosagePerDay() {
-        return dosagePerDay;
-    }
-
-    public void setDosagePerDay(float dosagePerDay) {
-        this.dosagePerDay = dosagePerDay;
-    }
-
     //  Additional Function to get total pills
     public float getTotalPills() {
-        return dosagePerDay * days;
+        return dosagePerTime * timesPerDay * days;
     }
 
     public int getDays() {
@@ -55,21 +49,38 @@ public class Prescription {
         this.days = days;
     }
 
-    public SalesItem getSalesItem() {
-        return salesItem;
+    public Medicine getMedicine() {
+        return medicine;
     }
 
-    public void setSalesItem(SalesItem salesItem) {
-        this.salesItem = salesItem;
+    public void setMedicine(Medicine medicine) {
+        this.medicine = medicine;
+    }
+
+    public float getDosagePerTime() {
+        return dosagePerTime;
+    }
+
+    public void setDosagePerTime(float dosagePerTime) {
+        this.dosagePerTime = dosagePerTime;
+    }
+
+    public int getTimesPerDay() {
+        return timesPerDay;
+    }
+
+    public void setTimesPerDay(int timesPerDay) {
+        this.timesPerDay = timesPerDay;
     }
 
     @Override
     public String toString() {
         return "** Prescription Details **  \n" +
-                "Prescription ID     : " + id           + "\n" +
-                "Medication          : " + salesItem.getName()   + "\n" +
+                "Medication          : " + medicine.getName()   + "\n" +
                 "Description         : " + description  + "\n" +
-                "Dosage per Day      : " + dosagePerDay + "\n" +
-                "Duration (Day)      : " + days                  + "\n";
+                "Dosage per Time     : " + dosagePerTime + "\n" +
+                "Times per day       : " + timesPerDay + "\n" +
+                "Duration (Day)      : " + days                  + "\n" +
+                "Quantity Given      : " + medicine.getQuantity();
     }
 }
