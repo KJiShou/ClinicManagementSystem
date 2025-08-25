@@ -8,6 +8,10 @@ import boundary.PatientUI;
 import entity.Consultation;
 import entity.Doctor;
 import entity.Patient;
+import entity.pharmacyManagement.LabTest;
+import entity.pharmacyManagement.Medicine;
+import entity.pharmacyManagement.Prescription;
+import entity.pharmacyManagement.SalesItem;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -254,7 +258,7 @@ public class PatientControl {
         String consultationNote = scanner.nextLine().trim();
 
         // Step 3: Create the consultation and add it to the consultation list
-        Consultation newConsultation = new Consultation(UUID.randomUUID(), p, selectedDoctor, LocalDate.now(), Consultation.Status.WAITING, consultationNote, LocalTime.now(), null, 0, "", null);
+        Consultation newConsultation = new Consultation(UUID.randomUUID(), p, selectedDoctor, LocalDate.now(), Consultation.Status.WAITING, consultationNote, LocalTime.now(), null, 0, "", new ArrayList<Prescription>(), new ArrayList<LabTest>());
         consultationList.add(newConsultation);
         System.out.println("Consultation registered successfully.");
         pause();

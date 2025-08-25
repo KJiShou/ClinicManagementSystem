@@ -81,6 +81,7 @@ public class Prescription {
                 "Dosage per Time     : " + dosagePerTime + "\n" +
                 "Times per day       : " + timesPerDay + "\n" +
                 "Duration (Day)      : " + days                  + "\n" +
-                "Quantity Given      : " + medicine.getQuantity();
+                "Quantity Given      : " + medicine.getQuantity() + "\n" +
+                "Price               : RM " + medicine.getPrice() * medicine.getQuantity();
     }
 }

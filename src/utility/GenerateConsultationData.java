@@ -5,7 +5,9 @@ import adt.ListInterface;
 import entity.Consultation;
 import entity.Doctor;
 import entity.Patient;
+import entity.pharmacyManagement.LabTest;
 import entity.pharmacyManagement.Prescription;
+import entity.pharmacyManagement.SalesItem;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -51,7 +53,8 @@ public class GenerateConsultationData {
                 parseTime("11:30"),
                 50.00f,
                 "medical treatment",
-                null
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -65,7 +68,8 @@ public class GenerateConsultationData {
                 parseTime("10:00"),
                 35.50f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -79,7 +83,8 @@ public class GenerateConsultationData {
                 w1End,
                 75.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -93,7 +98,8 @@ public class GenerateConsultationData {
                 ip1End,
                 150.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -107,7 +113,8 @@ public class GenerateConsultationData {
                 parseTime("14:00"),
                 180.25f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -121,7 +128,8 @@ public class GenerateConsultationData {
                 parseTime("09:45"),
                 105.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -135,7 +143,8 @@ public class GenerateConsultationData {
                 w2End,
                 60.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -149,7 +158,8 @@ public class GenerateConsultationData {
                 ip2End,
                 250.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -163,7 +173,8 @@ public class GenerateConsultationData {
                 parseTime("16:30"),
                 90.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -177,7 +188,8 @@ public class GenerateConsultationData {
                 parseTime("12:15"),
                 85.75f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         return consultations;

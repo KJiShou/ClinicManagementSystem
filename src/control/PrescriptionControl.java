@@ -61,6 +61,8 @@ public class PrescriptionControl {
                 case 3:
                     editPrescription(prescriptionList);
                     break;
+                case 999:
+                    break;
                 default:
                     System.out.println("Invalid choice. Try again.");
             }

@@ -4,9 +4,13 @@ import adt.HashedDictionary;
 import adt.ListInterface;
 import adt.ArrayList;
 import boundary.ConsultationUI;
+import control.PharmacyControl;
 import entity.Consultation;
 import entity.Doctor;
 import entity.Patient;
+import entity.pharmacyManagement.LabTest;
+import entity.pharmacyManagement.Medicine;
+import entity.pharmacyManagement.Prescription;
 import utility.GenerateConsultationData;
 
 import java.io.IOException;
@@ -21,16 +25,18 @@ public class ConsultationControl {
     ListInterface<Consultation> consultationList;
     PrescriptionControl  prescriptionControl;
     DutyScheduleControl scheduleControl;
+    PharmacyControl pharmacyControl;
     ConsultationUI UI;
     Scanner scanner;
 
-    ConsultationControl(ListInterface<Consultation> consultationList, PrescriptionControl  prescriptionControl, DutyScheduleControl scheduleControl) {
+    ConsultationControl(ListInterface<Consultation> consultationList, PrescriptionControl  prescriptionControl, DutyScheduleControl scheduleControl, PharmacyControl pharmacyControl) {
         try {
             this.consultationList = consultationList;
             scanner = new Scanner(System.in);
             UI = new ConsultationUI(scanner);
             this.prescriptionControl = prescriptionControl;
             this.scheduleControl =  scheduleControl;
+            this.pharmacyControl = pharmacyControl;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -188,22 +194,24 @@ public class ConsultationControl {
                         System.out.println("1. Notes");
                         System.out.println("2. Medical Treatment");
                         System.out.println("3. Prescription");
-                        System.out.println("4. Sales Item");
-                        System.out.println("4. Change Status to IN PROGRESS");
+                        System.out.println("4. Lab Test");
+                        System.out.println("5. Change Status to IN PROGRESS");
                         System.out.println("9. Exit");
                         break;
                     case IN_PROGRESS:
                         System.out.println("1. Notes");
                         System.out.println("2. Medical Treatment");
                         System.out.println("3. Prescription");
-                        System.out.println("4. Change Status to BILLING");
+                        System.out.println("4. Lab Test");
+                        System.out.println("5. Change Status to BILLING");
                         System.out.println("9. Exit");
                         break;
                     case BILLING:
                         System.out.println("1. Notes");
                         System.out.println("2. Medical Treatment");
                         System.out.println("3. Prescription");
-                        System.out.println("4. Dispense Bill");
+                        System.out.println("4. Lab Test");
+                        System.out.println("5. Dispense Bill");
                         System.out.println("9. Exit");
                         break;
                     case COMPLETED:
@@ -309,6 +317,13 @@ public class ConsultationControl {
                         prescriptionControl.main();
                         break;
                     case 4:
+                        if (consToUpdate.status != Consultation.Status.COMPLETED) {
+                            manageLabTests(consToUpdate);
+                        } else {
+                            System.out.println("You cannot modify the completed consultation.");
+                        }
+                        break;
+                    case 5:
                         if (consToUpdate.status == Consultation.Status.WAITING) {
                             consToUpdate.setStatus(Consultation.Status.IN_PROGRESS);
                             System.out.println("Status changed to IN PROGRESS.");
@@ -316,8 +331,7 @@ public class ConsultationControl {
                             consToUpdate.setStatus(Consultation.Status.BILLING);
                             System.out.println("Status changed to BILLING.");
                         } else if (consToUpdate.status == Consultation.Status.BILLING) {
-                            // TODO: dispense bill
-                            consToUpdate.setStatus(Consultation.Status.COMPLETED);
+                            dispenseBill(consToUpdate);
                             System.out.println("Status changed to COMPLETED.");
                         } else if (consToUpdate.status == Consultation.Status.COMPLETED) {
                             System.out.println("You cannot modify the completed consultation.");
@@ -374,6 +388,418 @@ public class ConsultationControl {
             }
         }
         return null;
+    }
+
+    public void dispenseBill(Consultation consultation) {
+        if (consultation == null) {
+            System.out.println("Error: Consultation not found.");
+            return;
+        }
+
+        System.out.println("\n=== DISPENSING BILL ===");
+
+        // Calculate total amounts
+        double consultationFee = 50.0; // Base consultation fee
+        double prescriptionTotal = calculatePrescriptionTotal(consultation);
+        double labTestTotal = calculateLabTestTotal(consultation);
+        double subtotal = consultationFee + prescriptionTotal + labTestTotal;
+        double tax = subtotal * 0.06; // 6% SST
+        double totalAmount = subtotal + tax;
+
+        // Display detailed bill
+        displayDetailedBill(consultation, consultationFee, prescriptionTotal, labTestTotal, subtotal, tax, totalAmount);
+
+        // Payment processing
+        processPayment(consultation, totalAmount);
+    }
+
+    private double calculatePrescriptionTotal(Consultation consultation) {
+        double total = 0.0;
+        ListInterface<Prescription> prescriptions = consultation.getPrescription();
+
+        if (prescriptions != null && !prescriptions.isEmpty()) {
+            for (int i = 0; i < prescriptions.size(); i++) {
+                Prescription prescription = prescriptions.get(i);
+                Medicine medicine = prescription.getMedicine();
+                if (medicine != null) {
+                    total += medicine.getPrice() * medicine.getQuantity();
+                }
+            }
+        }
+        return total;
+    }
+
+    private double calculateLabTestTotal(Consultation consultation) {
+        double total = 0.0;
+        ListInterface<LabTest> labTests = consultation.getLabTests();
+
+        if (labTests != null && !labTests.isEmpty()) {
+            for (int i = 0; i < labTests.size(); i++) {
+                LabTest labTest = labTests.get(i);
+                total += labTest.getPrice();
+            }
+        }
+        return total;
+    }
+
+    private void displayDetailedBill(Consultation consultation, double consultationFee,
+                                     double prescriptionTotal, double labTestsTotal,
+                                     double subtotal, double tax, double totalAmount) {
+
+        System.out.println("\n" + "=".repeat(62));
+        System.out.println("                    MEDICAL CLINIC BILL");
+        System.out.println("=".repeat(62));
+
+        // Clinic and consultation info
+        System.out.printf("Bill Date: %s%n", java.time.LocalDateTime.now().format(
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+        System.out.printf("Patient: %s%n", consultation.getPatient().getName());
+        System.out.printf("Doctor: %s%n", consultation.getDoctor().getName());
+        System.out.printf("Consultation Date: %s%n", consultation.getConsultatonDate());
+        System.out.println("-".repeat(62));
+
+        // Itemized billing
+        System.out.printf("%-40s %10s %10s%n", "DESCRIPTION", "QTY", "AMOUNT (RM)");
+        System.out.println("-".repeat(62));
+
+        // Consultation fee
+        System.out.printf("%-40s %10s %10.2f%n", "Consultation Fee", "1", consultationFee);
+
+        // Medical treatment
+        if (consultation.getMedicalTreatment() != null && !consultation.getMedicalTreatment().trim().isEmpty()) {
+            System.out.printf("%-40s %10s %8s%n", "Treatment: " +
+                    truncateString(consultation.getMedicalTreatment(), 30), "", "");
+        }
+
+        // Prescription items
+        ListInterface<Prescription> prescriptions = consultation.getPrescription();
+        if (prescriptions != null && !prescriptions.isEmpty()) {
+            System.out.println("-".repeat(62));
+            System.out.println("PRESCRIBED MEDICATIONS:");
+
+            for (int i = 0; i < prescriptions.size(); i++) {
+                Prescription prescription = prescriptions.get(i);
+                Medicine medicine = prescription.getMedicine();
+                if (medicine != null) {
+                    String medicineName = truncateString(medicine.getName() + " - " + medicine.getBrand(), 35);
+                    double itemTotal = medicine.getPrice() * medicine.getQuantity();
+
+                    System.out.printf("%-40s %10d %10.2f%n",
+                            medicineName, medicine.getQuantity(), itemTotal);
+
+                    // Show dosage information
+                    System.out.printf("  Dosage: %.1f %s, %d times/day, %d days%n",
+                            prescription.getDosagePerTime(), medicine.getUnit(),
+                            prescription.getTimesPerDay(), prescription.getDays());
+                }
+            }
+        }
+
+        // Sales items (if any)
+        if (labTestsTotal > 0) {
+            System.out.println("-".repeat(62));
+            System.out.println("ADDITIONAL ITEMS:");
+            System.out.printf("%-40s %10s %10.2f%n", "Other Items", "", labTestsTotal);
+        }
+
+        // Totals
+        System.out.println("=".repeat(62));
+        System.out.printf("%-52s RM %8.2f%n", "SUBTOTAL:", subtotal);
+        System.out.printf("%-52s RM %8.2f%n", "SST (6%):", tax);
+        System.out.println("-".repeat(62));
+        System.out.printf("%-52s RM %8.2f%n", "TOTAL AMOUNT:", totalAmount);
+        System.out.println("=".repeat(62));
+    }
+
+    private void processPayment(Consultation consultation, double totalAmount) {
+        while (true) {
+            System.out.printf("\nTotal Amount Due: RM %.2f%n", totalAmount);
+            System.out.println("\nPayment Options:");
+            System.out.println("1. Cash Payment");
+            System.out.println("2. Card Payment");
+            System.out.println("3. Cancel (Return to Billing Status)");
+            System.out.print("Select payment method: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    if (processCashPayment(totalAmount)) {
+                        completeBilling(consultation, totalAmount, "Cash");
+                        return;
+                    }
+                    break;
+                case "2":
+                    if (processCardPayment(totalAmount)) {
+                        completeBilling(consultation, totalAmount, "Card");
+                        return;
+                    }
+                    break;
+                case "3":
+                    System.out.println("Payment cancelled. Consultation remains in BILLING status.");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private boolean processCashPayment(double totalAmount) {
+        System.out.printf("Total Amount: RM %.2f%n", totalAmount);
+
+        while (true) {
+            System.out.print("Enter amount received: RM ");
+            try {
+                double amountReceived = Double.parseDouble(scanner.nextLine().trim());
+
+                if (amountReceived < totalAmount) {
+                    System.out.printf("Insufficient amount. Short by RM %.2f%n",
+                            totalAmount - amountReceived);
+                    continue;
+                }
+
+                double change = amountReceived - totalAmount;
+                System.out.printf("Amount Received: RM %.2f%n", amountReceived);
+                System.out.printf("Change: RM %.2f%n", change);
+
+                if (change > 0) {
+                    System.out.println("\n*** PLEASE GIVE CHANGE TO CUSTOMER ***");
+                }
+
+                System.out.print("Confirm cash payment? (y/n): ");
+                String confirm = scanner.nextLine().trim().toLowerCase();
+                if (confirm.equals("y") || confirm.equals("yes")) {
+                    return true;
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid amount format. Please try again.");
+            }
+        }
+    }
+
+    private boolean processCardPayment(double totalAmount) {
+        System.out.printf("Processing card payment for RM %.2f%n", totalAmount);
+        System.out.println("Please insert/swipe card and follow instructions on terminal...");
+        System.out.print("Press Enter when payment is completed, or 'c' to cancel: ");
+
+        String input = scanner.nextLine().trim().toLowerCase();
+        if (input.equals("c")) {
+            System.out.println("Card payment cancelled.");
+            return false;
+        }
+
+        // Simulate card processing
+        System.out.println("Processing...");
+        try {
+            Thread.sleep(2000); // Simulate processing time
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        System.out.println("Card payment successful!");
+        return true;
+    }
+
+    private void completeBilling(Consultation consultation, double totalAmount, String paymentMethod) {
+        // Update consultation
+        consultation.setTotalPayment(totalAmount);
+        consultation.setStatus(Consultation.Status.COMPLETED);
+        consultation.setEndTime(java.time.LocalTime.now());
+
+        // Print receipt
+        printReceipt(consultation, totalAmount, paymentMethod);
+
+        System.out.println("\n*** BILLING COMPLETED ***");
+        System.out.println("Consultation status changed to COMPLETED.");
+        pause();
+    }
+
+    private void printReceipt(Consultation consultation, double totalAmount, String paymentMethod) {
+        System.out.println("\n" + "=".repeat(40));
+        System.out.println("           PAYMENT RECEIPT");
+        System.out.println("=".repeat(40));
+        System.out.printf("Date: %s%n", java.time.LocalDateTime.now().format(
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        System.out.printf("Consultation ID: %s%n", consultation.getId().toString().substring(0, 8));
+        System.out.printf("Patient: %s%n", consultation.getPatient().getName());
+        System.out.printf("Payment Method: %s%n", paymentMethod);
+        System.out.printf("Total Paid: RM %.2f%n", totalAmount);
+        System.out.println("-".repeat(40));
+        System.out.println("Thank you for choosing our clinic!");
+        System.out.println("=".repeat(40));
+    }
+
+    private String truncateString(String str, int maxLength) {
+        if (str == null) return "";
+        return str.length() > maxLength ? str.substring(0, maxLength - 3) + "..." : str;
+    }
+
+    private void manageLabTests(Consultation consultation) {
+        while (true) {
+            System.out.println("\n=== MANAGE LAB TESTS ===");
+            System.out.println("Patient: " + consultation.getPatient().getName());
+            
+            // Display current lab tests
+            ArrayList<LabTest> currentLabTests = consultation.getLabTests();
+            if (currentLabTests != null && !currentLabTests.isEmpty()) {
+                System.out.println("\nCurrent Lab Tests:");
+                for (int i = 0; i < currentLabTests.size(); i++) {
+                    LabTest test = currentLabTests.get(i);
+                    System.out.printf("%d. %s - RM%.2f (%s)\n", 
+                        i + 1, test.getName(), test.getPrice(), 
+                        test.getReferringLab() != null ? test.getReferringLab().getName() : "Unknown Lab");
+                }
+            } else {
+                System.out.println("\nNo lab tests currently ordered.");
+                if (currentLabTests == null) {
+                    consultation.setLabTests(new ArrayList<>());
+                }
+            }
+            
+            System.out.println("\nOptions:");
+            System.out.println("1. Add Lab Test");
+            System.out.println("2. Remove Lab Test");
+            System.out.println("3. View Lab Test Details");
+            System.out.println("9. Return to Consultation");
+            System.out.print("Enter choice: ");
+            
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // consume newline
+                
+                switch (choice) {
+                    case 1:
+                        addLabTestToConsultation(consultation);
+                        break;
+                    case 2:
+                        removeLabTestFromConsultation(consultation);
+                        break;
+                    case 3:
+                        viewLabTestDetails(consultation);
+                        break;
+                    case 9:
+                        return;
+                    default:
+                        System.out.println("Invalid choice.");
+                }
+                pause();
+            } catch (Exception e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // consume invalid input
+                pause();
+            }
+        }
+    }
+    
+    private void addLabTestToConsultation(Consultation consultation) {
+        System.out.println("\n=== ADD LAB TEST ===");
+        
+        // Get available lab tests from pharmacy control and use pagination
+        @SuppressWarnings("unchecked")
+        HashedDictionary<String, LabTest> labTestDict = 
+            (HashedDictionary<String, LabTest>) pharmacyControl.getLabTests();
+            
+        if (labTestDict == null || labTestDict.isEmpty()) {
+            System.out.println("No lab tests available in the system.");
+            return;
+        }
+        
+        // Use the new pagination-based chooseLabTest method
+        LabTest selectedTest = pharmacyControl.chooseLabTest(labTestDict);
+        
+        if (selectedTest == null) {
+            System.out.println("No lab test selected.");
+            return;
+        }
+        
+        // Check if test is already added
+        ArrayList<LabTest> currentTests = consultation.getLabTests();
+        if (currentTests != null) {
+            for (int i = 0; i < currentTests.size(); i++) {
+                if (currentTests.get(i).getName().equals(selectedTest.getName())) {
+                    System.out.println("This lab test is already ordered for this consultation.");
+                    return;
+                }
+            }
+        }
+        
+        // Add the lab test
+        if (currentTests == null) {
+            currentTests = new ArrayList<>();
+            consultation.setLabTests(currentTests);
+        }
+        
+        currentTests.add(selectedTest);
+        System.out.println("Lab test '" + selectedTest.getName() + "' added successfully!");
+    }
+    
+    private void removeLabTestFromConsultation(Consultation consultation) {
+        System.out.println("\n=== REMOVE LAB TEST ===");
+        
+        ArrayList<LabTest> currentTests = consultation.getLabTests();
+        if (currentTests == null || currentTests.isEmpty()) {
+            System.out.println("No lab tests to remove.");
+            return;
+        }
+        
+        System.out.println("Current Lab Tests:");
+        for (int i = 0; i < currentTests.size(); i++) {
+            LabTest test = currentTests.get(i);
+            System.out.printf("%d. %s - RM%.2f\n", i + 1, test.getName(), test.getPrice());
+        }
+        
+        System.out.printf("Select lab test to remove [1-%d] or 0 to cancel: ", currentTests.size());
+        try {
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // consume newline
+            
+            if (choice == 0) {
+                System.out.println("Cancelled.");
+                return;
+            }
+            
+            if (choice < 1 || choice > currentTests.size()) {
+                System.out.println("Invalid choice.");
+                return;
+            }
+            
+            LabTest removedTest = currentTests.get(choice - 1);
+            currentTests.remove(choice - 1);
+            
+            System.out.println("Lab test '" + removedTest.getName() + "' removed successfully!");
+            
+        } catch (Exception e) {
+            System.out.println("Invalid input.");
+            scanner.nextLine(); // consume invalid input
+        }
+    }
+    
+    private void viewLabTestDetails(Consultation consultation) {
+        System.out.println("\n=== LAB TEST DETAILS ===");
+        
+        ArrayList<LabTest> currentTests = consultation.getLabTests();
+        if (currentTests == null || currentTests.isEmpty()) {
+            System.out.println("No lab tests to view.");
+            return;
+        }
+        
+        System.out.println("Lab Tests for this Consultation:");
+        for (int i = 0; i < currentTests.size(); i++) {
+            LabTest test = currentTests.get(i);
+            System.out.printf("\n%d. %s\n", i + 1, test.getName());
+            System.out.printf("   Code: %s\n", test.getCode() != null ? test.getCode() : "N/A");
+            System.out.printf("   Price: RM%.2f\n", test.getPrice());
+            System.out.printf("   Lab: %s\n", test.getReferringLab() != null ? test.getReferringLab().getName() : "Unknown");
+            System.out.printf("   Fasting Required: %s\n", test.isFastingRequired() ? "Yes" : "No");
+            System.out.printf("   Description: %s\n", test.getDescription() != null ? test.getDescription() : "N/A");
+            if (test.getPatientPrecautions() != null && !test.getPatientPrecautions().isEmpty()) {
+                System.out.printf("   Patient Precautions: %s\n", test.getPatientPrecautions());
+            }
+            if (test.getBloodTubes() != null && !test.getBloodTubes().isEmpty()) {
+                System.out.printf("   Blood Tubes Required: %s\n", test.getBloodTubes());
+            }
+        }
     }
 
     private void pause() {

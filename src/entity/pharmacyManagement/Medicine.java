@@ -13,8 +13,7 @@ public class Medicine extends SalesItem{
 
 
     public Medicine(UUID id, String name, int quantity, double price, String description, String unit, Company company, String brand, String strength, Date expiryDate) {
-        super(id, name, price, description, company, expiryDate);
-        this.quantity = quantity;
+        super(id, name, price, description, company, expiryDate, quantity);
         this.brand = brand;
         this.strength = strength;
         this.unit = unit;
