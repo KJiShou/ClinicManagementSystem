@@ -61,13 +61,10 @@ public class PrescriptionControl {
                 case 3:
                     editPrescription(prescriptionList);
                     break;
-                case 4:
-                    System.out.println("Returning to Consultation Menu...");
-                    break;
                 default:
                     System.out.println("Invalid choice. Try again.");
             }
-        } while (choice != 4);
+        } while (choice != 999);
     }
 
     public Prescription addPrescription() {
@@ -149,7 +146,7 @@ public class PrescriptionControl {
             return null;
         }
     }
-
+  
     private Medicine createPrescriptionMedicine(Medicine originalMedicine, int prescriptionQuantity) {
         Medicine prescriptionMedicine = new Medicine(
                 originalMedicine.getId(),
@@ -372,5 +369,35 @@ public class PrescriptionControl {
     private void pause() {
         System.out.print("Press Enter to continue...");
         scanner.nextLine();
+    }
+
+    private ArrayList<Medicine> filterMedicines(ArrayList<Medicine> source, String query) {
+
+        ArrayList<Medicine> results = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return results;
+        }
+
+        String q = query.toLowerCase();
+
+        for (int i = 0; i < source.size(); i++) {
+            Medicine m = source.get(i);
+
+            String name = safeLower(m.getName());
+            String brand = safeLower(m.getBrand());
+            String company = (m.getCompany() == null) ? "" : safeLower(m.getCompany().getName());
+
+            boolean textMatch =
+                    (name.contains(q) || brand.contains(q) || company.contains(q));
+
+            if (textMatch) {
+                results.add(m);
+            }
+        }
+        return results;
+    }
+
+    private static String safeLower(String s) {
+        return (s == null) ? "" : s.toLowerCase();
     }
 }

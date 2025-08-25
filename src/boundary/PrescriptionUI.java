@@ -16,7 +16,6 @@ public class PrescriptionUI {
     private static final int PAGE_SIZE = 5;
     private Scanner scanner;
 
-
     public PrescriptionUI() {
         choiceQueue = new LinkedQueue<>();
         UI = new MessageUI();
@@ -28,7 +27,6 @@ public class PrescriptionUI {
         choiceQueue.enqueue("Add Prescription");
         choiceQueue.enqueue("View Prescriptions");
         choiceQueue.enqueue("Edit Existing Prescription");
-        choiceQueue.enqueue("Back to Consultation Menu");
 
         MessageUI messageUI = new MessageUI();
 
