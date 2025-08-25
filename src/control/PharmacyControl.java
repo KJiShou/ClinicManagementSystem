@@ -1,9 +1,9 @@
 package control;
 
 import adt.*;
+import adt.ArrayList;
 import boundary.PharmacyUI;
 import entity.pharmacyManagement.*;
-import utility.GeneratePharmacyData;
 import utility.MessageUI;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.UUID;
 import static utility.MessageUI.askPositiveDouble;
 import static utility.MessageUI.askPositiveInt;
 
-public class Pharmacy {
+public class PharmacyControl {
 
     private static final int PAGE_SIZE = 5;
     private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("yyyy-MM-dd");
@@ -23,11 +23,13 @@ public class Pharmacy {
     private DictionaryInterface<String, Medicine> meds;
     private DictionaryInterface<String, LabTest> labTests;
     private DictionaryInterface<String, BloodTube> bloodTubeInventory;
+    private DictionaryInterface<String, Integer> medsRecord;
+    private DictionaryInterface<LabTest, Integer> labTestRecord;
     private PharmacyUI UI;
     private MessageUI messageUI;
     private Scanner scanner;
 
-    public Pharmacy(DictionaryInterface<String, Medicine> medicines, DictionaryInterface<String, LabTest> labTests, DictionaryInterface<String, BloodTube> bloodTubeInventory) {
+    public PharmacyControl(DictionaryInterface<String, Medicine> medicines, DictionaryInterface<String, LabTest> labTests, DictionaryInterface<String, BloodTube> bloodTubeInventory) {
         try {
             meds = medicines;
             this.labTests = labTests;
@@ -741,7 +743,6 @@ public class Pharmacy {
                     break;
                 }
                 case 4: {
-                    // Validate to the same allowed set you used in stockInMedicine
                     while (true) {
                         System.out.print("New Unit (tablet/ml/capsule): ");
                         String v = scanner.nextLine().trim();
@@ -875,13 +876,12 @@ public class Pharmacy {
                     if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
 
                     LabTest toEdit = currentView.get(start + (pick - 1));
-                    String oldKey = toEdit.getName(); // you currently key by name
+                    String oldKey = toEdit.getName();
                     editLabTestInPlace(toEdit);
 
                     String newKey = toEdit.getName();
                     if (!oldKey.equals(newKey)) {
                         if (dict.contains(oldKey)) dict.remove(oldKey);
-                        // For lab tests, “overwrite” behavior is typical.
                         dict.add(newKey, toEdit);
                     } else {
                         if (!dict.contains(oldKey)) dict.add(oldKey, toEdit);
@@ -965,7 +965,7 @@ public class Pharmacy {
                     break;
                 case 8: {
                     BloodTube pick = pickBloodTubesFromInventory();
-                    if (pick != null) t.setBloodTubes(pick.getName()); // your LabTest stores tube name as String
+                    if (pick != null) t.setBloodTubes(pick.getName());
                     break;
                 }
                 default:
@@ -988,7 +988,7 @@ public class Pharmacy {
         while (true) {
             int totalItems = currentView.size();
             int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
-            if (totalPages == 0) totalPages = 1; // guard
+            if (totalPages == 0) totalPages = 1;
 
             UI.displayLabTestList(currentView, totalItems, currentPage, totalPages, searchQuery);
 
@@ -1024,15 +1024,13 @@ public class Pharmacy {
                     if (filtered.isEmpty()) {
                         System.out.println("No results found for: " + searchQuery);
                         pause();
-                        // keep currentView unchanged
                     } else {
                         currentView = filtered;
-                        currentPage = 1; // reset to first page of new results
+                        currentPage = 1;
                     }
                     break;
 
                 case "r":
-                    // Reset back to full list from hashed store
                     currentView = originalView;
                     searchQuery = "";
                     currentPage = 1;
@@ -1064,7 +1062,7 @@ public class Pharmacy {
         while (true) {
             int totalItems = currentView.size();
             int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
-            if (totalPages == 0) totalPages = 1; // guard
+            if (totalPages == 0) totalPages = 1;
 
             UI.displayMedicineList(currentView, totalItems, currentPage, totalPages, searchQuery);
 
@@ -1100,10 +1098,9 @@ public class Pharmacy {
                     if (filtered.isEmpty()) {
                         System.out.println("No results found for: " + searchQuery);
                         pause();
-                        // keep currentView unchanged
                     } else {
                         currentView = filtered;
-                        currentPage = 1; // reset to first page of new results
+                        currentPage = 1;
                     }
                     break;
 
@@ -1111,7 +1108,6 @@ public class Pharmacy {
                     UI.displayInsufficientMedicines(meds);
 
                 case "r":
-                    // Reset back to full list from hashed store
                     currentView = originalView;
                     searchQuery = "";
                     currentPage = 1;
@@ -1139,7 +1135,7 @@ public class Pharmacy {
         while (true) {
             int totalItems = currentView.size();
             int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
-            if (totalPages == 0) totalPages = 1; // guard
+            if (totalPages == 0) totalPages = 1;
 
             UI.displayBloodTubeList(currentView, totalItems, currentPage, totalPages, searchQuery);
 
@@ -1170,16 +1166,14 @@ public class Pharmacy {
                     System.out.print("Enter search (Name/Cap color): ");
                     searchQuery = scanner.nextLine().trim();
 
-                    // Always search against the latest data from the hashed dictionary
                     ArrayList<BloodTube> filtered = filterBloodTube(originalView, searchQuery);
 
                     if (filtered.isEmpty()) {
                         System.out.println("No results found for: " + searchQuery);
                         pause();
-                        // keep currentView unchanged
                     } else {
                         currentView = filtered;
-                        currentPage = 1; // reset to first page of new results
+                        currentPage = 1;
                     }
                     break;
 
@@ -1187,7 +1181,6 @@ public class Pharmacy {
                     UI.displayInsufficientBloodTubes(bloodTubeInventory);
 
                 case "r":
-                    // Reset back to full list from hashed store
                     currentView = originalView;
                     searchQuery = "";
                     currentPage = 1;
@@ -1319,7 +1312,6 @@ public class Pharmacy {
 
         System.out.println("\n=== Stock In Medicine ===");
 
-        // Collect all medicine details from user
         System.out.print("Name: ");
         String name = scanner.nextLine().trim();
 
@@ -1349,7 +1341,6 @@ public class Pharmacy {
         System.out.print("Description: ");
         String desc = scanner.nextLine().trim();
 
-        // NEW: choose existing company or create a new one
         Company company = selectOrCreateCompany();
 
         System.out.print("Expiry date (yyyy-MM-dd): ");
@@ -1361,14 +1352,12 @@ public class Pharmacy {
             expiry = new Date();
         }
 
-        // Build a temporary Medicine to generate the key (name|strength|expiry-YYYY-MM-DD)
         Medicine temp = new Medicine(
                 UUID.randomUUID(), name, addQty, price, desc, unit,
                 company, brand, strength, expiry
         );
         String key = temp.getMedicineKey();
 
-        // Upsert into dictionary
         if (dict.contains(key)) {
             Medicine existing = dict.getValue(key);
             existing.setQuantity(existing.getQuantity() + addQty);
@@ -1390,7 +1379,6 @@ public class Pharmacy {
         @SuppressWarnings("unchecked")
         HashedDictionary<String, Medicine> dict = (HashedDictionary<String, Medicine>) meds;
 
-        // Build a unique list of companies by name (avoid duplicates).
         ArrayList<Company> uniqueCompanies = new ArrayList<>();
         ArrayList<String> seen = new ArrayList<>();
 
@@ -1406,33 +1394,28 @@ public class Pharmacy {
             }
         }
 
-        // If none exist, force creating a new one
         if (uniqueCompanies.isEmpty()) {
             System.out.println("No companies found. Please create a new company.");
             return createCompanyViaPrompt();
         }
 
-        // Build the choices queue for your pretty UI
         QueueInterface<String> q = new LinkedQueue<>();
         q.enqueue("Create new company");        // Option 1
         for (int i = 0; i < uniqueCompanies.size(); i++) {
             q.enqueue(uniqueCompanies.get(i).getName());  // Options 2..N+1
         }
 
-        // Use your box UI to get choice (1..N+1 or 999 to exit)
         Integer choice = messageUI.mainUI("Select Company", q);
 
         if (choice == null || choice == 999) {
             System.out.println("Cancelled.");
-            return null; // caller can decide to abort the flow
+            return null;
         }
 
         if (choice == 1) {
-            // Create new
             return createCompanyViaPrompt();
         }
 
-        // Map choice to list index: choice 2 -> index 0
         int idx = choice - 2;
         if (idx < 0 || idx >= uniqueCompanies.size()) {
             System.out.println("Invalid selection.");
@@ -1441,7 +1424,6 @@ public class Pharmacy {
         return uniqueCompanies.get(idx);
     }
 
-    // Prompt user to create a new company object.
     private Company createCompanyViaPrompt() {
         System.out.print("Company name: ");
         String name = scanner.nextLine().trim();
@@ -1472,7 +1454,6 @@ public class Pharmacy {
         System.out.print("Test Name: ");
         String name = scanner.nextLine().trim();
 
-        // often provided by referring lab; keep optional
         System.out.print("Code (optional): ");
         String code = scanner.nextLine().trim();
 
@@ -1488,7 +1469,6 @@ public class Pharmacy {
         System.out.print("Patient precautions (optional): ");
         String patientPrecautions = scanner.nextLine().trim();
 
-        // NEW: pick blood tubes from inventory (multi-select)
         BloodTube bloodTubes = pickBloodTubesFromInventory();
 
         LabTest test = new LabTest(
@@ -1503,10 +1483,10 @@ public class Pharmacy {
                 bloodTubes.getName()
         );
 
-        String key = name; // keep your key logic, or switch to name|lab|code for uniqueness
+        String key = name;
 
         if (dict.contains(key)) {
-            dict.add(key, test); // overwrites (add acts like upsert in your impl)
+            dict.add(key, test);
             System.out.println("Updated Lab Test: " + name + " (" + referringLab.getName() + ")");
         } else {
             dict.add(key, test);
@@ -1657,6 +1637,63 @@ public class Pharmacy {
         return (s == null) ? "" : s.toLowerCase();
     }
 
+    public void addMedicineRecord(String medicine, int quantity) {
+        if (medsRecord.contains(medicine)) {
+            medsRecord.add(medicine, quantity + medsRecord.getValue(medicine));
+        } else {
+            medsRecord.add(medicine, quantity);
+        }
+    }
+
+    public ArrayList<Entry<String, Integer>> getTop5SellingMedicines() {
+        if (medsRecord instanceof HashedDictionary<String, Integer> hashedMeds) {
+            ArrayList<Entry<String, Integer>> entryList = new ArrayList<>(hashedMeds.entryList());
+            entryList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+
+            ArrayList<Entry<String, Integer>> top5Medicines = new ArrayList<>();
+
+            int count = 0;
+            for (Entry<String, Integer> entry : entryList) {
+                if (count >= 5) break;
+
+                top5Medicines.add(entry);
+                count++;
+            }
+
+            return top5Medicines;
+        }
+        return new ArrayList<>();
+    }
+
+    public void addLabTestRecord(String labTest, int quantity) {
+        if (medsRecord.contains(labTest)) {
+            medsRecord.add(labTest, quantity + medsRecord.getValue(labTest));
+        } else {
+            medsRecord.add(labTest, quantity);
+        }
+    }
+
+    public ArrayList<Entry<LabTest, Integer>> getTop5SellingLabTests() {
+        if (labTestRecord instanceof HashedDictionary<LabTest, Integer> hashedLabTests) {
+            ArrayList<Entry<LabTest, Integer>> entryList = new ArrayList<>(hashedLabTests.entryList());
+            entryList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+
+            ArrayList<Entry<LabTest, Integer>> top5LabTests = new ArrayList<>();
+
+            int count = 0;
+            for (Entry<LabTest, Integer> entry : entryList) {
+                if (count >= 5) break;
+
+                top5LabTests.add(entry);
+                count++;
+            }
+
+            return top5LabTests;
+        }
+        return new ArrayList<>();
+    }
+
+    // TODO: what report can do
     public DictionaryInterface<String, Medicine> getMeds() {
         return meds;
     }

@@ -18,7 +18,7 @@ public class GeneratePatientData {
                 "012-3456789",
                 "ahmad.zulkifli@example.com",
                 "1990-05-15",
-                "900515-14-5678",
+                "900515145678",
                 null,
                 null
         ));
@@ -44,7 +44,7 @@ public class GeneratePatientData {
                 "016-9988776",
                 "lim.weisheng@example.com",
                 "1995-12-01",
-                "951201-10-9988",
+                "951201109988",
                 null,
                 "TP12345"
         ));
@@ -57,7 +57,7 @@ public class GeneratePatientData {
                 "017-1122334",
                 "aishah.rahman@example.com",
                 "1992-03-10",
-                "920310-07-3344",
+                "920310073344",
                 null,
                 null
         ));
@@ -70,7 +70,7 @@ public class GeneratePatientData {
                 "019-5566778",
                 "raj.kumar@example.com",
                 "1999-07-25",
-                "990725-08-5566",
+                "990725085566",
                 null,
                 null
         ));
