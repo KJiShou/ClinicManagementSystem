@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 import adt.*;
 import entity.pharmacyManagement.Prescription;
-import entity.pharmacyManagement.SalesItem;
+import entity.pharmacyManagement.SalesItem; //
 import utility.MessageUI;
 
 public class PrescriptionUI {
@@ -15,7 +15,6 @@ public class PrescriptionUI {
     private MessageUI UI;
     private static final int PAGE_SIZE = 5;
     private Scanner scanner;
-
 
     public PrescriptionUI() {
         choiceQueue = new LinkedQueue<>();
