@@ -37,7 +37,7 @@ public class MedicalTreatment {
     }
 
     public String toString() {
-        return "** Medical Treatment **\n" +
+        return "** Medical Treatment ** \n" +
                 "Treatment ID       : " + treatmentID + "\n" +
                 "Treatment Type     : " + treatmentType + "\n" +
                 "Description        : " + description + "\n";

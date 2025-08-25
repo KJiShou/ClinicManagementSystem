@@ -10,6 +10,7 @@ import entity.Patient;
 import entity.pharmacyManagement.BloodTube;
 import entity.pharmacyManagement.LabTest;
 import entity.pharmacyManagement.Medicine;
+import entity.pharmacyManagement.SalesItem;
 import entity.DutySchedule;
 import entity.Doctor;
 
@@ -50,6 +51,9 @@ public class MainControl {
 
         DutyScheduleControl scheduleControl = new DutyScheduleControl(doctors, schedules);
         //scheduleControl.main();
+
+        //PrescriptionControl prescriptionControl = new PrescriptionControl(medicines);
+        //prescriptionControl.main();
 
         ConsultationControl consultationControl = new ConsultationControl(consultations);
         //consultationControl.main();

@@ -62,4 +62,22 @@ public class MedicalRecord {
     public void setDiagnosis(String diagnosis) {
         this.diagnosis = diagnosis;
     }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public String toString() {
+        return "** MedicalRecord Details **  \n" +
+                "Medical Record ID  : " + medicalRecordID + "\n" +
+                "Start Time         : " + startTime + "\n" +
+                "End Time           : " + endTime + "\n" +
+                "Date               : " + date + "\n" +
+                "Diagnosis          : " + diagnosis + "\n" +
+                "Note               : " + note + "\n"; //
+    }
 }

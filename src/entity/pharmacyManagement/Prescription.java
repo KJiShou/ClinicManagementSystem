@@ -1,18 +1,19 @@
 package entity.pharmacyManagement;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 public class Prescription {
     private UUID id;
     private String description;
-    private float dosage;
+    private float dosagePerDay; // Pills as unit
     private int days;
     private SalesItem salesItem;
 
-    public Prescription(UUID id, String description, float dosage, int days, SalesItem salesItem) {
+    public Prescription(UUID id, String description, float dosagePerDay, int days, SalesItem salesItem) {
         this.id = id;
         this.description = description;
-        this.dosage = dosage;
+        this.dosagePerDay = dosagePerDay;
         this.days = days;
         this.salesItem = salesItem;
     }
@@ -33,12 +34,17 @@ public class Prescription {
         this.description = description;
     }
 
-    public float getDosage() {
-        return dosage;
+    public float getDosagePerDay() {
+        return dosagePerDay;
     }
 
-    public void setDosage(float dosage) {
-        this.dosage = dosage;
+    public void setDosagePerDay(float dosagePerDay) {
+        this.dosagePerDay = dosagePerDay;
+    }
+
+    //  Additional Function to get total pills
+    public float getTotalPills() {
+        return dosagePerDay * days;
     }
 
     public int getDays() {
@@ -57,5 +63,13 @@ public class Prescription {
         this.salesItem = salesItem;
     }
 
-
+    @Override
+    public String toString() {
+        return "** Prescription Details **  \n" +
+                "Prescription ID     : " + id           + "\n" +
+                "Medication          : " + salesItem.getName()   + "\n" +
+                "Description         : " + description  + "\n" +
+                "Dosage per Day      : " + dosagePerDay + "\n" +
+                "Duration (Day)      : " + days                  + "\n";
+    }
 }
