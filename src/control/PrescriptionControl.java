@@ -371,11 +371,6 @@ public class PrescriptionControl {
         scanner.nextLine();
     }
 
-    private void pause() {
-        System.out.print("Press Enter to continue...");
-        scanner.nextLine();
-    }
-
     private ArrayList<Medicine> filterMedicines(ArrayList<Medicine> source, String query) {
 
         ArrayList<Medicine> results = new ArrayList<>();
