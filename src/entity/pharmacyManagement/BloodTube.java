@@ -11,8 +11,7 @@ public class BloodTube extends SalesItem{
     private static final java.text.SimpleDateFormat KEY_DATE_FMT = new java.text.SimpleDateFormat("yyyy-MM-dd");
 
     public BloodTube(UUID id, String name, double price, int quantity, String description, Company company, Date expiryDate, double volumeMl, String capColor, String additive) {
-        super(id, name, price, description, company, expiryDate);
-        this.quantity = quantity;
+        super(id, name, price, description, company, expiryDate, quantity);
         this.volumeMl = volumeMl;
         this.capColor = capColor;
         this.additive = additive;

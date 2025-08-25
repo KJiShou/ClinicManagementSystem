@@ -23,8 +23,6 @@ public class PharmacyControl {
     private DictionaryInterface<String, Medicine> meds;
     private DictionaryInterface<String, LabTest> labTests;
     private DictionaryInterface<String, BloodTube> bloodTubeInventory;
-    private DictionaryInterface<String, Integer> medsRecord;
-    private DictionaryInterface<LabTest, Integer> labTestRecord;
     private PharmacyUI UI;
     private MessageUI messageUI;
     private Scanner scanner;
@@ -464,6 +462,109 @@ public class PharmacyControl {
 
                 case "q":
                     System.out.println("No medicine selected.");
+                    return null;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    public LabTest chooseLabTest(HashedDictionary<String, LabTest> dict) {
+        if (dict == null || dict.isEmpty()) {
+            System.out.println("No lab tests available to choose from.");
+            return null;
+        }
+
+        ArrayList<LabTest> originalView = dict.valueList();
+        ArrayList<LabTest> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
+            if (totalPages == 0) totalPages = 1;
+
+            UI.displayLabTestList(currentView, totalItems, currentPage, totalPages, searchQuery);
+
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [C] Choose item | [Q] Quit");
+            System.out.print("Enter your choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--;
+                    else {
+                        System.out.println("This is the first page.");
+                        pause();
+                    }
+                    break;
+
+                case "d":
+                    if (currentPage < totalPages) currentPage++;
+                    else {
+                        System.out.println("This is the last page.");
+                        pause();
+                    }
+                    break;
+
+                case "s":
+                    System.out.print("Enter search (Name/Tube Needed/Lab): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<LabTest> filtered = filterLabTest(originalView, searchQuery);
+                    if (filtered.isEmpty()) {
+                        System.out.println("No results found for: " + searchQuery);
+                        pause();
+                    } else {
+                        currentView = filtered;
+                        currentPage = 1;
+                    }
+                    break;
+
+                case "r":
+                    currentView = new ArrayList<>(originalView);
+                    searchQuery = "";
+                    currentPage = 1;
+                    break;
+
+                case "c": {
+                    if (currentView.isEmpty()) {
+                        System.out.println("No items to choose from.");
+                        pause();
+                        break;
+                    }
+
+                    int start = (currentPage - 1) * PAGE_SIZE;
+                    int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
+                    int visibleCount = endExclusive - start;
+
+                    System.out.printf("Select item [1-%d] on this page to choose: ", visibleCount);
+                    String raw = scanner.nextLine().trim();
+                    int pick;
+
+                    try {
+                        pick = Integer.parseInt(raw);
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Invalid number.");
+                        pause();
+                        break;
+                    }
+
+                    if (pick < 1 || pick > visibleCount) {
+                        System.out.println("Out of range.");
+                        pause();
+                        break;
+                    }
+
+                    LabTest chosen = currentView.get(start + (pick - 1));
+                    System.out.println("Selected: " + chosen.getName() + 
+                        " - " + (chosen.getReferringLab() != null ? chosen.getReferringLab().getName() : "Unknown Lab"));
+                    return chosen;
+                }
+
+                case "q":
+                    System.out.println("No lab test selected.");
                     return null;
 
                 default:
@@ -1739,64 +1840,9 @@ public class PharmacyControl {
     private static String safeLower(String s) {
         return (s == null) ? "" : s.toLowerCase();
     }
+    // TODO: medicine sales top list
 
-    public void addMedicineRecord(String medicine, int quantity) {
-        if (medsRecord.contains(medicine)) {
-            medsRecord.add(medicine, quantity + medsRecord.getValue(medicine));
-        } else {
-            medsRecord.add(medicine, quantity);
-        }
-    }
-
-    public ArrayList<Entry<String, Integer>> getTop5SellingMedicines() {
-        if (medsRecord instanceof HashedDictionary<String, Integer> hashedMeds) {
-            ArrayList<Entry<String, Integer>> entryList = new ArrayList<>(hashedMeds.entryList());
-            entryList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
-
-            ArrayList<Entry<String, Integer>> top5Medicines = new ArrayList<>();
-
-            int count = 0;
-            for (Entry<String, Integer> entry : entryList) {
-                if (count >= 5) break;
-
-                top5Medicines.add(entry);
-                count++;
-            }
-
-            return top5Medicines;
-        }
-        return new ArrayList<>();
-    }
-
-    public void addLabTestRecord(String labTest, int quantity) {
-        if (medsRecord.contains(labTest)) {
-            medsRecord.add(labTest, quantity + medsRecord.getValue(labTest));
-        } else {
-            medsRecord.add(labTest, quantity);
-        }
-    }
-
-    public ArrayList<Entry<LabTest, Integer>> getTop5SellingLabTests() {
-        if (labTestRecord instanceof HashedDictionary<LabTest, Integer> hashedLabTests) {
-            ArrayList<Entry<LabTest, Integer>> entryList = new ArrayList<>(hashedLabTests.entryList());
-            entryList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
-
-            ArrayList<Entry<LabTest, Integer>> top5LabTests = new ArrayList<>();
-
-            int count = 0;
-            for (Entry<LabTest, Integer> entry : entryList) {
-                if (count >= 5) break;
-
-                top5LabTests.add(entry);
-                count++;
-            }
-
-            return top5LabTests;
-        }
-        return new ArrayList<>();
-    }
-
-    // TODO: what report can do
+    // TODO: most common lab test done by patient
     public DictionaryInterface<String, Medicine> getMeds() {
         return meds;
     }
