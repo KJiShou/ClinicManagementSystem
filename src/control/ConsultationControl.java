@@ -19,14 +19,18 @@ import java.util.UUID;
 public class ConsultationControl {
     private static final int PAGE_SIZE = 5;
     ListInterface<Consultation> consultationList;
+    PrescriptionControl  prescriptionControl;
+    DutyScheduleControl scheduleControl;
     ConsultationUI UI;
     Scanner scanner;
 
-    ConsultationControl(ListInterface<Consultation> consultationList) {
+    ConsultationControl(ListInterface<Consultation> consultationList, PrescriptionControl  prescriptionControl, DutyScheduleControl scheduleControl) {
         try {
             this.consultationList = consultationList;
             scanner = new Scanner(System.in);
             UI = new ConsultationUI(scanner);
+            this.prescriptionControl = prescriptionControl;
+            this.scheduleControl =  scheduleControl;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -301,6 +305,8 @@ public class ConsultationControl {
                         consToUpdate.setMedicalTreatment(scanner.nextLine());
                         break;
                     case 3:
+                        prescriptionControl.setPrescriptions(consToUpdate.getPrescription());
+                        prescriptionControl.main();
                         break;
                     case 4:
                         if (consToUpdate.status == Consultation.Status.WAITING) {

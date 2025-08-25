@@ -18,37 +18,49 @@ public class PrescriptionControl {
     private PrescriptionUI ui;
     private Scanner scanner;
     private ArrayList<Medicine> medicineList;
+    private PharmacyControl pharmacyControl;
 
-    public PrescriptionControl(DictionaryInterface<String, Medicine> medicines) {
-            meds = medicines;
-            this.prescriptions = new ArrayList<>();
-            this.ui = new PrescriptionUI();
-            this.scanner = new Scanner(System.in);
+    public PrescriptionControl(DictionaryInterface<String, Medicine> medicines, PharmacyControl pharmacyControl) {
+        meds = medicines;
+        this.prescriptions = new ArrayList<>();
+        this.ui = new PrescriptionUI();
+        this.scanner = new Scanner(System.in);
+        this.pharmacyControl = pharmacyControl;
 
         HashedDictionary<String, Medicine> dict = (HashedDictionary<String, Medicine>) meds;
-
-        // Convert dictionary values to a list for indexed selection
         medicineList = dict.valueList();
     }
 
+    // Overloaded constructor to accept existing prescription list
+    public PrescriptionControl(DictionaryInterface<String, Medicine> medicines, PharmacyControl pharmacyControl,
+                               ListInterface<Prescription> existingPrescriptions) {
+        this(medicines, pharmacyControl);
+        this.prescriptions = existingPrescriptions;
+    }
+
     public void main() throws IOException {
+        main(prescriptions);
+    }
+
+    public void main(ListInterface<Prescription> prescriptionList) throws IOException {
+        this.prescriptions = prescriptionList;
 
         int choice;
         do {
             choice = ui.prescriptionMenu();
             switch (choice) {
                 case 1:
-                    addPrescription();
+                    Prescription newPrescription = addPrescription();
+                    if (newPrescription != null) {
+                        System.out.println("Prescription created successfully!");
+                    }
                     break;
                 case 2:
-                    viewPrescriptions();
+                    viewPrescriptions(prescriptionList);
                     break;
                 case 3:
-                    editPrescription();
+                    editPrescription(prescriptionList);
                     break;
-                //case 4:
-                //    deletePrescription();
-                //    break;
                 case 4:
                     System.out.println("Returning to Consultation Menu...");
                     break;
@@ -58,124 +70,307 @@ public class PrescriptionControl {
         } while (choice != 4);
     }
 
-    private void addPrescription() {
-        System.out.println("\n--- Add New Prescription ---");
-
-        if (medicineList.isEmpty()) {
-            System.out.println("No medications available.");
-            return;
-        }
-
-        //  Select Medication section
-        System.out.println("Available Medications:");
-        for (int i = 0; i < medicineList.size(); i++) {
-            System.out.println((i + 1) + ". " + medicineList.get(i).getName());
-        }
-        System.out.print("Select medication by number: ");
-        int choice = getIntInput();
-
-        if (choice < 1 || choice > medicineList.size()) {
-            System.out.println("Invalid selection.");
-            return;
-        }
-
-        Medicine selectedMedicine = medicineList.get(choice - 1);
-
-        //  Manual description input section
-        System.out.print("Enter prescription description: ");
-        String description = scanner.nextLine();
-
-        System.out.print("Enter dosage per day (pills): ");
-        float dosagePerDay = getFloatInput();
-
-        System.out.print("Enter number of days: ");
-        int days = getIntInput();
-
-        Prescription prescription = new Prescription(UUID.randomUUID(), description, dosagePerDay, days, selectedMedicine);
-        prescriptions.add(prescription);
-
-        System.out.println("\nPrescription added successfully!");
-        System.out.println(prescription);
+    public Prescription addPrescription() {
+        return addPrescription(prescriptions);
     }
 
-    private void viewPrescriptions() {
-        if (prescriptions.isEmpty()) {
+    public Prescription addPrescription(ListInterface<Prescription> prescriptionList) {
+        System.out.println("\n--- Add New Prescription ---");
+        System.out.println("(Type 'exit' at any time to cancel)");
+
+        try {
+            System.out.println("\n1. Select Medicine:");
+            Medicine selectedMedicine = pharmacyControl.chooseMedicine((HashedDictionary<String, Medicine>) meds);
+            if (selectedMedicine == null) {
+                System.out.println("No medicine selected. Prescription creation cancelled.");
+                return null;
+            }
+
+            System.out.println("\nSelected Medicine Details:");
+            System.out.printf("Name: %s | Brand: %s | Available Stock: %d %s\n",
+                    selectedMedicine.getName(), selectedMedicine.getBrand(),
+                    selectedMedicine.getQuantity(), selectedMedicine.getUnit());
+
+            System.out.println("\n2. Enter prescription details:");
+            String description = getValidatedStringInput("Enter prescription description: ", false);
+            if (description == null) return null; // User chose to exit
+
+            Float dosagePerTime = getValidatedFloatInput("Enter dosage per time (" + selectedMedicine.getUnit() + "): ", 0.1f, 50.0f);
+            if (dosagePerTime == null) return null; // User chose to exit
+
+            Integer timesPerDay = getValidatedIntInput("Enter times per day: ", 1, 10);
+            if (timesPerDay == null) return null; // User chose to exit
+
+            Integer days = getValidatedIntInput("Enter duration (days): ", 1, 365);
+            if (days == null) return null; // User chose to exit
+
+            System.out.printf("Available stock: %d %s\n", selectedMedicine.getQuantity(), selectedMedicine.getUnit());
+
+            int maxQuantity = selectedMedicine.getQuantity();
+            if (maxQuantity <= 0) {
+                System.out.println("Error: No stock available for this medicine!");
+                System.out.println("Prescription creation cancelled.");
+                return null;
+            }
+
+            Integer quantityToGive = getValidatedIntInput(
+                    String.format("Enter quantity to give (1-%d %s): ", maxQuantity, selectedMedicine.getUnit()),
+                    1, maxQuantity);
+            if (quantityToGive == null) return null; // User chose to exit
+
+            Medicine prescriptionMedicine = createPrescriptionMedicine(selectedMedicine, quantityToGive);
+
+            selectedMedicine.setQuantity(selectedMedicine.getQuantity() - quantityToGive);
+            System.out.printf("Medicine stock updated. Remaining quantity: %d %s\n",
+                    selectedMedicine.getQuantity(), selectedMedicine.getUnit());
+
+            // Create prescription
+            Prescription prescription = new Prescription(
+                    UUID.randomUUID(),
+                    description,
+                    dosagePerTime,
+                    timesPerDay,
+                    days,
+                    prescriptionMedicine
+            );
+
+            // Add to the provided list
+            prescriptionList.add(prescription);
+
+            // Display summary
+            System.out.println("\n=== Prescription Summary ===");
+            System.out.println(prescription);
+            System.out.printf("Total quantity prescribed: %d %s\n", quantityToGive, selectedMedicine.getUnit());
+            pause();
+            return prescription;
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while creating prescription: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Medicine createPrescriptionMedicine(Medicine originalMedicine, int prescriptionQuantity) {
+        Medicine prescriptionMedicine = new Medicine(
+                originalMedicine.getId(),
+                originalMedicine.getName(),
+                prescriptionQuantity,
+                originalMedicine.getPrice(),
+                originalMedicine.getDescription(),
+                originalMedicine.getUnit(),
+                originalMedicine.getCompany(),
+                originalMedicine.getBrand(),
+                originalMedicine.getStrength(),
+                originalMedicine.getExpiryDate()
+        );
+        return prescriptionMedicine;
+    }
+
+    public void viewPrescriptions(ListInterface<Prescription> prescriptionList) {
+        if (prescriptionList.isEmpty()) {
             System.out.println("No prescriptions available.");
             return;
         }
+
         System.out.println("\n--- Prescriptions List ---");
-        for (int i = 0; i < prescriptions.size(); i++) {
-            System.out.println((i + 1) + ". " + prescriptions.get(i));
+        for (int i = 0; i < prescriptionList.size(); i++) {
+            System.out.println("=== Prescription " + (i + 1) + " ===");
+            System.out.println(prescriptionList.get(i));
+            System.out.println();
         }
+
+        System.out.println("Press Enter to continue...");
+        scanner.nextLine();
     }
 
-    private void editPrescription() {
-        if (prescriptions.isEmpty()) {
+    public void editPrescription(ListInterface<Prescription> prescriptionList) {
+        if (prescriptionList.isEmpty()) {
             System.out.println("No prescriptions to edit.");
             return;
         }
-        viewPrescriptions();
-        System.out.print("Select prescription to edit: ");
-        int index = getIntInput() - 1;
 
-        if (index < 0 || index >= prescriptions.size()) {
-            System.out.println("Invalid selection.");
+        viewPrescriptions(prescriptionList);
+
+        System.out.println("(Type 'exit' to cancel)");
+        Integer index = getValidatedIntInput("Select prescription to edit (1-" + prescriptionList.size() + "): ",
+                1, prescriptionList.size());
+
+        if (index == null) {
+            System.out.println("Edit cancelled.");
             return;
         }
 
-        Prescription prescription = prescriptions.get(index);
-        System.out.println("Editing Prescription: " + prescription);
+        Prescription prescription = prescriptionList.get(index - 1);
+        System.out.println("\nEditing Prescription: ");
+        System.out.println(prescription);
 
-        System.out.print("Enter new description: ");
-        String description = scanner.nextLine();
-        prescription.setDescription(description);
+        try {
+            // Edit Description
+            String newDescription = getValidatedStringInput("Enter new description (current: " +
+                    prescription.getDescription() + "): ", true);
+            if (newDescription != null && !newDescription.trim().isEmpty()) {
+                prescription.setDescription(newDescription);
+            }
 
-        System.out.print("Enter new dosage per day: ");
-        float dosage = getFloatInput();
-        prescription.setDosagePerDay(dosage);
+            // Edit Dosage per Time
+            Float newDosagePerTime = getValidatedFloatInput("Enter new dosage per time (current: " +
+                    prescription.getDosagePerTime() + "): ", 0.1f, 50.0f, true);
+            if (newDosagePerTime != null) {
+                prescription.setDosagePerTime(newDosagePerTime);
+            }
 
-        System.out.print("Enter new duration (days): ");
-        int days = getIntInput();
-        prescription.setDays(days);
+            // Edit Times per Day
+            Integer newTimesPerDay = getValidatedIntInput("Enter new times per day (current: " +
+                    prescription.getTimesPerDay() + "): ", 1, 10, true);
+            if (newTimesPerDay != null) {
+                prescription.setTimesPerDay(newTimesPerDay);
+            }
 
-        System.out.println("Prescription updated successfully!");
+            // Edit Duration
+            Integer newDays = getValidatedIntInput("Enter new duration in days (current: " +
+                    prescription.getDays() + "): ", 1, 365, true);
+            if (newDays != null) {
+                prescription.setDays(newDays);
+            }
+
+            System.out.println("\n=== Updated Prescription ===");
+            System.out.println(prescription);
+            System.out.println("Prescription updated successfully!");
+
+        } catch (Exception e) {
+            System.out.println("An error occurred while editing prescription: " + e.getMessage());
+        }
     }
 
-    private void deletePrescription() {
-        if (prescriptions.isEmpty()) {
+    public void deletePrescription(ListInterface<Prescription> prescriptionList) {
+        if (prescriptionList.isEmpty()) {
             System.out.println("No prescriptions to delete.");
             return;
         }
-        viewPrescriptions();
-        System.out.print("Select prescription to delete: ");
-        int index = getIntInput() - 1;
 
-        if (index < 0 || index >= prescriptions.size()) {
-            System.out.println("Invalid selection.");
+        viewPrescriptions(prescriptionList);
+
+        Integer index = getValidatedIntInput("Select prescription to delete (1-" + prescriptionList.size() + "): ",
+                1, prescriptionList.size());
+
+        if (index == null) {
+            System.out.println("Delete cancelled.");
             return;
         }
 
-        prescriptions.remove(index);
-        System.out.println("Prescription deleted successfully!");
+        Prescription toDelete = prescriptionList.get(index - 1);
+        System.out.println("Selected prescription:");
+        System.out.println(toDelete);
+
+        String confirm = getValidatedStringInput("Are you sure you want to delete this prescription? (y/n): ", true);
+        if (confirm != null && (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes"))) {
+            prescriptionList.remove(index - 1);
+            System.out.println("Prescription deleted successfully!");
+        } else {
+            System.out.println("Delete cancelled.");
+        }
     }
 
-    private int getIntInput() {
-        while (!scanner.hasNextInt()) {
-            System.out.print("Invalid input. Enter a number: ");
-            scanner.next();
+    // Validation helper methods
+    private String getValidatedStringInput(String prompt, boolean allowEmpty) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+
+            if (input.equalsIgnoreCase("exit")) {
+                return null;
+            }
+
+            if (!allowEmpty && input.isEmpty()) {
+                System.out.println("Input cannot be empty. Please try again.");
+                continue;
+            }
+
+            return input;
         }
-        int val = scanner.nextInt();
-        scanner.nextLine();
-        return val;
     }
 
-    private float getFloatInput() {
-        while (!scanner.hasNextFloat()) {
-            System.out.print("Invalid input. Enter a number: ");
-            scanner.next();
+    private Integer getValidatedIntInput(String prompt, int min, int max) {
+        return getValidatedIntInput(prompt, min, max, false);
+    }
+
+    private Integer getValidatedIntInput(String prompt, int min, int max, boolean allowEmpty) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+
+            if (input.equalsIgnoreCase("exit")) {
+                return null;
+            }
+
+            if (allowEmpty && input.isEmpty()) {
+                return null; // Return null to indicate no change
+            }
+
+            if (input.isEmpty()) {
+                System.out.println("Input cannot be empty. Please try again.");
+                continue;
+            }
+
+            try {
+                int value = Integer.parseInt(input);
+                if (value < min || value > max) {
+                    System.out.printf("Value must be between %d and %d. Please try again.\n", min, max);
+                    continue;
+                }
+                return value;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number format. Please try again.");
+            }
         }
-        float val = scanner.nextFloat();
+    }
+
+    private Float getValidatedFloatInput(String prompt, float min, float max) {
+        return getValidatedFloatInput(prompt, min, max, false);
+    }
+
+    private Float getValidatedFloatInput(String prompt, float min, float max, boolean allowEmpty) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+
+            if (input.equalsIgnoreCase("exit")) {
+                return null;
+            }
+
+            if (allowEmpty && input.isEmpty()) {
+                return null; // Return null to indicate no change
+            }
+
+            if (input.isEmpty()) {
+                System.out.println("Input cannot be empty. Please try again.");
+                continue;
+            }
+
+            try {
+                float value = Float.parseFloat(input);
+                if (value < min || value > max) {
+                    System.out.printf("Value must be between %.2f and %.2f. Please try again.\n", min, max);
+                    continue;
+                }
+                return value;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number format. Please try again.");
+            }
+        }
+    }
+
+    // Getter methods
+    public ListInterface<Prescription> getPrescriptions() {
+        return prescriptions;
+    }
+
+    public void setPrescriptions(ListInterface<Prescription> prescriptions) {
+        this.prescriptions = prescriptions;
+    }
+
+    private void pause() {
+        System.out.print("Press Enter to continue...");
         scanner.nextLine();
-        return val;
     }
 }

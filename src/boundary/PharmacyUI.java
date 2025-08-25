@@ -167,10 +167,10 @@ public class PharmacyUI {
 
             Medicine medObj = insufficientMeds.getValue(nameKey);
 
-            System.out.printf("| %-3d | %-40s | %-20s | %-20s | RM%-18.2f |\n",
+            System.out.printf("| %-3d | %-40s | %-30s | %-20s | RM%-18.2f |\n",
                     counter++, medObj.getName(), medObj.getCompany().getName(), medObj.getQuantity() + " " + medObj.getUnit(), medObj.getPrice());
         }
-        System.out.println("+-----+------------------------------------------+----------------------+----------------------+----------------------+");
+        System.out.println("+-----+------------------------------------------+--------------------------------+----------------------+----------------------+");
         System.out.println("Enter to continue...");
         scanner.nextLine();
         System.out.println();  // blank line between pages
