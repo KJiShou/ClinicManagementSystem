@@ -24,10 +24,14 @@ public class MainUI {
 
     public Integer mainMenu() throws IOException {
         // choice 1
-        choiceQueue.enqueue("Search Patient");
+        choiceQueue.enqueue("Patient");
         choiceQueue.enqueue("Consultation");
         choiceQueue.enqueue("Pharmacy");
         choiceQueue.enqueue("Duty Schedule");
+        choiceQueue.enqueue("Appointment");
+        choiceQueue.enqueue("Staff Management");
+        choiceQueue.enqueue("Doctor Management");
+        choiceQueue.enqueue("Logout");
 
         return UI.mainUI("Welcome to Clinic Management System", choiceQueue);
     }

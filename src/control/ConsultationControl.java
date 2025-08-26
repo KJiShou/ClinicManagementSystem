@@ -504,10 +504,10 @@ public class ConsultationControl {
 
         // Totals
         System.out.println("=".repeat(62));
-        System.out.printf("%-52s RM %8.2f%n", "SUBTOTAL:", subtotal);
-        System.out.printf("%-52s RM %8.2f%n", "SST (6%):", tax);
+        System.out.printf("%-52s RM %6.2f%n", "SUBTOTAL:", subtotal);
+        System.out.printf("%-52s RM %6.2f%n", "SST (6%):", tax);
         System.out.println("-".repeat(62));
-        System.out.printf("%-52s RM %8.2f%n", "TOTAL AMOUNT:", totalAmount);
+        System.out.printf("%-52s RM %6.2f%n", "TOTAL AMOUNT:", totalAmount);
         System.out.println("=".repeat(62));
     }
 
@@ -752,7 +752,7 @@ public class ConsultationControl {
         System.out.printf("Select lab test to remove [1-%d] or 0 to cancel: ", currentTests.size());
         try {
             int choice = scanner.nextInt();
-            scanner.nextLine(); // consume newline
+            scanner.nextLine();
             
             if (choice == 0) {
                 System.out.println("Cancelled.");

@@ -3,6 +3,7 @@ package entity;
 import java.util.UUID;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 public class Appointment {
     private UUID id;
@@ -14,10 +15,14 @@ public class Appointment {
     private LocalTime endTime;
     private String appointmentType;
     private String description;
+    private Status status;
+    
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     public Appointment() {}
 
-    public Appointment(UUID id, Patient patient, Doctor doctor, Staff staff, LocalDate appointmentDate, LocalTime startTime, LocalTime endTime, String appointmentType, String description) {
+    public Appointment(UUID id, Patient patient, Doctor doctor, Staff staff, LocalDate appointmentDate, LocalTime startTime, LocalTime endTime, String appointmentType, String description, Status status) {
         this.id = id;
         this.patient = patient;
         this.doctor = doctor;
@@ -27,6 +32,7 @@ public class Appointment {
         this.startTime = startTime;
         this.endTime = endTime;
         this.description = description;
+        this.status = status;
     }
 
     // Getter
@@ -42,6 +48,7 @@ public class Appointment {
     public LocalTime getStartTime() { return startTime; }
     public LocalTime getEndTime() { return endTime; }
     public String getDescription() { return description; }
+    public Status getStatus() { return status; }
 
     // Setter
     public void setId(UUID id) { this.id = id; }
@@ -52,16 +59,54 @@ public class Appointment {
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
     public void setDescription(String description) { this.description = description; }
+    public void setStatus(Status status) { this.status = status; }
+    public void setStaff(Staff staff) { this.staff = staff; }
+
+    // Utility methods
+    public String getFormattedDate() {
+        return appointmentDate != null ? appointmentDate.format(DATE_FMT) : "N/A";
+    }
+    
+    public String getFormattedStartTime() {
+        return startTime != null ? startTime.format(TIME_FMT) : "N/A";
+    }
+    
+    public String getFormattedEndTime() {
+        return endTime != null ? endTime.format(TIME_FMT) : "N/A";
+    }
+    
+    public String getStatusDisplay() {
+        switch (status) {
+            case SCHEDULED:
+                return "📅 SCHEDULED";
+            case CONFIRMED:
+                return "✅ CONFIRMED";
+            case CANCELLED:
+                return "❌ CANCELLED";
+            case COMPLETED:
+                return "✔️ COMPLETED";
+            default:
+                return status != null ? status.toString() : "N/A";
+        }
+    }
 
     public String toString(){
         return  "Appointment ID  : " + id +
                 "\nPatient ID      : " + getPatientId() +
                 "\nDoctor ID       : " + getDoctorId() +
-                "\nStaff ID        : " + getStaffId() +
+                "\nStaff ID        : " + (staff != null ? getStaffId() : "N/A") +
                 "\nDate            : " + appointmentDate +
                 "\nAppointmentType : " + appointmentType +
                 "\nStart Time      : " + startTime +
                 "\nEnd Time        : " + endTime +
+                "\nStatus          : " + (status != null ? status : "N/A") +
                 "\nDescription     : " + description;
+    }
+    
+    public enum Status {
+        SCHEDULED,
+        CONFIRMED,
+        CANCELLED,
+        COMPLETED
     }
 }
