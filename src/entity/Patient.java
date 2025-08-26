@@ -46,6 +46,24 @@ public class Patient extends User {
         this.studentID = studentID;
     }
 
+    public String getDisplayId() {
+        if (patientIC != null && !patientIC.isBlank()) {
+            // Check if it looks like a Malaysian IC (12 digits or nnnnnn-nn-nnnn)
+            if (patientIC.matches("\\d{12}") || patientIC.matches("\\d{6}-\\d{2}-\\d{4}")) {
+                return patientIC; // IC only
+            } else {
+                return patientIC + " (Other)";
+            }
+        }
+        if (patientPassport != null && !patientPassport.isBlank()) {
+            return patientPassport + " (Passport)";
+        }
+        if (studentID != null && !studentID.isBlank()) {
+            return studentID + " (Student)";
+        }
+        return "N/A";
+    }
+
     @Override
     public String toString() {
         return super.toString() + "\n" +
