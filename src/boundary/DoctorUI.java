@@ -83,7 +83,7 @@ public class DoctorUI {
                 return input;
             }
             
-            System.out.println("❌ " + fieldName + " is required.");
+            System.out.println("ERROR: " + fieldName + " is required.");
         }
     }
 
@@ -103,7 +103,7 @@ public class DoctorUI {
             switch (input) {
                 case "1": return User.Gender.MALE;
                 case "2": return User.Gender.FEMALE;
-                default: System.out.println("❌ Invalid choice.");
+                default: System.out.println("ERROR: Invalid choice.");
             }
         }
     }
@@ -173,11 +173,11 @@ public class DoctorUI {
     }
 
     public void displaySuccess(String message) {
-        System.out.println("✅ " + message);
+        System.out.println("SUCCESS: " + message);
     }
 
     public void displayError(String message) {
-        System.out.println("❌ " + message);
+        System.out.println("ERROR: " + message);
     }
 
     public void pause() {

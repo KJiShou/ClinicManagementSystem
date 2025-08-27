@@ -362,10 +362,10 @@ public class PatientControl {
                 if (doctorChoice >= 1 && doctorChoice <= doctorsOnDuty.size()) {
                     selectedDoctor = doctorsOnDuty.get(doctorChoice - 1);
                 } else {
-                    System.out.println("Invalid selection. Please enter a number between 1 and " + doctorsOnDuty.size() + ".");
+                    System.out.println("ERROR: Invalid selection. Please enter a number between 1 and " + doctorsOnDuty.size() + ".");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid number or type CANCEL.");
+                System.out.println("ERROR: Invalid input. Please enter a valid number or type CANCEL.");
             }
         }
 
@@ -850,13 +850,13 @@ public class PatientControl {
     private String getStatusDisplay(Consultation.Status status) {
         switch (status) {
             case WAITING:
-                return "⏳ WAITING";
+                return "WAITING";
             case IN_PROGRESS:
-                return "🔄 IN PROGRESS";
+                return "IN PROGRESS";
             case BILLING:
-                return "💳 BILLING";
+                return "BILLING";
             case COMPLETED:
-                return "✅ COMPLETED";
+                return "COMPLETED";
             default:
                 return status.toString();
         }

@@ -209,9 +209,9 @@ public class DoctorControl {
                 if (choice >= 1 && choice <= doctors.size()) {
                     return doctors.get(choice - 1);
                 }
-                System.out.println("❌ Invalid selection.");
+                System.out.println("ERROR: Invalid selection.");
             } catch (NumberFormatException e) {
-                System.out.println("❌ Please enter a valid number.");
+                System.out.println("ERROR: Please enter a valid number.");
             }
         }
     }
@@ -253,7 +253,7 @@ public class DoctorControl {
                         String newName = scanner.nextLine().trim();
                         if (!newName.isEmpty()) {
                             doctor.setName(newName);
-                            System.out.println("✅ Name updated.");
+                            System.out.println("SUCCESS: Name updated.");
                         }
                         break;
                     case 2:
@@ -261,7 +261,7 @@ public class DoctorControl {
                         String newSpec = scanner.nextLine().trim();
                         if (!newSpec.isEmpty()) {
                             doctor.setSpecialization(newSpec);
-                            System.out.println("✅ Specialization updated.");
+                            System.out.println("SUCCESS: Specialization updated.");
                         }
                         break;
                     case 3:
@@ -269,7 +269,7 @@ public class DoctorControl {
                         String newLicense = scanner.nextLine().trim();
                         if (!newLicense.isEmpty()) {
                             doctor.setLicenseNumber(newLicense);
-                            System.out.println("✅ License number updated.");
+                            System.out.println("SUCCESS: License number updated.");
                         }
                         break;
                     case 4:
@@ -277,7 +277,7 @@ public class DoctorControl {
                         String newPhone = scanner.nextLine().trim();
                         if (!newPhone.isEmpty()) {
                             doctor.setPhone(newPhone);
-                            System.out.println("✅ Phone updated.");
+                            System.out.println("SUCCESS: Phone updated.");
                         }
                         break;
                     case 5:
@@ -285,7 +285,7 @@ public class DoctorControl {
                         String newEmail = scanner.nextLine().trim();
                         if (!newEmail.isEmpty()) {
                             doctor.setEmail(newEmail);
-                            System.out.println("✅ Email updated.");
+                            System.out.println("SUCCESS: Email updated.");
                         }
                         break;
                     case 6:
@@ -293,7 +293,7 @@ public class DoctorControl {
                         String newAddress = scanner.nextLine().trim();
                         if (!newAddress.isEmpty()) {
                             doctor.setAddress(newAddress);
-                            System.out.println("✅ Address updated.");
+                            System.out.println("SUCCESS: Address updated.");
                         }
                         break;
                     case 9:
