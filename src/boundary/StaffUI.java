@@ -104,7 +104,7 @@ public class StaffUI {
                 return input;
             }
             
-            System.out.println("❌ " + fieldName + " is required. Please enter a value.");
+            System.out.println("ERROR: " + fieldName + " is required. Please enter a value.");
         }
     }
 
@@ -127,7 +127,7 @@ public class StaffUI {
                 case "2":
                     return User.Gender.FEMALE;
                 default:
-                    System.out.println("❌ Invalid choice. Please select 1 or 2.");
+                    System.out.println("ERROR: Invalid choice. Please select 1 or 2.");
             }
         }
     }
@@ -142,12 +142,12 @@ public class StaffUI {
             }
             
             if (account.isEmpty()) {
-                System.out.println("❌ Account is required.");
+                System.out.println("ERROR: Account is required.");
                 continue;
             }
             
             if (account.length() < 3) {
-                System.out.println("❌ Account must be at least 3 characters long.");
+                System.out.println("ERROR: Account must be at least 3 characters long.");
                 continue;
             }
             
@@ -166,7 +166,7 @@ public class StaffUI {
             }
             
             if (password.length() < 4) {
-                System.out.println("❌ Password must be at least 4 characters long.");
+                System.out.println("ERROR: Password must be at least 4 characters long.");
                 continue;
             }
             
@@ -174,7 +174,7 @@ public class StaffUI {
             String confirmPassword = scanner.nextLine().trim();
             
             if (!password.equals(confirmPassword)) {
-                System.out.println("❌ Passwords do not match. Please try again.");
+                System.out.println("ERROR: Passwords do not match. Please try again.");
                 continue;
             }
             
@@ -202,10 +202,10 @@ public class StaffUI {
                 if (choice >= 1 && choice <= roles.length) {
                     return roles[choice - 1];
                 } else {
-                    System.out.println("❌ Invalid choice. Please select a number between 1 and " + roles.length + ".");
+                    System.out.println("ERROR: Invalid choice. Please select a number between 1 and " + roles.length + ".");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("❌ Please enter a valid number.");
+                System.out.println("ERROR: Please enter a valid number.");
             }
         }
     }
@@ -289,9 +289,9 @@ public class StaffUI {
                 if (choice >= 1 && choice <= staffList.size()) {
                     return staffList.get(choice - 1);
                 }
-                System.out.println("❌ Invalid selection.");
+                System.out.println("ERROR: Invalid selection.");
             } catch (NumberFormatException e) {
-                System.out.println("❌ Please enter a valid number.");
+                System.out.println("ERROR: Please enter a valid number.");
             }
         }
     }
@@ -321,7 +321,7 @@ public class StaffUI {
     }
 
     public boolean confirmDeletion(Staff staff) {
-        System.out.println("\n⚠️  WARNING: DELETE STAFF MEMBER");
+        System.out.println("\nWARNING: DELETE STAFF MEMBER");
         System.out.println("-".repeat(50));
         System.out.println("Name: " + staff.getName());
         System.out.println("Account: " + staff.getAccount());
@@ -372,11 +372,11 @@ public class StaffUI {
     }
 
     public void displaySuccess(String message) {
-        System.out.println("✅ " + message);
+        System.out.println("SUCCESS: " + message);
     }
 
     public void displayError(String message) {
-        System.out.println("❌ " + message);
+        System.out.println("ERROR: " + message);
     }
 
     public void pause() {

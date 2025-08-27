@@ -242,9 +242,9 @@ public class StaffControl {
                 if (choice >= 1 && choice <= staffArray.size()) {
                     return staffArray.get(choice - 1);
                 }
-                System.out.println("❌ Invalid selection.");
+                System.out.println("ERROR: Invalid selection.");
             } catch (NumberFormatException e) {
-                System.out.println("❌ Please enter a valid number.");
+                System.out.println("ERROR: Please enter a valid number.");
             }
         }
     }
@@ -349,7 +349,7 @@ public class StaffControl {
         String newName = scanner.nextLine().trim();
         if (!newName.isEmpty()) {
             staff.setName(newName);
-            System.out.println("✅ Name updated.");
+            System.out.println("SUCCESS: Name updated.");
         }
     }
 
@@ -358,7 +358,7 @@ public class StaffControl {
         String newPosition = scanner.nextLine().trim();
         if (!newPosition.isEmpty()) {
             staff.setPosition(newPosition);
-            System.out.println("✅ Position updated.");
+            System.out.println("SUCCESS: Position updated.");
         }
     }
 
@@ -367,7 +367,7 @@ public class StaffControl {
         String newDepartment = scanner.nextLine().trim();
         if (!newDepartment.isEmpty()) {
             staff.setDepartment(newDepartment);
-            System.out.println("✅ Department updated.");
+            System.out.println("SUCCESS: Department updated.");
         }
     }
 
@@ -376,7 +376,7 @@ public class StaffControl {
         String newPhone = scanner.nextLine().trim();
         if (!newPhone.isEmpty()) {
             staff.setPhone(newPhone);
-            System.out.println("✅ Phone updated.");
+            System.out.println("SUCCESS: Phone updated.");
         }
     }
 
@@ -385,7 +385,7 @@ public class StaffControl {
         String newEmail = scanner.nextLine().trim();
         if (!newEmail.isEmpty()) {
             staff.setEmail(newEmail);
-            System.out.println("✅ Email updated.");
+            System.out.println("SUCCESS: Email updated.");
         }
     }
 
@@ -394,7 +394,7 @@ public class StaffControl {
         String newAddress = scanner.nextLine().trim();
         if (!newAddress.isEmpty()) {
             staff.setAddress(newAddress);
-            System.out.println("✅ Address updated.");
+            System.out.println("SUCCESS: Address updated.");
         }
     }
 
@@ -410,7 +410,7 @@ public class StaffControl {
             int choice = Integer.parseInt(scanner.nextLine().trim());
             if (choice >= 1 && choice <= roles.length) {
                 staff.setRole(roles[choice - 1]);
-                System.out.println("✅ Role updated to: " + staff.getRole());
+                System.out.println("SUCCESS: Role updated to: " + staff.getRole());
             } else {
                 System.out.println("Invalid choice.");
             }
@@ -424,12 +424,12 @@ public class StaffControl {
         String newPassword = scanner.nextLine().trim();
         
         if (newPassword.length() < 4) {
-            System.out.println("❌ Password must be at least 4 characters long.");
+            System.out.println("ERROR: Password must be at least 4 characters long.");
             return;
         }
         
         staff.setPassword(newPassword);
-        System.out.println("✅ Password reset successfully!");
+        System.out.println("SUCCESS: Password reset successfully!");
     }
 
     private ArrayList<Staff> searchStaffMembers(String searchTerm) {

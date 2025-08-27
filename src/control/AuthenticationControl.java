@@ -40,13 +40,13 @@ public class AuthenticationControl {
             Staff staff = authenticateUser(account, password);
             if (staff != null) {
                 this.currentUser = staff;
-                System.out.println("\n✅ Login successful!");
+                System.out.println("\nSUCCESS: Login successful!");
                 System.out.println("Welcome, " + staff.getName() + " (" + staff.getRole() + ")");
                 pause();
                 return true;
             } else {
                 attempts++;
-                System.out.println("❌ Invalid account or password.");
+                System.out.println("ERROR: Invalid account or password.");
                 if (attempts < maxAttempts) {
                     System.out.println("Attempts remaining: " + (maxAttempts - attempts));
                     System.out.println("Type 'EXIT' as account to cancel login.\n");
@@ -106,7 +106,7 @@ public class AuthenticationControl {
 
     public boolean requireLogin() {
         if (!isLoggedIn()) {
-            System.out.println("❌ Authentication required. Please login first.");
+            System.out.println("ERROR: Authentication required. Please login first.");
             return login();
         }
         return true;
@@ -118,7 +118,7 @@ public class AuthenticationControl {
         }
         
         if (!hasRole(requiredRole)) {
-            System.out.println("❌ Access denied. Required role: " + requiredRole);
+            System.out.println("ERROR: Access denied. Required role: " + requiredRole);
             System.out.println("Your role: " + currentUser.getRole());
             pause();
             return false;
@@ -132,7 +132,7 @@ public class AuthenticationControl {
         }
         
         if (!hasAnyRole(roles)) {
-            System.out.print("❌ Access denied. Required roles: ");
+            System.out.print("ERROR: Access denied. Required roles: ");
             for (int i = 0; i < roles.length; i++) {
                 System.out.print(roles[i]);
                 if (i < roles.length - 1) System.out.print(", ");
@@ -171,7 +171,7 @@ public class AuthenticationControl {
         String currentPassword = scanner.nextLine().trim();
 
         if (!currentUser.getPassword().equals(currentPassword)) {
-            System.out.println("❌ Current password is incorrect.");
+            System.out.println("ERROR: Current password is incorrect.");
             pause();
             return;
         }
@@ -182,7 +182,7 @@ public class AuthenticationControl {
             String password1 = scanner.nextLine().trim();
 
             if (password1.length() < 4) {
-                System.out.println("❌ Password must be at least 4 characters long.");
+                System.out.println("ERROR: Password must be at least 4 characters long.");
                 continue;
             }
 
@@ -190,7 +190,7 @@ public class AuthenticationControl {
             String password2 = scanner.nextLine().trim();
 
             if (!password1.equals(password2)) {
-                System.out.println("❌ Passwords do not match.");
+                System.out.println("ERROR: Passwords do not match.");
                 continue;
             }
 
@@ -198,7 +198,7 @@ public class AuthenticationControl {
         }
 
         currentUser.setPassword(newPassword);
-        System.out.println("✅ Password changed successfully!");
+        System.out.println("SUCCESS: Password changed successfully!");
         pause();
     }
 
