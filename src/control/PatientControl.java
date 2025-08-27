@@ -18,12 +18,14 @@ import control.MainControl;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Period;
+import java.util.Comparator;
 import java.util.Scanner;
 import java.util.UUID;
 
 public class PatientControl {
 
-    private static final int PAGE_SIZE = 5;
+    private static final int PAGE_SIZE = 10;
 
     private QueueInterface<Patient> patientQueue;
     private ListInterface<Consultation> consultationList;
@@ -63,6 +65,8 @@ public class PatientControl {
                 case 5:
                     deletePatient();
                     break;
+                case 6:
+                    patientReport();
                 case 999:
                     return;
                 default:
@@ -101,19 +105,160 @@ public class PatientControl {
 
         Patient p = patients.get(choice - 1);
 
+        System.out.println("\n=== EDIT PATIENT DETAILS ===");
+        System.out.println("Leave field blank and press Enter to keep current value.");
+        System.out.println("Type 'CANCEL' at any time to cancel editing.\n");
+
+        // Name
         System.out.print("New Name (" + p.getName() + "): ");
         String name = scanner.nextLine().trim();
+        if (name.equalsIgnoreCase("CANCEL")) {
+            ui.displayMessage("Edit cancelled.");
+            return;
+        }
         if (!name.isEmpty()) p.setName(name);
 
-        System.out.print("New Phone (" + p.getPhone() + "): ");
-        String phone = scanner.nextLine().trim();
-        if (!phone.isEmpty()) p.setPhone(phone);
+        // Address
+        System.out.print("New Address (" + p.getAddress() + "): ");
+        String address = scanner.nextLine().trim();
+        if (address.equalsIgnoreCase("CANCEL")) {
+            ui.displayMessage("Edit cancelled.");
+            return;
+        }
+        if (!address.isEmpty()) p.setAddress(address);
 
-        System.out.print("New Email (" + p.getEmail() + "): ");
-        String email = scanner.nextLine().trim();
-        if (!email.isEmpty()) p.setEmail(email);
+        // Gender
+        System.out.print("New Gender (" + p.getGender() + ") (M/F): ");
+        String gender = scanner.nextLine().trim().toUpperCase();
+        if (gender.equalsIgnoreCase("CANCEL")) {
+            ui.displayMessage("Edit cancelled.");
+            return;
+        }
+        if (!gender.isEmpty()) {
+            if (gender.equals("M") || gender.equals("F")) {
+                p.setGender(gender);
+            } else {
+                System.out.println("Invalid gender. Keeping current value.");
+            }
+        }
+
+        // Phone
+        String phone;
+        do {
+            System.out.print("New Phone (" + p.getPhone() + "): ");
+            phone = scanner.nextLine().trim();
+            if (phone.equalsIgnoreCase("CANCEL")) {
+                ui.displayMessage("Edit cancelled.");
+                return;
+            }
+            if (!phone.isEmpty()) {
+                if (phone.matches("\\d{10,11}")) {
+                    p.setPhone(phone);
+                    break;
+                } else {
+                    System.out.println("Error: Phone must be 10-11 digits. Try again or leave blank to keep current.");
+                    phone = ""; // Reset to force re-prompt
+                }
+            } else {
+                break; // User wants to keep current phone
+            }
+        } while (phone.isEmpty());
+
+        // Email
+        String email;
+        do {
+            System.out.print("New Email (" + p.getEmail() + "): ");
+            email = scanner.nextLine().trim();
+            if (email.equalsIgnoreCase("CANCEL")) {
+                ui.displayMessage("Edit cancelled.");
+                return;
+            }
+            if (!email.isEmpty()) {
+                if (email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+                    p.setEmail(email);
+                    break;
+                } else {
+                    System.out.println("Error: Invalid email format. Try again or leave blank to keep current.");
+                    email = ""; // Reset to force re-prompt
+                }
+            } else {
+                break; // User wants to keep current email
+            }
+        } while (email.isEmpty());
+
+        // Date of Birth
+        String dob;
+        do {
+            System.out.print("New Date of Birth (" + p.getDateOfBirthString() + ") (YYYY-MM-DD): ");
+            dob = scanner.nextLine().trim();
+            if (dob.equalsIgnoreCase("CANCEL")) {
+                ui.displayMessage("Edit cancelled.");
+                return;
+            }
+            if (!dob.isEmpty()) {
+                // Validate date format
+                if (!dob.matches("\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])")) {
+                    System.out.println("Error: Date must be in valid YYYY-MM-DD format. Try again or leave blank to keep current.");
+                    dob = "";
+                    continue;
+                }
+                try {
+                    LocalDate newDob = LocalDate.parse(dob);
+                    if (newDob.isAfter(LocalDate.now())) {
+                        System.out.println("Error: Date of birth cannot be in the future. Try again or leave blank to keep current.");
+                        dob = "";
+                    } else if (newDob.isBefore(LocalDate.of(1900, 1, 1))) {
+                        System.out.println("Error: Date of birth cannot be before 1900-01-01. Try again or leave blank to keep current.");
+                        dob = "";
+                    } else {
+                        p.setDateOfBirth(newDob);
+                        break;
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error: Invalid date. Try again or leave blank to keep current.");
+                    dob = "";
+                }
+            } else {
+                break; // User wants to keep current DOB
+            }
+        } while (dob.isEmpty());
+
+        // Patient IC
+        System.out.print("New Patient IC (" + (p.getPatientIC() != null ? p.getPatientIC() : "none") + "): ");
+        String patientIC = scanner.nextLine().trim();
+        if (patientIC.equalsIgnoreCase("CANCEL")) {
+            ui.displayMessage("Edit cancelled.");
+            return;
+        }
+        if (!patientIC.isEmpty()) {
+            if (patientIC.matches("\\d{12}")) {
+                p.setPatientIC(patientIC);
+            } else {
+                System.out.println("Warning: IC should be 12 digits. Storing as entered.");
+                p.setPatientIC(patientIC);
+            }
+        }
+
+        // Passport
+        System.out.print("New Passport (" + (p.getPatientPassport() != null ? p.getPatientPassport() : "none") + "): ");
+        String passport = scanner.nextLine().trim();
+        if (passport.equalsIgnoreCase("CANCEL")) {
+            ui.displayMessage("Edit cancelled.");
+            return;
+        }
+        if (!passport.isEmpty()) p.setPatientPassport(passport);
+
+        // Student ID
+        System.out.print("New Student ID (" + (p.getStudentID() != null ? p.getStudentID() : "none") + "): ");
+        String studentID = scanner.nextLine().trim();
+        if (studentID.equalsIgnoreCase("CANCEL")) {
+            ui.displayMessage("Edit cancelled.");
+            return;
+        }
+        if (!studentID.isEmpty()) p.setStudentID(studentID);
 
         ui.displaySuccess("Patient updated successfully!");
+        pause();
     }
 
     // Register Consultant
@@ -136,7 +281,7 @@ public class PatientControl {
             boolean isPassport = key.matches("[A-Za-z0-9]{6,}");
 
             if (!isIC && !isPassport) {
-                System.out.println("❌ Invalid input. Please enter a valid IC (12 digits) or Passport (min 6 alphanumeric).");
+                System.out.println("Invalid input. Please enter a valid IC (12 digits) or Passport (min 6 alphanumeric).");
                 continue; // re-prompt
             }
 
@@ -166,7 +311,7 @@ public class PatientControl {
     }
 
 
-    // Helper: Find patient by IC or Passport
+    // Find patient by IC or Passport
     private Patient findPatientByICOrPassport(String keyword) {
         ArrayList<Patient> patients = new ArrayList<>();
         while (!patientQueue.isEmpty()) {
@@ -217,7 +362,6 @@ public class PatientControl {
 
             switch (input) {
                 case "1":
-                    // register consultation
                     registerConsultation(p);
                     break;
                 case "2":
@@ -239,6 +383,7 @@ public class PatientControl {
     }
 
     private void registerConsultation(Patient p) {
+
         // Step 1: Get doctors currently on duty
         ArrayList<Doctor> doctorsOnDuty = getDoctorsOnDuty();
         
@@ -277,11 +422,11 @@ public class PatientControl {
             }
         }
 
-        // Step 2: Enter the consultation note
+        // Enter the consultation note
         System.out.print("Enter the consultation issue/notes: ");
         String consultationNote = scanner.nextLine().trim();
 
-        // Step 3: Create the consultation and add it to the consultation list
+        // Create the consultation and add it to the consultation list
         Consultation newConsultation = new Consultation(UUID.randomUUID(), p, selectedDoctor, LocalDate.now(), Consultation.Status.WAITING, consultationNote, LocalTime.now(), null, 0, "", new ArrayList<Prescription>(), new ArrayList<LabTest>());
         consultationList.add(newConsultation);
         System.out.println("Consultation registered successfully.");
@@ -371,6 +516,95 @@ public class PatientControl {
             }
         }
     }
+
+    public void patientReport() {
+        while (true) {
+            System.out.println("\n=== REPORT MENU ===");
+            System.out.println("[1] Patient Demographics – Age Distribution");
+            System.out.println("[2] Patient Demographics – Identification Type");
+            System.out.println("[Q] Back to Main Menu");
+            System.out.print("Choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "1":
+                    reportPatientByAgeGroup();
+                    break;
+                case "2":
+                    reportPatientByIdType();
+                    break;
+                case "q":
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    public void reportPatientByAgeGroup() {
+        if (patientQueue.isEmpty()) {
+            System.out.println("No patients found.");
+            pause();
+            return;
+        }
+
+        ui.printReportHeader("Age Distribution of Patients");
+
+        ArrayList<Patient> patients = queueToList();
+        patients.sort(Comparator.comparing(Patient::getDateOfBirth).reversed());
+
+        int under18 = 0, between18And30 = 0, between31And50 = 0, above50 = 0;
+
+        for (Patient p : patients) {
+            int age = Period.between(p.getDateOfBirth(), LocalDate.now()).getYears();
+            if (age < 18) under18++;
+            else if (age <= 30) between18And30++;
+            else if (age <= 50) between31And50++;
+            else above50++;
+        }
+
+        System.out.printf("<18 years      : %d%n", under18);
+        System.out.printf("18 - 30 years  : %d%n", between18And30);
+        System.out.printf("31 - 50 years  : %d%n", between31And50);
+        System.out.printf("51+ years      : %d%n", above50);
+        System.out.println("---------------------------------------\n");
+
+        pause();
+    }
+
+    public void reportPatientByIdType() {
+        if (patientQueue.isEmpty()) {
+            System.out.println("No patients found.");
+            pause();
+            return;
+        }
+
+        ui.printReportHeader("Patient Distribution by Identification Type");
+
+        ArrayList<Patient> patients = queueToList();
+
+        int icCount = 0, passportCount = 0, studentCount = 0;
+
+        for (int i = 0; i < patients.size(); i++) {
+            Patient p = patients.get(i);
+            if (p.getPatientIC() != null && !p.getPatientIC().isEmpty()) {
+                icCount++;
+            } else if (p.getPatientPassport() != null && !p.getPatientPassport().isEmpty()) {
+                passportCount++;
+            } else if (p.getStudentID() != null && !p.getStudentID().isEmpty()) {
+                studentCount++;
+            }
+        }
+
+        System.out.println("--- Patient by Identification Type ---");
+        System.out.printf("Malaysian IC : %d%n", icCount);
+        System.out.printf("Passport     : %d%n", passportCount);
+        System.out.printf("Student ID   : %d%n", studentCount);
+        System.out.println("--------------------------------------\n");
+
+        pause();
+    }
+
 
     // Helper: Convert queue -> ArrayList
     private ArrayList<Patient> queueToList() {
