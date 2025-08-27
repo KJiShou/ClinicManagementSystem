@@ -105,157 +105,104 @@ public class PatientControl {
 
         Patient p = patients.get(choice - 1);
 
-        System.out.println("\n=== EDIT PATIENT DETAILS ===");
-        System.out.println("Leave field blank and press Enter to keep current value.");
-        System.out.println("Type 'CANCEL' at any time to cancel editing.\n");
+        while (true) {
+            System.out.println("\n=== EDIT PATIENT DETAILS ===");
+            System.out.println("Editing: " + p.getName());
+            System.out.println("1. Name");
+            System.out.println("2. Address");
+            System.out.println("3. Gender");
+            System.out.println("4. Phone");
+            System.out.println("5. Email");
+            System.out.println("6. Date of Birth");
+            System.out.println("7. Patient IC");
+            System.out.println("8. Passport");
+            System.out.println("9. Student ID");
+            System.out.println("0. Done editing");
+            System.out.print("Enter choice: ");
 
-        // Name
-        System.out.print("New Name (" + p.getName() + "): ");
-        String name = scanner.nextLine().trim();
-        if (name.equalsIgnoreCase("CANCEL")) {
-            ui.displayMessage("Edit cancelled.");
-            return;
-        }
-        if (!name.isEmpty()) p.setName(name);
-
-        // Address
-        System.out.print("New Address (" + p.getAddress() + "): ");
-        String address = scanner.nextLine().trim();
-        if (address.equalsIgnoreCase("CANCEL")) {
-            ui.displayMessage("Edit cancelled.");
-            return;
-        }
-        if (!address.isEmpty()) p.setAddress(address);
-
-        // Gender
-        System.out.print("New Gender (" + p.getGender() + ") (M/F): ");
-        String gender = scanner.nextLine().trim().toUpperCase();
-        if (gender.equalsIgnoreCase("CANCEL")) {
-            ui.displayMessage("Edit cancelled.");
-            return;
-        }
-        if (!gender.isEmpty()) {
-            if (gender.equals("M") || gender.equals("F")) {
-                p.setGender(gender);
-            } else {
-                System.out.println("Invalid gender. Keeping current value.");
+            String input = scanner.nextLine().trim();
+            if (!input.matches("\\d")) {
+                System.out.println("Invalid choice.");
+                continue;
             }
-        }
 
-        // Phone
-        String phone;
-        do {
-            System.out.print("New Phone (" + p.getPhone() + "): ");
-            phone = scanner.nextLine().trim();
-            if (phone.equalsIgnoreCase("CANCEL")) {
-                ui.displayMessage("Edit cancelled.");
-                return;
-            }
-            if (!phone.isEmpty()) {
-                if (phone.matches("\\d{10,11}")) {
-                    p.setPhone(phone);
+            int field = Integer.parseInt(input);
+            if (field == 0) break;
+
+            switch (field) {
+                case 1:
+                    System.out.print("New Name (" + p.getName() + "): ");
+                    String name = scanner.nextLine().trim();
+                    if (!name.isEmpty()) p.setName(name);
                     break;
-                } else {
-                    System.out.println("Error: Phone must be 10-11 digits. Try again or leave blank to keep current.");
-                    phone = ""; // Reset to force re-prompt
-                }
-            } else {
-                break; // User wants to keep current phone
-            }
-        } while (phone.isEmpty());
 
-        // Email
-        String email;
-        do {
-            System.out.print("New Email (" + p.getEmail() + "): ");
-            email = scanner.nextLine().trim();
-            if (email.equalsIgnoreCase("CANCEL")) {
-                ui.displayMessage("Edit cancelled.");
-                return;
-            }
-            if (!email.isEmpty()) {
-                if (email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-                    p.setEmail(email);
+                case 2:
+                    System.out.print("New Address (" + p.getAddress() + "): ");
+                    String address = scanner.nextLine().trim();
+                    if (!address.isEmpty()) p.setAddress(address);
                     break;
-                } else {
-                    System.out.println("Error: Invalid email format. Try again or leave blank to keep current.");
-                    email = ""; // Reset to force re-prompt
-                }
-            } else {
-                break; // User wants to keep current email
-            }
-        } while (email.isEmpty());
 
-        // Date of Birth
-        String dob;
-        do {
-            System.out.print("New Date of Birth (" + p.getDateOfBirthString() + ") (YYYY-MM-DD): ");
-            dob = scanner.nextLine().trim();
-            if (dob.equalsIgnoreCase("CANCEL")) {
-                ui.displayMessage("Edit cancelled.");
-                return;
-            }
-            if (!dob.isEmpty()) {
-                // Validate date format
-                if (!dob.matches("\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])")) {
-                    System.out.println("Error: Date must be in valid YYYY-MM-DD format. Try again or leave blank to keep current.");
-                    dob = "";
-                    continue;
-                }
-                try {
-                    LocalDate newDob = LocalDate.parse(dob);
-                    if (newDob.isAfter(LocalDate.now())) {
-                        System.out.println("Error: Date of birth cannot be in the future. Try again or leave blank to keep current.");
-                        dob = "";
-                    } else if (newDob.isBefore(LocalDate.of(1900, 1, 1))) {
-                        System.out.println("Error: Date of birth cannot be before 1900-01-01. Try again or leave blank to keep current.");
-                        dob = "";
-                    } else {
-                        p.setDateOfBirth(newDob);
-                        break;
+                case 3:
+                    System.out.print("New Gender (" + p.getGender() + ") (M/F): ");
+                    String gender = scanner.nextLine().trim().toUpperCase();
+                    if (gender.equals("M") || gender.equals("F")) p.setGender(gender);
+                    else System.out.println("Invalid gender.");
+                    break;
+
+                case 4:
+                    System.out.print("New Phone (" + p.getPhone() + "): ");
+                    String phone = scanner.nextLine().trim();
+                    if (phone.matches("\\d{10,11}")) p.setPhone(phone);
+                    else if (!phone.isEmpty()) System.out.println("Invalid phone number.");
+                    break;
+
+                case 5:
+                    System.out.print("New Email (" + p.getEmail() + "): ");
+                    String email = scanner.nextLine().trim();
+                    if (email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) p.setEmail(email);
+                    else if (!email.isEmpty()) System.out.println("Invalid email format.");
+                    break;
+
+                case 6:
+                    System.out.print("New Date of Birth (" + p.getDateOfBirthString() + "): ");
+                    String dob = scanner.nextLine().trim();
+                    if (!dob.isEmpty()) {
+                        try {
+                            LocalDate newDob = LocalDate.parse(dob);
+                            if (newDob.isAfter(LocalDate.now())) {
+                                System.out.println("Error: DOB cannot be in future.");
+                            } else {
+                                p.setDateOfBirth(newDob);
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Invalid date format.");
+                        }
                     }
-                } catch (Exception e) {
-                    System.out.println("Error: Invalid date. Try again or leave blank to keep current.");
-                    dob = "";
-                }
-            } else {
-                break; // User wants to keep current DOB
+                    break;
+
+                case 7:
+                    System.out.print("New Patient IC (" + (p.getPatientIC() != null ? p.getPatientIC() : "none") + "): ");
+                    String ic = scanner.nextLine().trim();
+                    if (ic.matches("\\d{12}")) p.setPatientIC(ic);
+                    else if (!ic.isEmpty()) System.out.println("Invalid IC format.");
+                    break;
+
+                case 8:
+                    System.out.print("New Passport (" + (p.getPatientPassport() != null ? p.getPatientPassport() : "none") + "): ");
+                    String passport = scanner.nextLine().trim();
+                    if (!passport.isEmpty()) p.setPatientPassport(passport);
+                    break;
+
+                case 9:
+                    System.out.print("New Student ID (" + (p.getStudentID() != null ? p.getStudentID() : "none") + "): ");
+                    String sid = scanner.nextLine().trim();
+                    if (!sid.isEmpty()) p.setStudentID(sid);
+                    break;
+
+                default:
+                    System.out.println("Invalid choice.");
             }
-        } while (dob.isEmpty());
-
-        // Patient IC
-        System.out.print("New Patient IC (" + (p.getPatientIC() != null ? p.getPatientIC() : "none") + "): ");
-        String patientIC = scanner.nextLine().trim();
-        if (patientIC.equalsIgnoreCase("CANCEL")) {
-            ui.displayMessage("Edit cancelled.");
-            return;
         }
-        if (!patientIC.isEmpty()) {
-            if (patientIC.matches("\\d{12}")) {
-                p.setPatientIC(patientIC);
-            } else {
-                System.out.println("Warning: IC should be 12 digits. Storing as entered.");
-                p.setPatientIC(patientIC);
-            }
-        }
-
-        // Passport
-        System.out.print("New Passport (" + (p.getPatientPassport() != null ? p.getPatientPassport() : "none") + "): ");
-        String passport = scanner.nextLine().trim();
-        if (passport.equalsIgnoreCase("CANCEL")) {
-            ui.displayMessage("Edit cancelled.");
-            return;
-        }
-        if (!passport.isEmpty()) p.setPatientPassport(passport);
-
-        // Student ID
-        System.out.print("New Student ID (" + (p.getStudentID() != null ? p.getStudentID() : "none") + "): ");
-        String studentID = scanner.nextLine().trim();
-        if (studentID.equalsIgnoreCase("CANCEL")) {
-            ui.displayMessage("Edit cancelled.");
-            return;
-        }
-        if (!studentID.isEmpty()) p.setStudentID(studentID);
 
         ui.displaySuccess("Patient updated successfully!");
         pause();
@@ -903,7 +850,7 @@ public class PatientControl {
     private String getStatusDisplay(Consultation.Status status) {
         switch (status) {
             case WAITING:
-                return "⏳ WAITING";
+                return "WAITING";
             case IN_PROGRESS:
                 return "IN PROGRESS";
             case BILLING:
