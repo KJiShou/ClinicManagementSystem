@@ -31,7 +31,6 @@ public class MainUI {
         choiceQueue.enqueue("Appointment");
         choiceQueue.enqueue("Staff Management");
         choiceQueue.enqueue("Doctor Management");
-        choiceQueue.enqueue("Logout");
 
         return UI.mainUI("Welcome to Clinic Management System", choiceQueue);
     }
