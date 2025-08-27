@@ -2,8 +2,11 @@ package control;
 
 import adt.*;
 import boundary.DutyScheduleUI;
+import entity.Consultation;
 import entity.Doctor;
 import entity.DutySchedule;
+import boundary.DutyScheduleUI;
+import control.ConsultationControl;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,11 +20,13 @@ public class DutyScheduleControl {
     private DutyScheduleUI ui;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+    private ListInterface<Consultation> consultations;
 
-    public DutyScheduleControl(ListInterface<Doctor> doctors, HashedDictionary<UUID, ListInterface<DutySchedule>> schedules) {
+    public DutyScheduleControl(ListInterface<Doctor> doctors, HashedDictionary<UUID, ListInterface<DutySchedule>> schedules, ListInterface<Consultation> consultations) {
         this.doctors = doctors;
         this.schedules = schedules != null ? schedules : new HashedDictionary<>();
         this.ui = new DutyScheduleUI();
+        this.consultations = consultations;
     }
 
     public void main() {
@@ -50,6 +55,9 @@ public class DutyScheduleControl {
                         break;
                     case 5:
                         viewDoctorScheduleGrid();
+                        break;
+                    case 6:
+                        showDoctorDutyDaysReport();
                         break;
                     case 999:
                         System.out.println("Exiting Duty Schedule Management...");
@@ -274,6 +282,69 @@ public class DutyScheduleControl {
             ui.displayMessage("Error viewing doctor grid: " + e.getMessage());
         }
     }
+
+    public void showDoctorDutyDaysReport() {
+        Doctor doctor = ui.selectDoctor(doctors);
+        if (doctor == null) return;
+
+        ListInterface<DutySchedule> doctorSchedules = schedules.getValue(doctor.getUserID());
+        if (doctorSchedules == null || doctorSchedules.isEmpty()) {
+            System.out.println("No duty schedules found for " + doctor.getName());
+            return;
+        }
+
+        LocalDate start = LocalDate.of(2025, 8, 25);
+        LocalDate end   = LocalDate.of(2025, 8, 31);
+
+        // ===== Duty Table =====
+        System.out.println("\nDuty works between " + start + " and " + end);
+        System.out.println("+-----+------------+");
+        System.out.printf("| %-3s | %-10s |\n", "No.", "Date");
+        System.out.println("+-----+------------+");
+
+        int count = 0;
+        int index = 1;
+        for (int i = 0; i < doctorSchedules.size(); i++) {
+            DutySchedule ds = doctorSchedules.get(i);
+            LocalDate date = LocalDate.parse(ds.getDate(), DATE_FORMAT);
+            if (!date.isBefore(start) && !date.isAfter(end)) {
+                System.out.printf("| %-3d | %-10s |\n", index++, date);
+                count++;
+            }
+        }
+
+        System.out.println("+-----+------------+");
+        System.out.println("Summary: " + doctor.getName()
+                + " worked " + count
+                + " days between " + start + " and " + end + ".");
+
+        // ===== Consultation Table =====
+        System.out.println("\nConsultations:");
+        System.out.println("+-----+----------------------+------------+");
+        System.out.printf("| %-3s | %-20s | %-10s |\n", "No.", "Patient Name", "Date");
+        System.out.println("+-----+----------------------+------------+");
+
+        int consCount = 0;
+        int consIndex = 1;
+
+        for (int i = 0; i < consultations.size(); i++) {
+            Consultation cons = consultations.get(i);
+            if (cons.getDoctor() != null && cons.getDoctor().equals(doctor)) {
+                LocalDate date = cons.getConsultatonDate();
+                if (!date.isBefore(start) && !date.isAfter(end)) {
+                    System.out.printf("| %-3d | %-20s | %-10s |\n",
+                            consIndex++, cons.getPatient().getName(), date);
+                    consCount++;
+                }
+            }
+        }
+        System.out.println("+-----+----------------------+------------+");
+        System.out.println("Summary: " + doctor.getName()
+                + " consulted " + consCount + " patients.");
+    }
+
+
+
 
 
 }

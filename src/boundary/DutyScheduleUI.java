@@ -29,6 +29,7 @@ public class DutyScheduleUI {
         choiceQueue.enqueue("Delete Duty Schedule");
         choiceQueue.enqueue("View Clinic Schedule");
         choiceQueue.enqueue("View Doctor Schedule");
+        choiceQueue.enqueue("Generate Report");
         return UI.mainUI("Duty Schedule Management", choiceQueue);
     }
 
@@ -189,7 +190,7 @@ public class DutyScheduleUI {
             if (choice >= 1 && choice <= (endIndex - startIndex)) {
                 return currentView.get(startIndex + choice - 1);
             } else {
-                displayMessage("Invalid number. Please select from the displayed range.");
+                displayMessage("");
             }
         } catch (NumberFormatException e) {
             displayMessage("Invalid input.");
