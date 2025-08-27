@@ -29,6 +29,9 @@ public class PharmacyUI {
         choiceQueue.enqueue("Stock In Sales Item");
         choiceQueue.enqueue("Update Sales Item details");
         choiceQueue.enqueue("Stock Out Sales Item");
+        choiceQueue.enqueue("Low Stock Medicine Report");
+        choiceQueue.enqueue("Expiry Medicine Report");
+
 
         return UI.mainUI("Welcome to Pharmacy Management System", choiceQueue);
     }

@@ -69,7 +69,7 @@ public class SalesItem {
     }
 
     public int getQuantity() {return  quantity;}
-    public void setQuantity(int quantity) {}
+    public void setQuantity(int quantity) {this.quantity = quantity;}
 
     public String toString() {
         return " Name: " + name + " Price: " + price + " Company: " +company;

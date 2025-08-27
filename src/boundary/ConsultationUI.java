@@ -319,7 +319,7 @@ public class ConsultationUI {
                 System.out.printf("| %-30s | %-30.2f |\n", "Dosage per Time", prescription.getDosagePerTime());
                 System.out.printf("| %-30s | %-30s |\n", "Times per Day", String.valueOf(prescription.getTimesPerDay()));
                 System.out.printf("| %-30s | %-30s |\n", "Duration (Days)", String.valueOf(prescription.getDays()));
-                System.out.printf("| %-30s | RM %27.2fs |\n", "Price", prescription.getMedicine().getPrice() * prescription.getMedicine().getQuantity());
+                System.out.printf("| %-30s | RM %-27.2f |\n", "Price", prescription.getMedicine().getPrice() * prescription.getMedicine().getQuantity());
 
                 // Description with proper text wrapping
                 String description = prescription.getDescription();
