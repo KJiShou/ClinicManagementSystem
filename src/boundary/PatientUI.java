@@ -6,6 +6,7 @@ import adt.QueueInterface;
 import entity.Patient;
 import utility.MessageUI;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class PatientUI {
     public PatientUI() {
         choiceQueue = new LinkedQueue<>();
         messageUI = new MessageUI();
-        pageSize = 5;
+        pageSize = 10;
         scanner = new Scanner(System.in);
     }
 
@@ -29,6 +30,7 @@ public class PatientUI {
         choiceQueue.enqueue("Edit Patient Details");
         choiceQueue.enqueue("Register Consultation");
         choiceQueue.enqueue("Delete Patient Details");
+        choiceQueue.enqueue("Patient Reports");
 
         return messageUI.mainUI("Patient Management System", choiceQueue);
     }
@@ -56,6 +58,9 @@ public class PatientUI {
             if (name.equalsIgnoreCase("CANCEL")) return null;
             if (name.isEmpty()) {
                 System.out.println("Error: Name cannot be empty");
+            } else if (!name.matches("[a-zA-Z\\s]+")) {
+                System.out.println("Error: Name must contain only alphabets and spaces");
+                name = "";
             }
         } while (name.isEmpty());
 
@@ -88,8 +93,8 @@ public class PatientUI {
             System.out.print("Phone: ");
             phone = scanner.nextLine().trim();
             if (phone.equalsIgnoreCase("CANCEL")) return null;
-            if (!phone.matches("\\d+")) {
-                System.out.println("Error: Phone must contain only digits");
+            if (!phone.matches("\\d{10,11}")) {
+                System.out.println("Error: Phone must be 10-11 digits");
                 phone = "";
             }
         } while (phone.isEmpty());
@@ -112,8 +117,27 @@ public class PatientUI {
             System.out.print("Date of Birth (YYYY-MM-DD): ");
             dob = scanner.nextLine().trim();
             if (dob.equalsIgnoreCase("CANCEL")) return null;
-            if (!dob.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                System.out.println("Error: Date must be in YYYY-MM-DD format");
+
+            // First check format with regex
+            if (!dob.matches("\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])")) {
+                System.out.println("Error: Date must be in valid YYYY-MM-DD format (e.g., 1990-01-15)");
+                dob = "";
+                continue;
+            }
+
+            try {
+                // Then parse and validate the actual date
+                LocalDate dateOfBirth = LocalDate.parse(dob);
+
+                if (dateOfBirth.isAfter(LocalDate.now())) {
+                    System.out.println("Error: Date of birth cannot be in the future");
+                    dob = "";
+                } else if (dateOfBirth.isBefore(LocalDate.of(1900, 1, 1))) {
+                    System.out.println("Error: Date of birth cannot be before 1900-01-01");
+                    dob = "";
+                }
+            } catch (Exception e) {
+                System.out.println("Error: Invalid date (e.g., February 30th)");
                 dob = "";
             }
         } while (dob.isEmpty());
@@ -161,8 +185,18 @@ public class PatientUI {
         // Rows
         for (int i = start; i < end; i++) {
             Patient patient = patients.get(i);
-            String identifier = patient.getPatientIC() != null ? patient.getPatientIC() :
-                    (patient.getPatientPassport() != null ? patient.getPatientPassport() : patient.getEmail());
+
+            // Determine the identification type with labels
+            String identifier;
+            if (patient.getPatientIC() != null && !patient.getPatientIC().isEmpty()) {
+                identifier = patient.getPatientIC();
+            } else if (patient.getStudentID() != null && !patient.getStudentID().isEmpty()) {
+                identifier = patient.getStudentID() + " (student)";
+            } else if (patient.getPatientPassport() != null && !patient.getPatientPassport().isEmpty()) {
+                identifier = patient.getPatientPassport() + " (passport)";
+            } else {
+                identifier = "No ID provided";
+            }
 
             System.out.printf("| %-3d | %-30s | %-20s | %-30s | %-40s |\n",
                     i+1,
@@ -230,6 +264,17 @@ public class PatientUI {
                 System.out.println("Invalid input. Please enter a number, N, P, or 0.");
             }
         }
+    }
+
+    public void printReportHeader(String reportTitle) {
+        System.out.println("=======================================");
+        System.out.println("        CLINIC MANAGEMENT SYSTEM       ");
+        System.out.println("         PATIENT REPORT MODULE         ");
+        System.out.println("---------------------------------------");
+        System.out.printf(" Report Title : %s%n", reportTitle);
+        System.out.printf(" Generated On : %s%n",
+                new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()));
+        System.out.println("=======================================\n");
     }
 
     public void displayPatientDetails(Patient patient) {

@@ -2,6 +2,9 @@ package entity;
 
 import java.io.Serializable;
 import java.util.UUID;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class User implements Serializable {
     // Inner Gender enum
@@ -36,17 +39,20 @@ public class User implements Serializable {
     private UUID userID;
     private String name;
     private String address;
-    private Gender gender;  // Changed from String to Gender enum
+    private Gender gender;
     private String phone;
     private String email;
-    private String dateOfBirth;
+    private LocalDate dateOfBirth;
+
+    // Date formatter (for parsing from String)
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public User() {
         // Default constructor
     }
 
     public User(UUID userID, String name, String address, Gender gender,
-                String phone, String email, String dateOfBirth) {
+                String phone, String email, LocalDate dateOfBirth) {
         this.userID = userID;
         this.name = name;
         this.address = address;
@@ -54,6 +60,21 @@ public class User implements Serializable {
         this.phone = phone;
         this.email = email;
         this.dateOfBirth = dateOfBirth;
+    }
+
+    // Overloaded constructor for String DOB
+    public User(UUID userID, String name, String address, Gender gender,
+                String phone, String email, String dateOfBirth) {
+        this(userID, name, address, gender, phone, email, parseDate(dateOfBirth));
+    }
+
+    // Parse string date
+    private static LocalDate parseDate(String dateStr) {
+        try {
+            return (dateStr == null || dateStr.isBlank()) ? null : LocalDate.parse(dateStr, DATE_FORMAT);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format. Expected yyyy-MM-dd, got: " + dateStr);
+        }
     }
 
     // Getters
@@ -73,9 +94,8 @@ public class User implements Serializable {
         return gender;
     }
 
-    // Returns gender code (M/F) for compatibility
     public String getGenderCode() {
-        return gender.getCode();
+        return gender != null ? gender.getCode() : "-";
     }
 
     public String getPhone() {
@@ -86,8 +106,13 @@ public class User implements Serializable {
         return email;
     }
 
-    public String getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    // Return DOB as string
+    public String getDateOfBirthString() {
+        return (dateOfBirth != null) ? dateOfBirth.format(DATE_FORMAT) : "-";
     }
 
     // Setters
@@ -107,7 +132,6 @@ public class User implements Serializable {
         this.gender = gender;
     }
 
-    // Convenience setter that accepts String (M/F)
     public void setGender(String genderCode) {
         this.gender = Gender.fromString(genderCode);
     }
@@ -120,8 +144,13 @@ public class User implements Serializable {
         this.email = email;
     }
 
-    public void setDateOfBirth(String dateOfBirth) {
+    // Accept both LocalDate and String for DOB
+    public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = parseDate(dateOfBirth);
     }
 
     @Override
@@ -129,9 +158,9 @@ public class User implements Serializable {
         return "UserID: " + userID + "\n" +
                 "Name: " + name + "\n" +
                 "Address: " + address + "\n" +
-                "Gender: " + gender.getCode() + "\n" +
+                "Gender: " + getGenderCode() + "\n" +
                 "Phone: " + phone + "\n" +
                 "Email: " + email + "\n" +
-                "Date of Birth: " + dateOfBirth;
+                "Date of Birth: " + getDateOfBirthString();
     }
 }
