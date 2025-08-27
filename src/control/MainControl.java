@@ -13,8 +13,6 @@ import entity.pharmacyManagement.Medicine;
 import entity.pharmacyManagement.SalesItem;
 import entity.DutySchedule;
 import entity.Doctor;
-import entity.Appointment;
-import entity.Staff;
 
 import utility.*;
 
@@ -30,10 +28,7 @@ public class MainControl {
     static ArrayList<Patient> patients;
     static ListInterface<Doctor> doctors;
     static ListInterface<Consultation> consultations;
-    static ListInterface<Appointment> appointments;
-    static ListInterface<Staff> staff;
     static HashedDictionary<UUID, ListInterface<DutySchedule>> schedules;
-    static AuthenticationControl authControl;
     static MainUI UI;
 
     public static void main(String[] args) throws IOException, ParseException {
@@ -41,13 +36,10 @@ public class MainControl {
         medicines = GeneratePharmacyData.createMedicineTable();
         labTests = GeneratePharmacyData.createLabTests();
         bloodTubes = GeneratePharmacyData.createBloodTubeInventory();
+        consultations = GenerateConsultationData.createSampleConsultation();
         patients = GeneratePatientData.createSamplePatients();
         doctors = GenerateDoctorData.createSampleDoctors();
         schedules = GenerateDutyScheduleData.createSampleDutySchedulesDictionary(doctors);
-        consultations = GenerateConsultationData.createSampleConsultation(doctors, patients);
-        appointments = GenerateAppointmentData.createSampleAppointments(doctors, patients);
-        staff = GenerateStaffData.createSampleStaff();
-        authControl = new AuthenticationControl(staff);
         UI = new MainUI();
 
         // pharmacy module
@@ -57,7 +49,7 @@ public class MainControl {
         PatientControl patient = new PatientControl(patients, consultations, doctors);
         //patient.main();
 
-        DutyScheduleControl scheduleControl = new DutyScheduleControl(doctors, schedules);
+        DutyScheduleControl scheduleControl = new DutyScheduleControl(doctors, schedules, consultations);
         //scheduleControl.main();
 
         PrescriptionControl prescriptionControl = new PrescriptionControl(medicines, pharmacy);
@@ -65,26 +57,12 @@ public class MainControl {
 
         ConsultationControl consultationControl = new ConsultationControl(consultations, prescriptionControl, scheduleControl, pharmacy);
         //consultationControl.main();
-
-        AppointmentControl appointmentControl = new AppointmentControl(patients, doctors, appointments);
-        //appointmentControl.main();
-
-        StaffControl staffControl = new StaffControl(staff, authControl);
-        DoctorControl doctorControl = new DoctorControl(doctors, authControl);
-        // Check if user is logged in, if not, show login screen
-        if (!authControl.isLoggedIn()) {
-            if (!authControl.login()) {
-                System.out.println("Login failed. Exiting system.");
-                return;
-            }
-        }
-
         while (true) {
             Integer choice = UI.mainMenu();
             switch (choice) {
                 case 1:
                     // Search Patient
-                    patient.main();
+                    patient.displayPatient();
                     break;
                 case 2:
                     // Consultation
@@ -98,20 +76,7 @@ public class MainControl {
                     // Duty Schedule
                     scheduleControl.main();
                     break;
-                case 5:
-                    // Appointment
-                    appointmentControl.main();
-                    break;
-                case 6:
-                    // Staff Management
-                    staffControl.main();
-                    break;
-                case 7:
-                    // Doctor Management
-                    doctorControl.main();
-                    break;
                 case 999:
-                    authControl.logout();
                     System.out.println("Thank you for using this system!");
                     return;
                 default:
