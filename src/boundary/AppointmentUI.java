@@ -292,11 +292,11 @@ public class AppointmentUI {
     }
 
     public void displaySuccess(String message) {
-        System.out.println("✅ " + message);
+        System.out.println("SUCCESS: " + message);
     }
 
     public void displayError(String message) {
-        System.out.println("❌ " + message);
+        System.out.println("ERROR: " + message);
     }
 
     public void pause() {

@@ -78,13 +78,13 @@ public class Appointment {
     public String getStatusDisplay() {
         switch (status) {
             case SCHEDULED:
-                return "📅 SCHEDULED";
+                return "SCHEDULED";
             case CONFIRMED:
-                return "✅ CONFIRMED";
+                return "CONFIRMED";
             case CANCELLED:
-                return "❌ CANCELLED";
+                return "CANCELLED";
             case COMPLETED:
-                return "✔️ COMPLETED";
+                return "COMPLETED";
             default:
                 return status != null ? status.toString() : "N/A";
         }

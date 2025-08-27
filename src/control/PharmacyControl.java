@@ -1893,9 +1893,9 @@ public class PharmacyControl {
         System.out.printf("Total medicines requiring attention: %d%n", totalRequiringAttention);
         
         if (totalRequiringAttention > 0) {
-            System.out.println("⚠️  ACTION REQUIRED: Please restock medicines below reorder level");
+            System.out.println("WARNING: ACTION REQUIRED - Please restock medicines below reorder level");
         } else {
-            System.out.println("✅ All medicines are adequately stocked");
+            System.out.println("SUCCESS: All medicines are adequately stocked");
         }
         pause();
     }
@@ -1947,13 +1947,13 @@ public class PharmacyControl {
         System.out.printf("Total medicines requiring attention: %d%n", totalRequiringAttention);
         
         if (expiredCount > 0) {
-            System.out.println("🚨 CRITICAL: " + expiredCount + " medicine(s) have already expired - remove immediately");
+            System.out.println("CRITICAL: " + expiredCount + " medicine(s) have already expired - remove immediately");
         }
         if (expiringCount > 0) {
-            System.out.println("⚠️  WARNING: " + expiringCount + " medicine(s) expiring within " + daysAhead + " days");
+            System.out.println("WARNING: " + expiringCount + " medicine(s) expiring within " + daysAhead + " days");
         }
         if (totalRequiringAttention == 0) {
-            System.out.println("✅ All medicines are within safe expiry period");
+            System.out.println("SUCCESS: All medicines are within safe expiry period");
         }
         pause();
     }
