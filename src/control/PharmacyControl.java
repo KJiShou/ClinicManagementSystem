@@ -8,6 +8,11 @@ import utility.MessageUI;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.UUID;
@@ -59,6 +64,12 @@ public class PharmacyControl {
                 case 4:
                     // Stock out Sales Item
                     stockOutItem();
+                    break;
+                case 5:
+                    generateLowStockReport((HashedDictionary<String, Medicine>) meds, 10);
+                    break;
+                case 6:
+                    generateExpiryAlertReport((HashedDictionary<String, Medicine>) meds, 100);
                     break;
                 case 999:
                     return;
@@ -1840,9 +1851,113 @@ public class PharmacyControl {
     private static String safeLower(String s) {
         return (s == null) ? "" : s.toLowerCase();
     }
-    // TODO: medicine sales top list
 
-    // TODO: most common lab test done by patient
+    private static String truncateString(String s, int maxLength) {
+        if (s == null) return "";
+        return s.length() <= maxLength ? s : s.substring(0, maxLength - 3) + "...";
+    }
+
+    // 1. LOW STOCK ALERT REPORT (Most Critical)
+    public void generateLowStockReport(HashedDictionary<String, Medicine> medicines, int reorderLevel) {
+        System.out.println("\n=== LOW STOCK ALERT REPORT SUMMARY ===");
+        System.out.println("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        System.out.println("Reorder Level: " + reorderLevel);
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+
+        ArrayList<Medicine> allMeds = medicines.valueList();
+        int totalMedicines = allMeds.size();
+        int outOfStockCount = 0;
+        int lowStockCount = 0;
+        int adequateStockCount = 0;
+
+        for (int i = 0; i < allMeds.size(); i++) {
+            Medicine med = allMeds.get(i);
+            if (med.getQuantity() == 0) {
+                outOfStockCount++;
+            } else if (med.getQuantity() <= reorderLevel) {
+                lowStockCount++;
+            } else {
+                adequateStockCount++;
+            }
+        }
+
+        System.out.printf("| %-30s | %-10s |%n", "CATEGORY", "COUNT");
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+        System.out.printf("| %-30s | %-10d |%n", "Total Medicines", totalMedicines);
+        System.out.printf("| %-30s | %-10d |%n", "Out of Stock", outOfStockCount);
+        System.out.printf("| %-30s | %-10d |%n", "Low Stock", lowStockCount);
+        System.out.printf("| %-30s | %-10d |%n", "Adequate Stock", adequateStockCount);
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+        
+        int totalRequiringAttention = outOfStockCount + lowStockCount;
+        System.out.printf("Total medicines requiring attention: %d%n", totalRequiringAttention);
+        
+        if (totalRequiringAttention > 0) {
+            System.out.println("⚠️  ACTION REQUIRED: Please restock medicines below reorder level");
+        } else {
+            System.out.println("✅ All medicines are adequately stocked");
+        }
+        pause();
+    }
+
+    // 2. EXPIRY ALERT REPORT
+    public void generateExpiryAlertReport(HashedDictionary<String, Medicine> medicines, int daysAhead) {
+        System.out.println("\n=== MEDICINE EXPIRY ALERT REPORT SUMMARY ===");
+        System.out.println("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        System.out.printf("Alert Period: Next %d days%n", daysAhead);
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+
+
+        Date today = new Date();
+        long cutoffTime = today.getTime() + (daysAhead * 24L * 60L * 60L * 1000L);
+        Date cutoffDate = new Date(cutoffTime);
+        ArrayList<Medicine> allMeds = medicines.valueList();
+        
+        int totalMedicines = allMeds.size();
+        int expiredCount = 0;
+        int expiringCount = 0;
+        int safeCount = 0;
+
+        for (int i = 0; i < allMeds.size(); i++) {
+            Medicine med = allMeds.get(i);
+            if (med.getExpiryDate() != null) {
+                long daysLeft = (med.getExpiryDate().getTime() - today.getTime()) / (24L * 60L * 60L * 1000L);
+                
+                if (daysLeft < 0) {
+                    expiredCount++;
+                } else if (daysLeft <= daysAhead) {
+                    expiringCount++;
+                } else {
+                    safeCount++;
+                }
+            } else {
+                safeCount++; // Treat medicines without expiry date as safe
+            }
+        }
+
+        System.out.printf("| %-30s | %-10s |%n", "CATEGORY", "COUNT");
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+        System.out.printf("| %-30s | %-10d |%n", "Total Medicines", totalMedicines);
+        System.out.printf("| %-30s | %-10d |%n", "Already Expired", expiredCount);
+        System.out.printf("| %-30s | %-10d |%n", "Expiring Soon", expiringCount);
+        System.out.printf("| %-30s | %-10d |%n", "Safe (Not Expiring)", safeCount);
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+        
+        int totalRequiringAttention = expiredCount + expiringCount;
+        System.out.printf("Total medicines requiring attention: %d%n", totalRequiringAttention);
+        
+        if (expiredCount > 0) {
+            System.out.println("🚨 CRITICAL: " + expiredCount + " medicine(s) have already expired - remove immediately");
+        }
+        if (expiringCount > 0) {
+            System.out.println("⚠️  WARNING: " + expiringCount + " medicine(s) expiring within " + daysAhead + " days");
+        }
+        if (totalRequiringAttention == 0) {
+            System.out.println("✅ All medicines are within safe expiry period");
+        }
+        pause();
+    }
+
     public DictionaryInterface<String, Medicine> getMeds() {
         return meds;
     }
