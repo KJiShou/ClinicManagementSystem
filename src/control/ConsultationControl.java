@@ -58,6 +58,12 @@ public class ConsultationControl {
                 case 4:
                     deleteConsultation();
                     break;
+                case 5:
+                    revenueReport();
+                    break;
+                case 6:
+                    durationReport();
+                    break;
                 case 999:
                     return;
                 default:
@@ -800,6 +806,19 @@ public class ConsultationControl {
                 System.out.printf("   Blood Tubes Required: %s\n", test.getBloodTubes());
             }
         }
+    }
+
+    private void revenueReport() {
+        System.out.println("\n=== CONSULTATION REVENUE REPORT ===");
+
+        pause();
+    }
+
+    private void durationReport() {
+        System.out.println("\n=== CONSULTATION DURATION REPORT ===");
+
+
+        pause();
     }
 
     private void pause() {
