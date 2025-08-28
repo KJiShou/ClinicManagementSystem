@@ -38,45 +38,10 @@ public class ConsultationUI {
     public Integer mainMenu() throws IOException {
         choiceQueue.enqueue("View Consultation");
         choiceQueue.enqueue("Add Consultation");
-        choiceQueue.enqueue("Update Consultation");
-        choiceQueue.enqueue("Delete Consultation");
         choiceQueue.enqueue("Consultation Revenue Report");
         choiceQueue.enqueue("Consultation Duration Report");
 
         return UI.mainUI("Welcome to Consultation Menu", choiceQueue);
-    }
-
-    public Integer viewConsultationMenu() throws IOException {
-        choiceQueue.enqueue("View All Consultation");
-        choiceQueue.enqueue("Sort by Status");
-        choiceQueue.enqueue("Sort by Date");
-        choiceQueue.enqueue("Sort by Payment");
-
-        return UI.mainUI("View Consultation Selection", choiceQueue);
-    }
-
-    public void displayConsultationList(ArrayList<Consultation> consultation, int totalItems, int currentPage, int totalPages) {
-        int start = (currentPage - 1) * pageSize;
-        int end = Math.min(totalItems, start + pageSize);
-        System.out.println("\n\n\n\n\n\n\n\n\n\n");
-
-        System.out.printf("Page %d/%d\n", currentPage, totalPages);
-        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+");
-        System.out.printf("| %-3s | %-30s | %-30s | %-10s | %-11s | %-9s |\n", "No.", "Patient Name", "Doctor Name", "Date", "Status", "Payment");
-        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+");
-
-        for (int i = start; i < end; i++) {
-            Consultation cons = consultation.get(i);
-
-            System.out.printf("| %-3d | %-30s | %-30s | %-10s | %-11s | %-9s |\n",
-                    i + 1,
-                    cons.getPatient().getName(),
-                    cons.getDoctor().getName(),
-                    cons.getConsultatonDate(),
-                    cons.status.toString(),
-                    cons.getTotalPayment());
-        }
-        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+\n\n");
     }
 
     private static final DateTimeFormatter ARRIVAL_FMT = DateTimeFormatter.ofPattern("HH:mm");
@@ -171,20 +136,12 @@ public class ConsultationUI {
 
         //placeholder
         Patient patient = null;
+
+
         Doctor doctor = null;
 
         Date date;
-        do {
-            try {
-                System.out.print("Consultation Date (YYYY-MM-DD): ");
-                date = DATE_FMT.parse(scanner.nextLine().trim());
-
-            } catch (Exception e) {
-                System.out.println("Invalid date format, try again.\n");
-                date = new Date();
-            }
-        } while (date == null);
-        LocalDate consultationDate = LocalDate.parse(date.toString());
+        LocalDate consultationDate = LocalDate.now();
 
         System.out.print("Enter Notes: ");
         String notes = scanner.nextLine();
