@@ -16,6 +16,8 @@ import utility.GenerateConsultationData;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.util.UUID;
@@ -28,6 +30,7 @@ public class ConsultationControl {
     PharmacyControl pharmacyControl;
     ConsultationUI UI;
     Scanner scanner;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
     ConsultationControl(ListInterface<Consultation> consultationList, PrescriptionControl  prescriptionControl, DutyScheduleControl scheduleControl, PharmacyControl pharmacyControl) {
         try {
@@ -53,15 +56,9 @@ public class ConsultationControl {
                     addConsultation();
                     break;
                 case 3:
-                    //updateConsultation();
-                    break;
-                case 4:
-                    deleteConsultation();
-                    break;
-                case 5:
                     revenueReport();
                     break;
-                case 6:
+                case 4:
                     durationReport();
                     break;
                 case 999:
@@ -359,41 +356,6 @@ public class ConsultationControl {
                 pause();
             }
         }
-    }
-
-
-    public void deleteConsultation() {
-        System.out.println("\n=== DELETE CONSULTATION ===");
-        System.out.print("Enter Consultation ID to delete: ");
-        String idString = scanner.nextLine().trim();
-        try {
-            UUID id = UUID.fromString(idString);
-            boolean found = false;
-            for (int i = 0; i < consultationList.size(); i++) {
-                if (consultationList.get(i).getId().equals(id)) {
-                    consultationList.remove(i);
-                    found = true;
-                    System.out.println("Consultation deleted successfully!");
-                    break;
-                }
-            }
-            if (!found) {
-                System.out.println("Error: Consultation not found.");
-            }
-            pause();
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: Invalid UUID format.");
-            pause();
-        }
-    }
-
-    private Consultation findConsultationById(UUID id) {
-        for (int i = 0; i < consultationList.size(); i++) {
-            if (consultationList.get(i).getId().equals(id)) {
-                return consultationList.get(i);
-            }
-        }
-        return null;
     }
 
     public void dispenseBill(Consultation consultation) {
@@ -810,13 +772,62 @@ public class ConsultationControl {
 
     private void revenueReport() {
         System.out.println("\n=== CONSULTATION REVENUE REPORT ===");
+        System.out.println("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        System.out.println("+" + "-".repeat(85) + "+");
+        System.out.printf("| %-3s | %-20s | %-20s | %-13s | %-15s |\n", "No.", "Patient", "Doctor", "Status", "Total Amount");
+        System.out.println("+" + "-".repeat(85) + "+");
+
+        float totalRevenue = 0.0f;
+
+        for (int i = 0; i < consultationList.size(); i++) {
+            Consultation cons = consultationList.get(i);
+            double payment = cons.getTotalPayment();
+            totalRevenue += payment;
+
+            String patientName = (cons.getPatient() != null) ? cons.getPatient().getName() : "N/A";
+            String doctorName = (cons.getDoctor() != null) ? cons.getDoctor().getName() : "N/A";
+            String status = cons.getStatus() != null ? cons.getStatus().toString() : "N/A";
+
+            System.out.printf("| %-3d | %-20s | %-20s | %-13s | RM%13.2f |\n", (i + 1), patientName, doctorName, status, payment);
+        }
+        System.out.println("+" + "-".repeat(85) + "+");
+        System.out.printf("| %-68s | %12d |%n", "TOTAL CONSULTATION TODAY", consultationList.size());
+        System.out.printf("| %-68s | RM%10.2f |%n", "TOTAL REVENUE", totalRevenue);
+        System.out.println("+" + "-".repeat(85) + "+");
 
         pause();
     }
 
     private void durationReport() {
         System.out.println("\n=== CONSULTATION DURATION REPORT ===");
+        System.out.println("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        System.out.println("+" + "-".repeat(50) + "+");
+        System.out.printf("| %-3s | %-10s | %-10s | %-15s |\n", "No.", "Start Time", "End Time", "Time Taken (min)");
+        System.out.println("+" + "-".repeat(50) + "+");
 
+        long totalDurationMinutes = 0;
+        int completedConsultations = 0;
+
+        for (int i = 0; i < consultationList.size(); i++) {
+            Consultation cons = consultationList.get(i);
+
+            // Only calculate for completed consultations with valid start/end times
+            if (cons.getStatus() == Consultation.Status.COMPLETED && cons.getStartTime() != null && cons.getEndTime() != null) {
+                long duration = ChronoUnit.MINUTES.between(cons.getStartTime(), cons.getEndTime());
+                totalDurationMinutes += duration;
+                completedConsultations++;
+
+                System.out.printf("| %-3d | %-10s | %-10s | %-16d |\n", completedConsultations, formatter.format(cons.getStartTime()), formatter.format(cons.getEndTime()), duration);
+            }
+        }
+        System.out.println("+" + "-".repeat(50) + "+");
+
+        double averageDurationMinutes = (completedConsultations > 0) ? (double) totalDurationMinutes / completedConsultations : 0.0;
+
+        System.out.printf("| %-34s | %11d |\n", "TOTAL COMPLETED CONSULTATION", completedConsultations);
+        System.out.printf("| %-34s | %11d |\n", "TOTAL DURATION (MINUTES)", totalDurationMinutes);
+        System.out.printf("| %-34s | %11.2f |\n", "AVERAGE DURATION (MINUTES)", averageDurationMinutes);
+        System.out.println("+" + "-".repeat(50) + "+");
 
         pause();
     }
