@@ -369,6 +369,109 @@ public class PharmacyControl {
         }
     }
 
+
+    public Medicine chooseMedicine(HashedDictionary<String, Medicine> dict) {
+        if (dict == null || dict.isEmpty()) {
+            System.out.println("No medicines available to choose from.");
+            return null;
+        }
+
+        ArrayList<Medicine> originalView = dict.valueList();
+        ArrayList<Medicine> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
+            if (totalPages == 0) totalPages = 1;
+
+            UI.displayMedicineList(currentView, totalItems, currentPage, totalPages, searchQuery);
+
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [C] Choose item | [Q] Quit");
+            System.out.print("Enter your choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--;
+                    else {
+                        System.out.println("This is the first page.");
+                        pause();
+                    }
+                    break;
+
+                case "d":
+                    if (currentPage < totalPages) currentPage++;
+                    else {
+                        System.out.println("This is the last page.");
+                        pause();
+                    }
+                    break;
+
+                case "s":
+                    System.out.print("Enter search (Name/Brand/Company): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<Medicine> filtered = filterMedicines(originalView, searchQuery);
+                    if (filtered.isEmpty()) {
+                        System.out.println("No results found for: " + searchQuery);
+                        pause();
+                    } else {
+                        currentView = filtered;
+                        currentPage = 1;
+                    }
+                    break;
+
+                case "r":
+                    currentView = new ArrayList<>(originalView);
+                    searchQuery = "";
+                    currentPage = 1;
+                    break;
+
+                case "c": {
+                    if (currentView.isEmpty()) {
+                        System.out.println("No items to choose from.");
+                        pause();
+                        break;
+                    }
+
+                    int start = (currentPage - 1) * PAGE_SIZE;
+                    int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
+                    int visibleCount = endExclusive - start;
+
+                    System.out.printf("Select item [1-%d] on this page to choose: ", visibleCount);
+                    String raw = scanner.nextLine().trim();
+                    int pick;
+
+                    try {
+                        pick = Integer.parseInt(raw);
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Invalid number.");
+                        pause();
+                        break;
+                    }
+
+                    if (pick < 1 || pick > visibleCount) {
+                        System.out.println("Out of range.");
+                        pause();
+                        break;
+                    }
+
+                    Medicine chosen = currentView.get(start + (pick - 1));
+                    System.out.println("Selected: " + chosen.getName() + " - " + chosen.getBrand());
+                    return chosen;
+                }
+
+                case "q":
+                    System.out.println("No medicine selected.");
+                    return null;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
     public void updateMedicine(HashedDictionary<String, Medicine> dict) {
         if (dict == null || dict.isEmpty()) {
             System.out.println("No medicines to update.");
