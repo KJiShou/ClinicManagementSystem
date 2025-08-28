@@ -55,7 +55,7 @@ public class MainControl {
         PrescriptionControl prescriptionControl = new PrescriptionControl(medicines, pharmacy);
         //prescriptionControl.main();
 
-        ConsultationControl consultationControl = new ConsultationControl(consultations, prescriptionControl, scheduleControl, pharmacy);
+        ConsultationControl consultationControl = new ConsultationControl(consultations, patients, doctors, prescriptionControl, scheduleControl, pharmacy);
         //consultationControl.main();
         while (true) {
             Integer choice = UI.mainMenu();
