@@ -40,6 +40,8 @@ public class ConsultationUI {
         choiceQueue.enqueue("Add Consultation");
         choiceQueue.enqueue("Update Consultation");
         choiceQueue.enqueue("Delete Consultation");
+        choiceQueue.enqueue("Consultation Revenue Report");
+        choiceQueue.enqueue("Consultation Duration Report");
 
         return UI.mainUI("Welcome to Consultation Menu", choiceQueue);
     }
