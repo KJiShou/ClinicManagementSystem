@@ -1,3 +1,4 @@
+// Kong Ji Shou
 package adt;
 
 import java.util.Comparator;
@@ -16,7 +17,6 @@ public interface ListInterface<T> extends Iterable<T> {
     boolean contains(T item);
     int indexOf(T item);
 
-    // --- New, commonly expected methods ---
     int lastIndexOf(T item);
     boolean remove(T item);
     boolean addAll(Iterable<? extends T> items);
