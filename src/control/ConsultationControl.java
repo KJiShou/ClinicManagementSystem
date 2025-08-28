@@ -14,6 +14,7 @@ import entity.pharmacyManagement.Prescription;
 import utility.GenerateConsultationData;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -28,11 +29,13 @@ public class ConsultationControl {
     PrescriptionControl  prescriptionControl;
     DutyScheduleControl scheduleControl;
     PharmacyControl pharmacyControl;
+    private ArrayList<Patient> patients;
+    private ListInterface<Doctor> doctors;
     ConsultationUI UI;
     Scanner scanner;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
-    ConsultationControl(ListInterface<Consultation> consultationList, PrescriptionControl  prescriptionControl, DutyScheduleControl scheduleControl, PharmacyControl pharmacyControl) {
+    ConsultationControl(ListInterface<Consultation> consultationList, ArrayList<Patient> patients, ListInterface<Doctor> doctors, PrescriptionControl  prescriptionControl, DutyScheduleControl scheduleControl, PharmacyControl pharmacyControl) {
         try {
             this.consultationList = consultationList;
             scanner = new Scanner(System.in);
@@ -40,6 +43,8 @@ public class ConsultationControl {
             this.prescriptionControl = prescriptionControl;
             this.scheduleControl =  scheduleControl;
             this.pharmacyControl = pharmacyControl;
+            this.patients = patients;
+            this.doctors = doctors;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,9 +61,12 @@ public class ConsultationControl {
                     addConsultation();
                     break;
                 case 3:
-                    revenueReport();
+                    removeConsultation();
                     break;
                 case 4:
+                    revenueReport();
+                    break;
+                case 5:
                     durationReport();
                     break;
                 case 999:
@@ -67,13 +75,6 @@ public class ConsultationControl {
                     System.out.println("Invalid choice.");
             }
         }
-    }
-
-    public void addConsultation() throws IOException {
-        Consultation newConsultation = UI.addConsultation();
-        consultationList.add(newConsultation);
-        System.out.println("Consultation added successfully!");
-        pause();
     }
 
     // If you don't already have it:
@@ -106,7 +107,7 @@ public class ConsultationControl {
         while (true) {
             if (consultationList.isEmpty()) {
                 System.out.println("No consultations found.");
-                pause();
+                UI.pause();
                 return;
             }
 
@@ -165,14 +166,14 @@ public class ConsultationControl {
                 chosen = Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Type a valid number or Q.");
-                pause();
+                UI.pause();
                 continue;
             }
 
             Consultation selected = pickMap.getValue(chosen);
             if (selected == null) {
                 System.out.println("No consultation with that number. Try again.");
-                pause();
+                UI.pause();
                 continue;
             }
 
@@ -180,6 +181,133 @@ public class ConsultationControl {
         }
     }
 
+    public void addConsultation() throws IOException {
+        System.out.println("\n=== ADD NEW CONSULTATION ===");
+
+        UUID id = UUID.randomUUID();
+
+        Patient patient = selectPatient();
+        Doctor doctor = selectDoctor();
+
+        LocalDate consultationDate = LocalDate.now();
+
+        System.out.print("Enter Notes: ");
+        String notes = scanner.nextLine();
+
+        LocalTime startTime;
+        do {
+            try {
+                System.out.print("Enter Start Time (HH:MM, 24H format): ");
+                startTime = LocalTime.parse(scanner.nextLine());
+            } catch (Exception e) {
+                System.out.println("Invalid time format, try again.\n");
+                startTime = null;
+            }
+        } while (startTime == null);
+
+        LocalTime endTime;
+        do {
+            try {
+                System.out.print("Enter Start Time (HH:MM, 24H format): ");
+                endTime = LocalTime.parse(scanner.nextLine());
+            } catch (Exception e) {
+                System.out.println("Invalid time format, try again.\n");
+                endTime = null;
+            }
+        } while (endTime == null);
+
+        float totalPayment = 0;
+        do {
+            try {
+                System.out.print("Enter Total Payment: RM");
+                totalPayment = scanner.nextFloat();
+            } catch (Exception e) {
+                System.out.println("Invalid amount, try again.\n");
+            }
+        } while (totalPayment <= 0);
+
+        Consultation newConsultation = new Consultation(
+                id, patient, doctor, consultationDate, Consultation.Status.BILLING,
+                notes, startTime, endTime, totalPayment, "medical Treatment",null, null);
+
+        consultationList.add(newConsultation);
+        System.out.println("Consultation added successfully!");
+        UI.pause();
+    }
+
+    private Patient selectPatient() {
+        System.out.println("\n=== SELECT PATIENT ===");
+
+        if (patients.isEmpty()) {
+            UI.displayError("No patients found in the system.");
+            return null;
+        }
+
+        while (true) {
+            System.out.printf("Available Patients (1-%d):\n", patients.size());
+            for (int i = 0; i < Math.min(patients.size(), 10); i++) {
+                Patient patient = patients.get(i);
+                System.out.printf("[%d] %s (IC: %s)\n",
+                        i + 1,
+                        patient.getName(),
+                        patient.getPatientIC() != null ? patient.getPatientIC() : "N/A");
+            }
+
+            if (patients.size() > 10) {
+                System.out.println("... and " + (patients.size() - 10) + " more patients");
+            }
+
+            System.out.printf("Select patient (1-%d) or 0 to cancel: ", patients.size());
+
+            try {
+                int choice = Integer.parseInt(scanner.nextLine().trim());
+                if (choice == 0) {
+                    return null;
+                }
+                if (choice >= 1 && choice <= patients.size()) {
+                    return patients.get(choice - 1);
+                }
+                System.out.println("Invalid selection.");
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+    }
+
+    private Doctor selectDoctor() {
+        System.out.println("\n=== SELECT DOCTOR ===");
+
+        if (doctors.isEmpty()) {
+            UI.displayError("No doctors found in the system.");
+            return null;
+        }
+
+        while (true) {
+            System.out.printf("Available Doctors:\n");
+            for (int i = 0; i < doctors.size(); i++) {
+                Doctor doctor = doctors.get(i);
+                System.out.printf("[%d] Dr. %s (%s)\n",
+                        i + 1,
+                        doctor.getName(),
+                        doctor.getSpecialization());
+            }
+
+            System.out.printf("Select doctor (1-%d) or 0 to cancel: ", doctors.size());
+
+            try {
+                int choice = Integer.parseInt(scanner.nextLine().trim());
+                if (choice == 0) {
+                    return null;
+                }
+                if (choice >= 1 && choice <= doctors.size()) {
+                    return doctors.get(choice - 1);
+                }
+                System.out.println("Invalid selection.");
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+    }
 
     public void updateConsultation(Consultation consToUpdate) throws IOException {
         while (true) {
@@ -187,7 +315,7 @@ public class ConsultationControl {
             try {
                 if (consToUpdate == null) {
                     System.out.println("Error: Consultation not found.");
-                    pause();
+                    UI.pause();
                     return;
                 }
                 UI.displayConsultationDetails(consToUpdate);
@@ -346,16 +474,58 @@ public class ConsultationControl {
                         System.out.println("Invalid choice.");
                         break;
                 }
-                pause();
+                UI.pause();
             } catch (IllegalArgumentException e) {
                 System.out.println("Error: Invalid UUID format.");
-                pause();
+                UI.pause();
             } catch (Exception e) {
                 System.out.println("An error occurred during update.");
                 e.printStackTrace();
-                pause();
+                UI.pause();
             }
         }
+    }
+
+    public void removeConsultation() {
+        System.out.println("\n=== REMOVE CONSULTATION ===");
+
+        ListInterface<Consultation> removableConsultations = new ArrayList<>();
+        for (int i = 0; i < consultationList.size(); i++) {
+            removableConsultations.add(consultationList.get(i));
+        }
+
+        if (removableConsultations.isEmpty()) {
+            UI.displayMessage("No consultations available for removal.");
+            UI.pause();
+            return;
+        }
+
+        Consultation selectedConsultation = UI.selectConsultation(removableConsultations);
+        if (selectedConsultation == null) {
+            UI.displayMessage("Operation cancelled.");
+            UI.pause();
+            return;
+        }
+
+        System.out.println("\nConsultation to Remove:");
+        System.out.println("- Patient: " + (selectedConsultation.getPatient() != null ? selectedConsultation.getPatient().getName() : "N/A"));
+        System.out.println("- Doctor: " + (selectedConsultation.getDoctor() != null ? selectedConsultation.getDoctor().getName() : "N/A"));
+        System.out.println("- Status: " + (selectedConsultation.getStatus() != null ? selectedConsultation.getStatus() : "N/A"));
+
+        System.out.print("\nConfirm removal? (Y/N): ");
+        String confirm = scanner.nextLine().trim().toUpperCase();
+
+        if (confirm.equals("Y")) {
+            boolean removed = consultationList.remove(selectedConsultation);
+            if (removed) {
+                UI.displaySuccess("Consultation removed successfully!");
+            } else {
+                UI.displayError("Failed to remove consultation.");
+            }
+        } else {
+            UI.displayMessage("Removal aborted.");
+        }
+        UI.pause();
     }
 
     public void dispenseBill(Consultation consultation) {
@@ -580,7 +750,7 @@ public class ConsultationControl {
 
         System.out.println("\n*** BILLING COMPLETED ***");
         System.out.println("Consultation status changed to COMPLETED.");
-        pause();
+        UI.pause();
     }
 
     private void printReceipt(Consultation consultation, double totalAmount, String paymentMethod) {
@@ -651,11 +821,11 @@ public class ConsultationControl {
                     default:
                         System.out.println("Invalid choice.");
                 }
-                pause();
+                UI.pause();
             } catch (Exception e) {
                 System.out.println("Invalid input. Please enter a number.");
                 scanner.nextLine(); // consume invalid input
-                pause();
+                UI.pause();
             }
         }
     }
@@ -795,7 +965,7 @@ public class ConsultationControl {
         System.out.printf("| %-68s | RM%10.2f |%n", "TOTAL REVENUE", totalRevenue);
         System.out.println("+" + "-".repeat(85) + "+");
 
-        pause();
+        UI.pause();
     }
 
     private void durationReport() {
@@ -829,11 +999,6 @@ public class ConsultationControl {
         System.out.printf("| %-34s | %11.2f |\n", "AVERAGE DURATION (MINUTES)", averageDurationMinutes);
         System.out.println("+" + "-".repeat(50) + "+");
 
-        pause();
-    }
-
-    private void pause() {
-        System.out.print("Press Enter to continue...");
-        scanner.nextLine();
+        UI.pause();
     }
 }
