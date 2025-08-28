@@ -66,7 +66,7 @@ public class MainControl {
                     break;
                 case 2:
                     // Consultation
-                    consultationControl.viewConsultation();
+                    consultationControl.main();
                     break;
                 case 3:
                     // Pharmacy
