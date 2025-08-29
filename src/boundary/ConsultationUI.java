@@ -2,9 +2,6 @@
 package boundary;
 
 import adt.*;
-import entity.Patient;
-import entity.Doctor;
-import entity.User;
 import entity.pharmacyManagement.LabTest;
 import entity.pharmacyManagement.Medicine;
 import entity.pharmacyManagement.Prescription;
@@ -16,10 +13,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Scanner;
-import java.util.UUID;
-import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class ConsultationUI {
@@ -39,43 +33,11 @@ public class ConsultationUI {
     public Integer mainMenu() throws IOException {
         choiceQueue.enqueue("View Consultation");
         choiceQueue.enqueue("Add Consultation");
-        choiceQueue.enqueue("Update Consultation");
-        choiceQueue.enqueue("Delete Consultation");
+        choiceQueue.enqueue("Remove Consultation");
+        choiceQueue.enqueue("Consultation Revenue Report");
+        choiceQueue.enqueue("Consultation Duration Report");
 
         return UI.mainUI("Welcome to Consultation Menu", choiceQueue);
-    }
-
-    public Integer viewConsultationMenu() throws IOException {
-        choiceQueue.enqueue("View All Consultation");
-        choiceQueue.enqueue("Sort by Status");
-        choiceQueue.enqueue("Sort by Date");
-        choiceQueue.enqueue("Sort by Payment");
-
-        return UI.mainUI("View Consultation Selection", choiceQueue);
-    }
-
-    public void displayConsultationList(ArrayList<Consultation> consultation, int totalItems, int currentPage, int totalPages) {
-        int start = (currentPage - 1) * pageSize;
-        int end = Math.min(totalItems, start + pageSize);
-        System.out.println("\n\n\n\n\n\n\n\n\n\n");
-
-        System.out.printf("Page %d/%d\n", currentPage, totalPages);
-        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+");
-        System.out.printf("| %-3s | %-30s | %-30s | %-10s | %-11s | %-9s |\n", "No.", "Patient Name", "Doctor Name", "Date", "Status", "Payment");
-        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+");
-
-        for (int i = start; i < end; i++) {
-            Consultation cons = consultation.get(i);
-
-            System.out.printf("| %-3d | %-30s | %-30s | %-10s | %-11s | %-9s |\n",
-                    i + 1,
-                    cons.getPatient().getName(),
-                    cons.getDoctor().getName(),
-                    cons.getConsultatonDate(),
-                    cons.status.toString(),
-                    cons.getTotalPayment());
-        }
-        System.out.println("+-----+--------------------------------+--------------------------------+------------+-------------+-----------+\n\n");
     }
 
     private static final DateTimeFormatter ARRIVAL_FMT = DateTimeFormatter.ofPattern("HH:mm");
@@ -160,70 +122,6 @@ public class ConsultationUI {
         StringBuilder sb = new StringBuilder(n);
         for (int i = 0; i < n; i++) sb.append(c);
         return sb.toString();
-    }
-
-
-    public Consultation addConsultation() throws IOException {
-        System.out.println("\n=== ADD NEW CONSULTATION ===");
-
-        UUID id = UUID.randomUUID();
-
-        //placeholder
-        Patient patient = null;
-        Doctor doctor = null;
-
-        Date date;
-        do {
-            try {
-                System.out.print("Consultation Date (YYYY-MM-DD): ");
-                date = DATE_FMT.parse(scanner.nextLine().trim());
-
-            } catch (Exception e) {
-                System.out.println("Invalid date format, try again.\n");
-                date = new Date();
-            }
-        } while (date == null);
-        LocalDate consultationDate = LocalDate.parse(date.toString());
-
-        System.out.print("Enter Notes: ");
-        String notes = scanner.nextLine();
-
-        LocalTime startTime;
-        do {
-            try {
-                System.out.print("Enter Start Time (HH:MM, 24H format): ");
-                startTime = LocalTime.parse(scanner.nextLine());
-            } catch (Exception e) {
-                System.out.println("Invalid time format, try again.\n");
-                startTime = null;
-            }
-        } while (startTime == null);
-
-        LocalTime endTime;
-        do {
-            try {
-                System.out.print("Enter Start Time (HH:MM, 24H format): ");
-                endTime = LocalTime.parse(scanner.nextLine());
-            } catch (Exception e) {
-                System.out.println("Invalid time format, try again.\n");
-                endTime = null;
-            }
-        } while (endTime == null);
-
-        float totalPayment = 0;
-        do {
-            try {
-                System.out.print("Enter Total Payment: RM");
-                totalPayment = scanner.nextFloat();
-            } catch (Exception e) {
-                System.out.println("Invalid amount, try again.\n");
-            }
-        } while (totalPayment <= 0);
-
-        return new Consultation(
-                id, patient, doctor, consultationDate, Consultation.Status.BILLING,
-                notes, startTime, endTime, totalPayment, "medical Treatment",null, null
-        );
     }
 
     public void displayConsultationDetails(Consultation consultation) {
@@ -465,5 +363,53 @@ public class ConsultationUI {
             System.out.println("\n=== LAB TEST DETAILS ===");
             System.out.println("No lab tests found for this consultation.");
         }
+    }
+
+    public Consultation selectConsultation(ListInterface<Consultation> consultations) {
+        if (consultations.isEmpty()) {
+            System.out.println("No consultations available to select.");
+            return null;
+        }
+
+        while (true) {
+            System.out.println("\nAvailable Consultations:");
+            for (int i = 0; i < consultations.size(); i++) {
+                Consultation cons = consultations.get(i);
+                System.out.printf("%2d. Patient: %-20s | Doctor: %-20s | Status: %-10s%n",
+                        (i + 1), cons.getPatient().getName(), cons.getDoctor().getName(), cons.getStatus());
+            }
+
+            System.out.printf("Select consultation (1-%d) or 0 to cancel: ", consultations.size());
+
+            try {
+                int choice = Integer.parseInt(scanner.nextLine().trim());
+                if (choice == 0) {
+                    return null;
+                }
+                if (choice >= 1 && choice <= consultations.size()) {
+                    return consultations.get(choice - 1);
+                }
+                System.out.println("Invalid selection. Please try again.");
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+    }
+
+    public void displayMessage(String message) {
+        System.out.println(message);
+    }
+
+    public void displaySuccess(String message) {
+        System.out.println("SUCCESS: " + message);
+    }
+
+    public void displayError(String message) {
+        System.out.println("ERROR: " + message);
+    }
+
+    public void pause() {
+        System.out.print("Press Enter to continue...");
+        scanner.nextLine();
     }
 }

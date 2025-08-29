@@ -49,7 +49,7 @@ public class GenerateConsultationData {
                 Consultation.Status.COMPLETED,
                 "Fever, cough",
                 parseTime("11:45"),
-                parseTime("11:30"),
+                parseTime("12:30"),
                 50.00f,
                 "medical treatment",
                 new ArrayList<Prescription>(),
