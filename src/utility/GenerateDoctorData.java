@@ -1,3 +1,4 @@
+// Chea Hong Jun
 package utility;
 
 import adt.ArrayList;
@@ -22,7 +23,7 @@ public class GenerateDoctorData {
                 "jisho@gmail.com",
                 "2005-07-30",
                 "Cardiology",
-                "L0001"
+                "L00001"
         ));
 
         doctors.add(new Doctor(
@@ -34,7 +35,7 @@ public class GenerateDoctorData {
                 "jiyu@gmail.com",
                 "2005-07-29",
                 "Orthopedics",
-                "L0002"
+                "L00002"
         ));
 
         doctors.add(new Doctor(
@@ -46,7 +47,7 @@ public class GenerateDoctorData {
                 "alex@gmail.com",
                 "2004-02-02",
                 "Pediatrics",
-                "L0003"
+                "L00003"
         ));
 
         doctors.add(new Doctor(
@@ -58,7 +59,7 @@ public class GenerateDoctorData {
                 "susan@gmail.com",
                 "2004-12-02",
                 "Pediatrics",
-                "L0004"
+                "L00004"
         ));
 
         return doctors;

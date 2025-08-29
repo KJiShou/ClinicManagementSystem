@@ -1,3 +1,4 @@
+// Teoh Yong Ming
 package control;
 
 import adt.HashedDictionary;
@@ -346,13 +347,20 @@ public class ConsultationControl {
                         System.out.println("9. Exit");
                         break;
                     case COMPLETED:
-                        System.out.println("Enter to continue..."); // No choice to edit notes here
+                        System.out.println("Unable to update completed consultation.");
+                        System.out.println("Enter to continue...");
                         scanner.nextLine();
                         return;
                 }
                 System.out.print("Enter choice: ");
-                int choice = scanner.nextInt();
-                scanner.nextLine();  // Consume the newline character
+                String input = scanner.nextLine().trim();
+                int choice;
+                try {
+                    choice = Integer.parseInt(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("ERROR: Please enter a valid number.");
+                    continue;
+                }
                 switch (choice) {
                     case 1:
                         String currentNotes = consToUpdate.getNotes();
@@ -847,7 +855,6 @@ public class ConsultationControl {
         LabTest selectedTest = pharmacyControl.chooseLabTest(labTestDict);
         
         if (selectedTest == null) {
-            System.out.println("No lab test selected.");
             return;
         }
         

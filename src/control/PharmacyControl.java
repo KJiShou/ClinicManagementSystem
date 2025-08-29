@@ -1,3 +1,4 @@
+// Kong Ji Shou
 package control;
 
 import adt.*;
@@ -156,15 +157,14 @@ public class PharmacyControl {
 
                     int start = (currentPage - 1) * PAGE_SIZE;
                     int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
-                    int visibleCount = endExclusive - start;
 
-                    System.out.printf("Select item [1-%d] on this page to stock out: ", visibleCount);
+                    System.out.printf("Select item [%d-%d] on this page to stock out: ", start + 1, endExclusive);
                     String raw = scanner.nextLine().trim();
                     int pick;
                     try { pick = Integer.parseInt(raw); } catch (NumberFormatException ex) { System.out.println("Invalid number."); pause(); break; }
-                    if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
+                    if (pick < start + 1 || pick > endExclusive) { System.out.println("Out of range."); pause(); break; }
 
-                    Medicine chosen = currentView.get(start + (pick - 1));
+                    Medicine chosen = currentView.get(pick - 1);
                     String key = chosen.getMedicineKey();
 
                     System.out.printf("Current qty: %d. Enter quantity to stock out: ", chosen.getQuantity());
@@ -260,15 +260,14 @@ public class PharmacyControl {
 
                     int start = (currentPage - 1) * PAGE_SIZE;
                     int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
-                    int visibleCount = endExclusive - start;
 
-                    System.out.printf("Select item [1-%d] on this page to stock out: ", visibleCount);
+                    System.out.printf("Select item [%d-%d] on this page to stock out: ", start+1, endExclusive);
                     String raw = scanner.nextLine().trim();
                     int pick;
                     try { pick = Integer.parseInt(raw); } catch (NumberFormatException ex) { System.out.println("Invalid number."); pause(); break; }
-                    if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
+                    if (pick < start+1 || pick > endExclusive) { System.out.println("Out of range."); pause(); break; }
 
-                    BloodTube chosen = currentView.get(start + (pick - 1));
+                    BloodTube chosen = currentView.get(pick - 1);
                     String key = chosen.getBloodTubeKey();
 
                     System.out.printf("Current qty: %d. Enter quantity to stock out: ", chosen.getQuantity());
@@ -548,9 +547,8 @@ public class PharmacyControl {
 
                     int start = (currentPage - 1) * PAGE_SIZE;
                     int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
-                    int visibleCount = endExclusive - start;
 
-                    System.out.printf("Select item [1-%d] on this page to choose: ", visibleCount);
+                    System.out.printf("Select item [%d-%d] on this page to choose: ", start + 1, endExclusive);
                     String raw = scanner.nextLine().trim();
                     int pick;
 
@@ -562,13 +560,13 @@ public class PharmacyControl {
                         break;
                     }
 
-                    if (pick < 1 || pick > visibleCount) {
+                    if (pick < start+1 || pick > endExclusive) {
                         System.out.println("Out of range.");
                         pause();
                         break;
                     }
 
-                    LabTest chosen = currentView.get(start + (pick - 1));
+                    LabTest chosen = currentView.get(pick - 1);
                     System.out.println("Selected: " + chosen.getName() + 
                         " - " + (chosen.getReferringLab() != null ? chosen.getReferringLab().getName() : "Unknown Lab"));
                     return chosen;
@@ -645,9 +643,8 @@ public class PharmacyControl {
                     // compute indices for current page
                     int start = (currentPage - 1) * PAGE_SIZE;
                     int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
-                    int visibleCount = endExclusive - start;
 
-                    System.out.printf("Select item [1-%d] on this page to edit: ", visibleCount);
+                    System.out.printf("Select item [%d-%d] on this page to edit: ", start+1, endExclusive);
                     String raw = scanner.nextLine().trim();
                     int pick;
                     try {
@@ -657,12 +654,12 @@ public class PharmacyControl {
                         pause();
                         break;
                     }
-                    if (pick < 1 || pick > visibleCount) {
+                    if (pick < start+1 || pick > endExclusive) {
                         System.out.println("Out of range.");
                         pause();
                         break;
                     }
-                    Medicine toEdit = currentView.get(start + (pick - 1));
+                    Medicine toEdit = currentView.get(pick - 1);
                     String oldKey = toEdit.getMedicineKey();
                     editMedicineInPlace(toEdit);
 
@@ -762,15 +759,14 @@ public class PharmacyControl {
 
                     int start = (currentPage - 1) * PAGE_SIZE;
                     int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
-                    int visibleCount = endExclusive - start;
 
-                    System.out.printf("Select item [1-%d] on this page to edit: ", visibleCount);
+                    System.out.printf("Select item [%d-%d] on this page to edit: ", start+1, endExclusive);
                     String raw = scanner.nextLine().trim();
                     int pick;
                     try { pick = Integer.parseInt(raw); } catch (NumberFormatException ex) { System.out.println("Invalid number."); pause(); break; }
-                    if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
+                    if (pick < start + 1 || pick > endExclusive) { System.out.println("Out of range."); pause(); break; }
 
-                    BloodTube toEdit = currentView.get(start + (pick - 1));
+                    BloodTube toEdit = currentView.get(pick - 1);
                     String oldKey = toEdit.getBloodTubeKey();
                     editBloodTubeInPlace(toEdit);
 
@@ -874,18 +870,33 @@ public class PharmacyControl {
                     if (!d.isEmpty()) t.setDescription(d);
                     break;
                 case 8:
-                    System.out.print("New Expiry date (yyyy-MM-dd): ");
-                    try {
-                        Date de = DATE_FMT.parse(scanner.nextLine().trim());
-                        t.setExpiryDate(de);
-                    } catch (Exception e) {
-                        System.out.println("Invalid date; keeping previous.");
+                    Date newExpiry;
+                    while (true) {
+                        System.out.print("New Expiry date (yyyy-MM-dd): ");
+                        String dateInput = scanner.nextLine().trim();
+                        if (dateInput.isEmpty()) {
+                            System.out.println("Keeping previous expiry date.");
+                            return;
+                        }
+                        try {
+                            newExpiry = DATE_FMT.parse(dateInput);
+                            Date today = new Date();
+                            if (newExpiry.before(today)) {
+                                System.out.println("Warning: New expiry date is in the past. Are you sure you want to continue? (y/n): ");
+                                if (!askYesNo("")) {
+                                    continue;
+                                }
+                            }
+                            t.setExpiryDate(newExpiry);
+                            break;
+                        } catch (Exception e) {
+                            System.out.println("Error: Invalid date format. Please enter date in yyyy-MM-dd format (e.g., 2025-12-31).");
+                        }
                     }
                     break;
                 case 9: {
                     System.out.println("1) Set absolute quantity");
                     System.out.println("2) Add to quantity");
-                    System.out.println("3) Subtract from quantity");
                     System.out.print("Choose: ");
                     String opt = scanner.nextLine().trim();
                     switch (opt) {
@@ -897,13 +908,6 @@ public class PharmacyControl {
                         case "2": {
                             int delta = askPositiveInt(scanner, "Add quantity: ");
                             t.setQuantity(t.getQuantity() + delta);
-                            break;
-                        }
-                        case "3": {
-                            int delta = askPositiveInt(scanner, "Subtract quantity: ");
-                            int newQ = t.getQuantity() - delta;
-                            if (newQ < 0) { System.out.println("Cannot go below zero. Setting to 0."); newQ = 0; }
-                            t.setQuantity(newQ);
                             break;
                         }
                         default:
@@ -952,9 +956,20 @@ public class PharmacyControl {
                     break;
                 }
                 case 3: {
-                    System.out.print("New Strength (e.g., 500mg): ");
-                    String v = scanner.nextLine().trim();
-                    if (!v.isEmpty()) m.setStrength(v);
+                    String v;
+                    while (true) {
+                        System.out.print("New Strength (e.g., 500mg, 10ml, 250mcg): ");
+                        v = scanner.nextLine().trim();
+                        if (v.isEmpty()) {
+                            System.out.println("Strength cannot be empty.");
+                            continue;
+                        }
+                        if (isValidStrength(v)) {
+                            m.setStrength(v);
+                            break;
+                        }
+                        System.out.println("Error: Invalid strength format. Please use format like '500mg', '10ml', '250mcg', etc.");
+                    }
                     break;
                 }
                 case 4: {
@@ -986,19 +1001,34 @@ public class PharmacyControl {
                     break;
                 }
                 case 8: {
-                    System.out.print("New Expiry date (yyyy-MM-dd): ");
-                    try {
-                        Date d = DATE_FMT.parse(scanner.nextLine().trim());
-                        m.setExpiryDate(d);
-                    } catch (Exception e) {
-                        System.out.println("Invalid date; keeping previous.");
+                    Date newExpiry;
+                    while (true) {
+                        System.out.print("New Expiry date (yyyy-MM-dd): ");
+                        String dateInput = scanner.nextLine().trim();
+                        if (dateInput.isEmpty()) {
+                            System.out.println("Keeping previous expiry date.");
+                            return;
+                        }
+                        try {
+                            newExpiry = DATE_FMT.parse(dateInput);
+                            Date today = new Date();
+                            if (newExpiry.before(today)) {
+                                System.out.println("Warning: New expiry date is in the past. Are you sure you want to continue? (y/n): ");
+                                if (!askYesNo("")) {
+                                    continue;
+                                }
+                            }
+                            m.setExpiryDate(newExpiry);
+                            break;
+                        } catch (Exception e) {
+                            System.out.println("Error: Invalid date format. Please enter date in yyyy-MM-dd format (e.g., 2025-12-31).");
+                        }
                     }
                     break;
                 }
                 case 9: {
                     System.out.println("1) Set absolute quantity");
                     System.out.println("2) Add to quantity");
-                    System.out.println("3) Subtract from quantity");
                     System.out.print("Choose: ");
                     String opt = scanner.nextLine().trim();
                     switch (opt) {
@@ -1010,16 +1040,6 @@ public class PharmacyControl {
                         case "2": {
                             int delta = askPositiveInt(scanner, "Add quantity: ");
                             m.setQuantity(m.getQuantity() + delta);
-                            break;
-                        }
-                        case "3": {
-                            int delta = askPositiveInt(scanner, "Subtract quantity: ");
-                            int newQ = m.getQuantity() - delta;
-                            if (newQ < 0) {
-                                System.out.println("Cannot go below zero. Setting to 0.");
-                                newQ = 0;
-                            }
-                            m.setQuantity(newQ);
                             break;
                         }
                         default:
@@ -1082,15 +1102,14 @@ public class PharmacyControl {
 
                     int start = (currentPage - 1) * PAGE_SIZE;
                     int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
-                    int visibleCount = endExclusive - start;
 
-                    System.out.printf("Select item [1-%d] on this page to edit: ", visibleCount);
+                    System.out.printf("Select item [%d-%d] on this page to edit: ", start+1, endExclusive);
                     String raw = scanner.nextLine().trim();
                     int pick;
                     try { pick = Integer.parseInt(raw); } catch (NumberFormatException ex) { System.out.println("Invalid number."); pause(); break; }
-                    if (pick < 1 || pick > visibleCount) { System.out.println("Out of range."); pause(); break; }
+                    if (pick < start +1 || pick > endExclusive) { System.out.println("Out of range."); pause(); break; }
 
-                    LabTest toEdit = currentView.get(start + (pick - 1));
+                    LabTest toEdit = currentView.get(pick - 1);
                     String oldKey = toEdit.getName();
                     editLabTestInPlace(toEdit);
 
@@ -1499,25 +1518,54 @@ public class PharmacyControl {
     }
 
     private void stockInItem() throws IOException {
-        int choice = UI.stockInSelectionUI();
+        Integer choice = UI.stockInSelectionUI();
+        
+        if (choice == null) {
+            System.out.println("Error: Unable to get user selection.");
+            return;
+        }
 
         switch (choice) {
             case 1:
                 // Stock In Medicine
-                stockInMedicine();
+                try {
+                    if (meds == null) {
+                        System.out.println("Error: Medicine inventory not initialized.");
+                        return;
+                    }
+                    stockInMedicine();
+                } catch (Exception e) {
+                    System.out.println("Error occurred while stocking medicine: " + e.getMessage());
+                }
                 break;
             case 2:
                 // Stock In Lab Test
-                createOrUpdateLabTest();
+                try {
+                    if (labTests == null) {
+                        System.out.println("Error: Lab test inventory not initialized.");
+                        return;
+                    }
+                    createOrUpdateLabTest();
+                } catch (Exception e) {
+                    System.out.println("Error occurred while creating/updating lab test: " + e.getMessage());
+                }
                 break;
             case 3:
                 // Stock In Blood Tube
-                stockInBloodTube();
+                try {
+                    if (bloodTubeInventory == null) {
+                        System.out.println("Error: Blood tube inventory not initialized.");
+                        return;
+                    }
+                    stockInBloodTube();
+                } catch (Exception e) {
+                    System.out.println("Error occurred while stocking blood tube: " + e.getMessage());
+                }
                 break;
             case 999:
                 return;
             default:
-                System.out.println("Invalid choice.");
+                System.out.println("Invalid choice. Please select a valid option (1-3 or 999 to exit).");
         }
     }
 
@@ -1533,8 +1581,19 @@ public class PharmacyControl {
         System.out.print("Brand: ");
         String brand = scanner.nextLine().trim();
 
-        System.out.print("Strength (e.g., 500mg): ");
-        String strength = scanner.nextLine().trim();
+        String strength;
+        while (true) {
+            System.out.print("Strength (e.g., 500mg, 10ml, 250mg): ");
+            strength = scanner.nextLine().trim();
+            if (strength.isEmpty()) {
+                System.out.println("Error: Strength cannot be empty. Please enter a valid strength.");
+                continue;
+            }
+            if (isValidStrength(strength)) {
+                break;
+            }
+            System.out.println("Error: Invalid strength format. Please use format like '500mg', '10ml', '250mcg', etc.");
+        }
 
         boolean unitFlag = true;
         String unit = "";
@@ -1558,13 +1617,27 @@ public class PharmacyControl {
 
         Company company = selectOrCreateCompany();
 
-        System.out.print("Expiry date (yyyy-MM-dd): ");
         Date expiry;
-        try {
-            expiry = DATE_FMT.parse(scanner.nextLine().trim());
-        } catch (Exception e) {
-            System.out.println("Invalid date format, using today.");
-            expiry = new Date();
+        while (true) {
+            System.out.print("Expiry date (yyyy-MM-dd): ");
+            String dateInput = scanner.nextLine().trim();
+            if (dateInput.isEmpty()) {
+                System.out.println("Error: Expiry date cannot be empty. Please enter a date in yyyy-MM-dd format.");
+                continue;
+            }
+            try {
+                expiry = DATE_FMT.parse(dateInput);
+                Date today = new Date();
+                if (expiry.before(today)) {
+                    System.out.println("Warning: Expiry date is in the past. Are you sure you want to continue? (y/n): ");
+                    if (!askYesNo("")) {
+                        continue;
+                    }
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println("Error: Invalid date format. Please enter date in yyyy-MM-dd format (e.g., 2025-12-31).");
+            }
         }
 
         Medicine temp = new Medicine(
@@ -1640,17 +1713,53 @@ public class PharmacyControl {
     }
 
     private Company createCompanyViaPrompt() {
-        System.out.print("Company name: ");
-        String name = scanner.nextLine().trim();
+        String name;
+        while (true) {
+            System.out.print("Company name: ");
+            name = scanner.nextLine().trim();
+            if (name.isEmpty()) {
+                System.out.println("Error: Company name cannot be empty. Please enter a valid name.");
+                continue;
+            }
+            if (name.length() > 100) {
+                System.out.println("Error: Company name cannot exceed 100 characters. Please enter a shorter name.");
+                continue;
+            }
+            break;
+        }
 
         System.out.print("Address (optional): ");
         String address = scanner.nextLine().trim();
+        if (address.length() > 200) {
+            System.out.println("Warning: Address too long, truncating to 200 characters.");
+            address = address.substring(0, 200);
+        }
 
-        System.out.print("Email (optional): ");
-        String email = scanner.nextLine().trim();
+        String email;
+        while (true) {
+            System.out.print("Email (optional): ");
+            email = scanner.nextLine().trim();
+            if (email.isEmpty()) {
+                break;
+            }
+            if (isValidEmail(email)) {
+                break;
+            }
+            System.out.println("Error: Invalid email format. Please enter a valid email address or leave blank.");
+        }
 
-        System.out.print("Phone (optional): ");
-        String phone = scanner.nextLine().trim();
+        String phone;
+        while (true) {
+            System.out.print("Phone (optional): ");
+            phone = scanner.nextLine().trim();
+            if (phone.isEmpty()) {
+                break;
+            }
+            if (isValidPhone(phone)) {
+                break;
+            }
+            System.out.println("Error: Invalid phone format. Please enter numbers only (8-15 digits) or leave blank.");
+        }
 
         return new Company(UUID.randomUUID(), name,
                 address.isEmpty() ? "-" : address,
@@ -1802,13 +1911,27 @@ public class PharmacyControl {
         System.out.print("Description: ");
         String desc = scanner.nextLine().trim();
 
-        System.out.print("Expiry date (yyyy-MM-dd): ");
         Date expiry;
-        try {
-            expiry = DATE_FMT.parse(scanner.nextLine().trim());
-        } catch (Exception e) {
-            System.out.println("Invalid date format, using today.");
-            expiry = new Date();
+        while (true) {
+            System.out.print("Expiry date (yyyy-MM-dd): ");
+            String dateInput = scanner.nextLine().trim();
+            if (dateInput.isEmpty()) {
+                System.out.println("Error: Expiry date cannot be empty. Please enter a date in yyyy-MM-dd format.");
+                continue;
+            }
+            try {
+                expiry = DATE_FMT.parse(dateInput);
+                Date today = new Date();
+                if (expiry.before(today)) {
+                    System.out.println("Warning: Expiry date is in the past. Are you sure you want to continue? (y/n): ");
+                    if (!askYesNo("")) {
+                        continue;
+                    }
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println("Error: Invalid date format. Please enter date in yyyy-MM-dd format (e.g., 2025-12-31).");
+            }
         }
 
         // Create new object
@@ -1855,6 +1978,29 @@ public class PharmacyControl {
     private static String truncateString(String s, int maxLength) {
         if (s == null) return "";
         return s.length() <= maxLength ? s : s.substring(0, maxLength - 3) + "...";
+    }
+
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return false;
+        }
+        return email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    private boolean isValidPhone(String phone) {
+        if (phone == null || phone.isEmpty()) {
+            return false;
+        }
+        String cleanPhone = phone.replaceAll("[\\s\\-\\(\\)\\+]", "");
+        return cleanPhone.matches("^\\d{8,15}$");
+    }
+
+    private boolean isValidStrength(String strength) {
+        if (strength == null || strength.trim().isEmpty()) {
+            return false;
+        }
+        String trimmed = strength.trim();
+        return trimmed.matches("^\\d+(\\.\\d+)?(mg|g|ml|mcg|ug|l|kg|IU|units?)$");
     }
 
     // 1. LOW STOCK ALERT REPORT (Most Critical)

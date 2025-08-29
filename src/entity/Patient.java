@@ -1,3 +1,4 @@
+// Ng Zhe Wei
 package entity;
 
 import java.util.UUID;
@@ -5,21 +6,26 @@ import java.util.UUID;
 public class Patient extends User {
     private String patientIC;
     private String patientPassport;
-    private String studentID;
 
     public Patient(UUID id, String name, String address, Gender gender, String phone, String email, String dateOfBirth,
-                   String patientIC, String patientPassport, String studentID) {
+                   String patientIC, String patientPassport) {
         super(id, name, address, gender, phone, email, dateOfBirth);
+        
+        // Validation: Either IC or passport must be provided
+        if ((patientIC == null || patientIC.trim().isEmpty()) && 
+            (patientPassport == null || patientPassport.trim().isEmpty())) {
+            throw new IllegalArgumentException("Either IC or Passport must be provided");
+        }
+        
         this.patientIC = patientIC;
         this.patientPassport = patientPassport;
-        this.studentID = studentID;
     }
 
     // Alternate constructor that accepts gender as String
     public Patient(UUID id, String name, String address, String genderCode, String phone, String email, String dateOfBirth,
-                   String patientIC, String patientPassport, String studentID) {
+                   String patientIC, String patientPassport) {
         this(id, name, address, Gender.fromString(genderCode), phone, email, dateOfBirth,
-                patientIC, patientPassport, studentID);
+                patientIC, patientPassport);
     }
 
     public String getPatientIC() {
@@ -38,13 +44,6 @@ public class Patient extends User {
         this.patientPassport = patientPassport;
     }
 
-    public String getStudentID() {
-        return studentID;
-    }
-
-    public void setStudentID(String studentID) {
-        this.studentID = studentID;
-    }
 
     public String getDisplayId() {
         if (patientIC != null && !patientIC.isBlank()) {
@@ -58,9 +57,6 @@ public class Patient extends User {
         if (patientPassport != null && !patientPassport.isBlank()) {
             return patientPassport + " (Passport)";
         }
-        if (studentID != null && !studentID.isBlank()) {
-            return studentID + " (Student)";
-        }
         return "N/A";
     }
 
@@ -68,7 +64,6 @@ public class Patient extends User {
     public String toString() {
         return super.toString() + "\n" +
                 "Patient IC: " + (patientIC != null ? patientIC : "N/A") + "\n" +
-                "Passport: " + (patientPassport != null ? patientPassport : "N/A") + "\n" +
-                "Student ID: " + (studentID != null ? studentID : "N/A");
+                "Passport: " + (patientPassport != null ? patientPassport : "N/A");
     }
 }

@@ -1,3 +1,4 @@
+// Ng Zhe Wei
 package control;
 
 import adt.ArrayList;
@@ -57,13 +58,13 @@ public class PatientControl {
                     displayPatient();
                     break;
                 case 3:
-                    editPatient();
+                    editPatient(null);
                     break;
                 case 4:
                     registerConsultation();
                     break;
                 case 5:
-                    deletePatient();
+                    deletePatient(null);
                     break;
                 case 6:
                     patientReport();
@@ -92,18 +93,21 @@ public class PatientControl {
     }
 
     // Edit patient
-    public void editPatient() {
+    public void editPatient(Patient p) {
         if (patientQueue.isEmpty()) {
             ui.displayError("No patients available to edit.");
             return;
         }
+        if (p == null) {
+            ArrayList<Patient> patients = queueToList();
 
-        ArrayList<Patient> patients = queueToList();
+            int choice = selectPatient(patients, "edit");
+            if (choice == 0) return;
 
-        int choice = selectPatient(patients, "edit");
-        if (choice == 0) return;
+            p = patients.get(choice - 1);
+        }
 
-        Patient p = patients.get(choice - 1);
+
 
         while (true) {
             System.out.println("\n=== EDIT PATIENT DETAILS ===");
@@ -116,7 +120,6 @@ public class PatientControl {
             System.out.println("6. Date of Birth");
             System.out.println("7. Patient IC");
             System.out.println("8. Passport");
-            System.out.println("9. Student ID");
             System.out.println("0. Done editing");
             System.out.print("Enter choice: ");
 
@@ -184,7 +187,7 @@ public class PatientControl {
                     System.out.print("New Patient IC (" + (p.getPatientIC() != null ? p.getPatientIC() : "none") + "): ");
                     String ic = scanner.nextLine().trim();
                     if (ic.matches("\\d{12}")) p.setPatientIC(ic);
-                    else if (!ic.isEmpty()) System.out.println("Invalid IC format.");
+                    else if (!ic.isEmpty()) System.out.println("Invalid IC format.");pause();
                     break;
 
                 case 8:
@@ -193,14 +196,9 @@ public class PatientControl {
                     if (!passport.isEmpty()) p.setPatientPassport(passport);
                     break;
 
-                case 9:
-                    System.out.print("New Student ID (" + (p.getStudentID() != null ? p.getStudentID() : "none") + "): ");
-                    String sid = scanner.nextLine().trim();
-                    if (!sid.isEmpty()) p.setStudentID(sid);
-                    break;
-
                 default:
                     System.out.println("Invalid choice.");
+                    pause();
             }
         }
 
@@ -291,7 +289,6 @@ public class PatientControl {
             System.out.println("Name       : " + p.getName());
             System.out.println("IC         : " + (p.getPatientIC() != null ? p.getPatientIC() : "-"));
             System.out.println("Passport   : " + (p.getPatientPassport() != null ? p.getPatientPassport() : "-"));
-            System.out.println("Student ID : " + (p.getStudentID() != null ? p.getStudentID() : "-"));
             System.out.println("Gender     : " + p.getGender());
             System.out.println("Phone      : " + p.getPhone());
             System.out.println("Email      : " + p.getEmail());
@@ -312,13 +309,15 @@ public class PatientControl {
                     registerConsultation(p);
                     break;
                 case "2":
-                    editPatient();
+                    editPatient(p);
                     break;
                 case "3":
                     viewConsultationHistory(p);
                     break;
                 case "4":
-                    deletePatient();
+                    if(deletePatient(p)){
+                        return;
+                    }
                     break;
                 case "q":
                     return;
@@ -381,30 +380,36 @@ public class PatientControl {
     }
 
     // Delete patient
-    public void deletePatient() {
+    public boolean deletePatient(Patient p) {
         if (patientQueue.isEmpty()) {
             ui.displayError("No patients available to delete.");
-            return;
+            return false;
         }
 
         ArrayList<Patient> patients = queueToList();
+        if(p ==  null) {
 
-        int choice = selectPatient(patients, "delete");
-        if (choice == 0) return;
+            int choice = selectPatient(patients, "delete");
+            if (choice == 0) return false;
 
-        Patient p = patients.get(choice - 1);
+            p = patients.get(choice - 1);
+        }
+
+
         System.out.print("Are you sure you want to delete " + p.getName() + "? (Y/N): ");
         String confirm = scanner.nextLine().trim().toUpperCase();
 
         if (confirm.equals("Y")) {
-            patients.remove(choice - 1);
+            patients.remove(p);
             patientQueue = new LinkedQueue<>();
             for (int i = 0; i < patients.size(); i++) {
                 patientQueue.enqueue(patients.get(i));
             }
             ui.displaySuccess("Patient deleted successfully!");
+            return true;
         } else {
             ui.displayMessage("Delete cancelled.");
+            return false;
         }
     }
 
@@ -530,7 +535,7 @@ public class PatientControl {
 
         ArrayList<Patient> patients = queueToList();
 
-        int icCount = 0, passportCount = 0, studentCount = 0;
+        int icCount = 0, passportCount = 0;
 
         for (int i = 0; i < patients.size(); i++) {
             Patient p = patients.get(i);
@@ -538,15 +543,12 @@ public class PatientControl {
                 icCount++;
             } else if (p.getPatientPassport() != null && !p.getPatientPassport().isEmpty()) {
                 passportCount++;
-            } else if (p.getStudentID() != null && !p.getStudentID().isEmpty()) {
-                studentCount++;
             }
         }
 
         System.out.println("--- Patient by Identification Type ---");
         System.out.printf("Malaysian IC : %d%n", icCount);
         System.out.printf("Passport     : %d%n", passportCount);
-        System.out.printf("Student ID   : %d%n", studentCount);
         System.out.println("--------------------------------------\n");
 
         pause();

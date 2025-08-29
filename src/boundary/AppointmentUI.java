@@ -1,9 +1,11 @@
+// Teoh Yong Ming
 package boundary;
 
 import adt.*;
 import entity.Appointment;
 import entity.Doctor;
 import entity.Patient;
+import entity.Staff;
 import utility.MessageUI;
 
 import java.time.LocalDate;
@@ -36,7 +38,7 @@ public class AppointmentUI {
         return UI.mainUI("Appointment Management", choiceQueue);
     }
 
-    public Appointment getAppointmentDetails(Patient patient, Doctor doctor) {
+    public Appointment getAppointmentDetails(Patient patient, Doctor doctor, Staff createdBy) {
         System.out.println("\n=== ADD APPOINTMENT ===");
         System.out.println("Patient: " + patient.getName());
         System.out.println("Doctor: " + doctor.getName() + " (" + doctor.getSpecialization() + ")");
@@ -142,7 +144,7 @@ public class AppointmentUI {
             UUID.randomUUID(),
             patient,
             doctor,
-            null, // staff can be null for now
+            createdBy,
             appointmentDate,
             startTime,
             endTime,
@@ -174,22 +176,24 @@ public class AppointmentUI {
             return;
         }
         
-        System.out.printf("%-4s %-12s %-10s %-15s %-20s %-20s %-15s\n", 
-                         "No.", "Date", "Time", "Duration", "Patient", "Doctor", "Status");
-        System.out.println("-".repeat(100));
+        System.out.printf("%-4s %-12s %-10s %-15s %-20s %-20s %-15s %-15s\n", 
+                         "No.", "Date", "Time", "Duration", "Patient", "Doctor", "Status", "Created By");
+        System.out.println("-".repeat(115));
         
         for (int i = startIndex; i < endIndex; i++) {
             Appointment apt = appointments.get(i);
             String duration = apt.getFormattedStartTime() + " - " + apt.getFormattedEndTime();
+            String createdBy = apt.getStaff() != null ? apt.getStaff().getName() : "N/A";
             
-            System.out.printf("%-4d %-12s %-10s %-15s %-20s %-20s %-15s\n",
+            System.out.printf("%-4d %-12s %-10s %-15s %-20s %-20s %-15s %-15s\n",
                             i + 1,
                             apt.getFormattedDate(),
                             apt.getFormattedStartTime(),
                             duration,
                             truncateString(apt.getPatient().getName(), 18),
                             truncateString(apt.getDoctor().getName(), 18),
-                            apt.getStatus().toString());
+                            apt.getStatus().toString(),
+                            truncateString(createdBy, 13));
                             
             if (apt.getDescription() != null && !apt.getDescription().trim().isEmpty()) {
                 System.out.printf("     Type: %s | Notes: %s\n", 
@@ -297,6 +301,33 @@ public class AppointmentUI {
 
     public void displayError(String message) {
         System.out.println("ERROR: " + message);
+    }
+    
+    public void displayAppointmentList(ArrayList<Appointment> appointments) {
+        if (appointments.isEmpty()) {
+            System.out.println("No appointments found.");
+            return;
+        }
+        
+        System.out.printf("%-4s %-12s %-15s %-18s %-18s %-12s %-12s %-15s%n",
+                         "No.", "Time", "Type", "Patient", "Doctor", "Status", "Duration", "Created By");
+        System.out.println("-".repeat(125));
+        
+        for (int i = 0; i < appointments.size(); i++) {
+            Appointment apt = appointments.get(i);
+            String createdBy = apt.getStaff() != null ? apt.getStaff().getName() : "N/A";
+            System.out.printf("%-4d %-12s %-15s %-18s %-18s %-12s %-12s %-15s%n",
+                            i + 1,
+                            apt.getFormattedStartTime(),
+                            truncateString(apt.getAppointmentType(), 13),
+                            truncateString(apt.getPatient().getName(), 16),
+                            truncateString("Dr. " + apt.getDoctor().getName(), 16),
+                            apt.getStatusDisplay(),
+                            apt.getFormattedStartTime() + "-" + apt.getFormattedEndTime(),
+                            truncateString(createdBy, 13));
+        }
+        System.out.println("-".repeat(125));
+        System.out.printf("Total appointments: %d%n", appointments.size());
     }
 
     public void pause() {

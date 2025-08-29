@@ -1,3 +1,4 @@
+// Kong Ji Shou
 package control;
 
 import adt.ArrayList;
@@ -58,9 +59,16 @@ public class StaffControl {
     public void addStaff() {
         System.out.println("\n=== ADD STAFF ===");
         
-        Staff newStaff = ui.getStaffDetails();
-        if (newStaff == null) {
-            ui.displayMessage("Staff registration cancelled.");
+        Staff newStaff;
+        try {
+            newStaff = ui.getStaffDetails();
+            if (newStaff == null) {
+                ui.displayMessage("Staff registration cancelled.");
+                ui.pause();
+                return;
+            }
+        } catch (Exception e) {
+            ui.displayError("Failed to create staff: " + e.getMessage());
             ui.pause();
             return;
         }
@@ -72,7 +80,7 @@ public class StaffControl {
             return;
         }
 
-        // Validate required fields
+        // Validate required fields (additional validation beyond entity validation)
         if (!validateStaffData(newStaff)) {
             ui.pause();
             return;

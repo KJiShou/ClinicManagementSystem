@@ -1,3 +1,4 @@
+// Chea Hong Jun
 package boundary;
 
 import adt.*;
@@ -551,5 +552,9 @@ public class DutyScheduleUI {
             Doctor d=doctors.get(i);
             System.out.println(getInitials(d.getName())+" = "+d.getName());
         }
+    }
+    public void pause() {
+        System.out.print("Press Enter to continue...");
+        scanner.nextLine();
     }
 }

@@ -1,3 +1,4 @@
+// Kong Ji Shou
 package utility;
 
 import adt.ArrayList;
@@ -42,7 +43,7 @@ public class GeneratePharmacyData {
         Company[] c = createSampleCompanies();
         // For readability
         final Date EXP_2027 = DATE_FMT.parse("2027-12-31");
-        final Date EXP_2026 = DATE_FMT.parse("2026-12-31");
+        final Date EXP_2026 = DATE_FMT.parse("2025-08-31");
 
         return new Medicine[]{
                 // ===== Analgesic / Antipyretic / NSAID =====

@@ -1,3 +1,4 @@
+// Ng Zhe Wei
 package boundary;
 
 import adt.ArrayList;
@@ -154,16 +155,23 @@ public class PatientUI {
         String patientPassport = scanner.nextLine().trim();
         if (patientPassport.equalsIgnoreCase("CANCEL")) return null;
 
-        System.out.print("Student ID (leave blank if none): ");
-        String studentID = scanner.nextLine().trim();
-        if (studentID.equalsIgnoreCase("CANCEL")) return null;
+        // Validation: Either IC or passport must be provided
+        if ((patientIC == null || patientIC.trim().isEmpty()) && 
+            (patientPassport == null || patientPassport.trim().isEmpty())) {
+            System.out.println("ERROR: Either IC or Passport must be provided. Patient creation failed.");
+            return null;
+        }
 
-        return new Patient(
-                id, name, address, gender, phone, email, dob,
-                patientIC.isEmpty() ? null : patientIC,
-                patientPassport.isEmpty() ? null : patientPassport,
-                studentID.isEmpty() ? null : studentID
-        );
+        try {
+            return new Patient(
+                    id, name, address, gender, phone, email, dob,
+                    patientIC.isEmpty() ? null : patientIC,
+                    patientPassport.isEmpty() ? null : patientPassport
+            );
+        } catch (IllegalArgumentException e) {
+            System.out.println("ERROR: " + e.getMessage());
+            return null;
+        }
     }
 
     public void displayPatientList(ArrayList<Patient> patients, int totalItems,
@@ -190,8 +198,6 @@ public class PatientUI {
             String identifier;
             if (patient.getPatientIC() != null && !patient.getPatientIC().isEmpty()) {
                 identifier = patient.getPatientIC();
-            } else if (patient.getStudentID() != null && !patient.getStudentID().isEmpty()) {
-                identifier = patient.getStudentID() + " (student)";
             } else if (patient.getPatientPassport() != null && !patient.getPatientPassport().isEmpty()) {
                 identifier = patient.getPatientPassport() + " (passport)";
             } else {
@@ -292,7 +298,6 @@ public class PatientUI {
         System.out.printf("| %-30s | %-30s |\n", "Email", patient.getEmail());
         System.out.printf("| %-30s | %-30s |\n", "IC Number", patient.getPatientIC() != null ? patient.getPatientIC() : "-");
         System.out.printf("| %-30s | %-30s |\n", "Passport", patient.getPatientPassport() != null ? patient.getPatientPassport() : "-");
-        System.out.printf("| %-30s | %-30s |\n", "Student ID", patient.getStudentID() != null ? patient.getStudentID() : "-");
         System.out.println("+--------------------------------+--------------------------------+");
     }
 

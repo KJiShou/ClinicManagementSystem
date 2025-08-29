@@ -1,3 +1,4 @@
+// Chea Hong Jun
 package control;
 
 import adt.*;
@@ -341,6 +342,7 @@ public class DutyScheduleControl {
         System.out.println("+-----+----------------------+------------+");
         System.out.println("Summary: " + doctor.getName()
                 + " consulted " + consCount + " patients.");
+        ui.pause();
     }
 
 

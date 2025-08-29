@@ -1,3 +1,4 @@
+// Kong Ji Shou
 package utility;
 
 import adt.ArrayList;
@@ -137,7 +138,6 @@ public class GenerateStaffData {
             Staff.Role.ADMIN
         ));
 
-        System.out.println("Generated " + staffList.size() + " sample staff accounts");
         return staffList;
     }
 

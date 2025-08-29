@@ -1,3 +1,4 @@
+// Kong Ji Shou
 package entity.pharmacyManagement;
 
 import java.util.Date;
@@ -6,7 +7,6 @@ import java.util.UUID;
 public class BloodTube extends SalesItem{
     private String capColor;
     private String additive;
-    private int quantity;
     private double volumeMl;
     private static final java.text.SimpleDateFormat KEY_DATE_FMT = new java.text.SimpleDateFormat("yyyy-MM-dd");
 
@@ -15,14 +15,6 @@ public class BloodTube extends SalesItem{
         this.volumeMl = volumeMl;
         this.capColor = capColor;
         this.additive = additive;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
     }
 
     public double getVolumeMl() {
