@@ -5,7 +5,9 @@ import adt.ListInterface;
 import entity.Consultation;
 import entity.Doctor;
 import entity.Patient;
+import entity.pharmacyManagement.LabTest;
 import entity.pharmacyManagement.Prescription;
+import entity.pharmacyManagement.SalesItem;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -20,12 +22,10 @@ public class GenerateConsultationData {
         return LocalTime.parse(timeString, TIME_FORMATTER);
     }
 
-    public static ListInterface<Consultation> createSampleConsultation() throws ParseException {
-        ListInterface<Consultation> consultations = new ArrayList<>();
-        ListInterface<Doctor> doctors = GenerateDoctorData.createSampleDoctors();
-        ListInterface<Patient> patients = GeneratePatientData.createSamplePatients();
+    public static ListInterface<Consultation> createSampleConsultation(ListInterface<Doctor> doctors, ArrayList<Patient> patients) throws ParseException {        ListInterface<Consultation> consultations = new ArrayList<>();
 
         LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
         LocalTime now = LocalTime.now();
 
         LocalTime w1Arr = now.minusMinutes(75);
@@ -51,7 +51,8 @@ public class GenerateConsultationData {
                 parseTime("11:30"),
                 50.00f,
                 "medical treatment",
-                null
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -65,7 +66,8 @@ public class GenerateConsultationData {
                 parseTime("10:00"),
                 35.50f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -79,7 +81,8 @@ public class GenerateConsultationData {
                 w1End,
                 75.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -93,7 +96,8 @@ public class GenerateConsultationData {
                 ip1End,
                 150.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -107,7 +111,8 @@ public class GenerateConsultationData {
                 parseTime("14:00"),
                 180.25f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -121,7 +126,8 @@ public class GenerateConsultationData {
                 parseTime("09:45"),
                 105.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -135,7 +141,8 @@ public class GenerateConsultationData {
                 w2End,
                 60.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -149,7 +156,8 @@ public class GenerateConsultationData {
                 ip2End,
                 250.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -163,7 +171,8 @@ public class GenerateConsultationData {
                 parseTime("16:30"),
                 90.00f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         consultations.add(new Consultation(
@@ -177,7 +186,98 @@ public class GenerateConsultationData {
                 parseTime("12:15"),
                 85.75f,
                 "medical treatment",
-                new ArrayList<Prescription>()
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
+        ));
+
+        consultations.add(new Consultation(
+                UUID.randomUUID(),
+                patients.get(0),
+                doctors.get(1),
+                yesterday,
+                Consultation.Status.COMPLETED,
+                "Routine health checkup, blood pressure check.",
+                parseTime("09:15"),
+                parseTime("09:45"),
+                75.00f,
+                "Blood pressure monitoring, general examination",
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
+        ));
+
+        consultations.add(new Consultation(
+                UUID.randomUUID(),
+                patients.get(1),
+                doctors.get(0),
+                yesterday,
+                Consultation.Status.COMPLETED,
+                "Follow-up for diabetes management.",
+                parseTime("10:30"),
+                parseTime("11:15"),
+                120.50f,
+                "Diabetes consultation, medication review",
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
+        ));
+
+        consultations.add(new Consultation(
+                UUID.randomUUID(),
+                patients.get(2),
+                doctors.get(2),
+                yesterday,
+                Consultation.Status.COMPLETED,
+                "Migraine treatment and prevention advice.",
+                parseTime("14:00"),
+                parseTime("14:30"),
+                95.25f,
+                "Prescribed pain relief, lifestyle advice",
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
+        ));
+
+        consultations.add(new Consultation(
+                UUID.randomUUID(),
+                patients.get(3),
+                doctors.get(1),
+                yesterday,
+                Consultation.Status.COMPLETED,
+                "Skin condition treatment, prescribed ointment.",
+                parseTime("15:30"),
+                parseTime("16:00"),
+                85.00f,
+                "Dermatology consultation, topical treatment",
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
+        ));
+
+        consultations.add(new Consultation(
+                UUID.randomUUID(),
+                patients.get(4),
+                doctors.get(0),
+                yesterday,
+                Consultation.Status.COMPLETED,
+                "Annual physical examination.",
+                parseTime("11:00"),
+                parseTime("12:00"),
+                150.00f,
+                "Comprehensive health screening",
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
+        ));
+
+        consultations.add(new Consultation(
+                UUID.randomUUID(),
+                patients.get(0),
+                doctors.get(3),
+                yesterday,
+                Consultation.Status.COMPLETED,
+                "Respiratory infection treatment.",
+                parseTime("16:45"),
+                parseTime("17:15"),
+                110.75f,
+                "Antibiotics prescribed, rest advised",
+                new ArrayList<Prescription>(),
+                new ArrayList<LabTest>()
         ));
 
         return consultations;

@@ -63,6 +63,7 @@ public class PrescriptionControl {
                     break;
                 case 4:
                     generateReports();
+                case 999:
                     break;
                 default:
                     System.out.println("Invalid choice. Try again.");

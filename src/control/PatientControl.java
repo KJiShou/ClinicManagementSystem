@@ -8,16 +8,24 @@ import boundary.PatientUI;
 import entity.Consultation;
 import entity.Doctor;
 import entity.Patient;
+import entity.pharmacyManagement.LabTest;
+import entity.pharmacyManagement.Medicine;
+import entity.pharmacyManagement.Prescription;
+import entity.pharmacyManagement.SalesItem;
+import entity.DutySchedule;
+import control.MainControl;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Period;
+import java.util.Comparator;
 import java.util.Scanner;
 import java.util.UUID;
 
 public class PatientControl {
 
-    private static final int PAGE_SIZE = 5;
+    private static final int PAGE_SIZE = 10;
 
     private QueueInterface<Patient> patientQueue;
     private ListInterface<Consultation> consultationList;
@@ -57,6 +65,8 @@ public class PatientControl {
                 case 5:
                     deletePatient();
                     break;
+                case 6:
+                    patientReport();
                 case 999:
                     return;
                 default:
@@ -95,19 +105,107 @@ public class PatientControl {
 
         Patient p = patients.get(choice - 1);
 
-        System.out.print("New Name (" + p.getName() + "): ");
-        String name = scanner.nextLine().trim();
-        if (!name.isEmpty()) p.setName(name);
+        while (true) {
+            System.out.println("\n=== EDIT PATIENT DETAILS ===");
+            System.out.println("Editing: " + p.getName());
+            System.out.println("1. Name");
+            System.out.println("2. Address");
+            System.out.println("3. Gender");
+            System.out.println("4. Phone");
+            System.out.println("5. Email");
+            System.out.println("6. Date of Birth");
+            System.out.println("7. Patient IC");
+            System.out.println("8. Passport");
+            System.out.println("9. Student ID");
+            System.out.println("0. Done editing");
+            System.out.print("Enter choice: ");
 
-        System.out.print("New Phone (" + p.getPhone() + "): ");
-        String phone = scanner.nextLine().trim();
-        if (!phone.isEmpty()) p.setPhone(phone);
+            String input = scanner.nextLine().trim();
+            if (!input.matches("\\d")) {
+                System.out.println("Invalid choice.");
+                continue;
+            }
 
-        System.out.print("New Email (" + p.getEmail() + "): ");
-        String email = scanner.nextLine().trim();
-        if (!email.isEmpty()) p.setEmail(email);
+            int field = Integer.parseInt(input);
+            if (field == 0) break;
+
+            switch (field) {
+                case 1:
+                    System.out.print("New Name (" + p.getName() + "): ");
+                    String name = scanner.nextLine().trim();
+                    if (!name.isEmpty()) p.setName(name);
+                    break;
+
+                case 2:
+                    System.out.print("New Address (" + p.getAddress() + "): ");
+                    String address = scanner.nextLine().trim();
+                    if (!address.isEmpty()) p.setAddress(address);
+                    break;
+
+                case 3:
+                    System.out.print("New Gender (" + p.getGender() + ") (M/F): ");
+                    String gender = scanner.nextLine().trim().toUpperCase();
+                    if (gender.equals("M") || gender.equals("F")) p.setGender(gender);
+                    else System.out.println("Invalid gender.");
+                    break;
+
+                case 4:
+                    System.out.print("New Phone (" + p.getPhone() + "): ");
+                    String phone = scanner.nextLine().trim();
+                    if (phone.matches("\\d{10,11}")) p.setPhone(phone);
+                    else if (!phone.isEmpty()) System.out.println("Invalid phone number.");
+                    break;
+
+                case 5:
+                    System.out.print("New Email (" + p.getEmail() + "): ");
+                    String email = scanner.nextLine().trim();
+                    if (email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) p.setEmail(email);
+                    else if (!email.isEmpty()) System.out.println("Invalid email format.");
+                    break;
+
+                case 6:
+                    System.out.print("New Date of Birth (" + p.getDateOfBirthString() + "): ");
+                    String dob = scanner.nextLine().trim();
+                    if (!dob.isEmpty()) {
+                        try {
+                            LocalDate newDob = LocalDate.parse(dob);
+                            if (newDob.isAfter(LocalDate.now())) {
+                                System.out.println("Error: DOB cannot be in future.");
+                            } else {
+                                p.setDateOfBirth(newDob);
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Invalid date format.");
+                        }
+                    }
+                    break;
+
+                case 7:
+                    System.out.print("New Patient IC (" + (p.getPatientIC() != null ? p.getPatientIC() : "none") + "): ");
+                    String ic = scanner.nextLine().trim();
+                    if (ic.matches("\\d{12}")) p.setPatientIC(ic);
+                    else if (!ic.isEmpty()) System.out.println("Invalid IC format.");
+                    break;
+
+                case 8:
+                    System.out.print("New Passport (" + (p.getPatientPassport() != null ? p.getPatientPassport() : "none") + "): ");
+                    String passport = scanner.nextLine().trim();
+                    if (!passport.isEmpty()) p.setPatientPassport(passport);
+                    break;
+
+                case 9:
+                    System.out.print("New Student ID (" + (p.getStudentID() != null ? p.getStudentID() : "none") + "): ");
+                    String sid = scanner.nextLine().trim();
+                    if (!sid.isEmpty()) p.setStudentID(sid);
+                    break;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
 
         ui.displaySuccess("Patient updated successfully!");
+        pause();
     }
 
     // Register Consultant
@@ -130,7 +228,7 @@ public class PatientControl {
             boolean isPassport = key.matches("[A-Za-z0-9]{6,}");
 
             if (!isIC && !isPassport) {
-                System.out.println("❌ Invalid input. Please enter a valid IC (12 digits) or Passport (min 6 alphanumeric).");
+                System.out.println("Invalid input. Please enter a valid IC (12 digits) or Passport (min 6 alphanumeric).");
                 continue; // re-prompt
             }
 
@@ -160,7 +258,7 @@ public class PatientControl {
     }
 
 
-    // Helper: Find patient by IC or Passport
+    // Find patient by IC or Passport
     private Patient findPatientByICOrPassport(String keyword) {
         ArrayList<Patient> patients = new ArrayList<>();
         while (!patientQueue.isEmpty()) {
@@ -211,15 +309,13 @@ public class PatientControl {
 
             switch (input) {
                 case "1":
-                    // register consultation
                     registerConsultation(p);
                     break;
                 case "2":
                     editPatient();
                     break;
                 case "3":
-                    System.out.println("View Consultation");
-                    pause();
+                    viewConsultationHistory(p);
                     break;
                 case "4":
                     deletePatient();
@@ -234,27 +330,51 @@ public class PatientControl {
     }
 
     private void registerConsultation(Patient p) {
-        // Step 1: Choose a doctor
-        System.out.println("Available Doctors:");
-        for (int i = 0; i < doctors.size(); i++) {
-            Doctor doctor = doctors.get(i);
-            System.out.println("[" + (i + 1) + "] " + doctor.getName());
-        }
-        System.out.print("Select doctor (1-" + doctors.size() + "): ");
-        int doctorChoice = Integer.parseInt(scanner.nextLine().trim());
 
-        if (doctorChoice < 1 || doctorChoice > doctors.size()) {
-            System.out.println("Invalid doctor selection.");
+        // Step 1: Get doctors currently on duty
+        ArrayList<Doctor> doctorsOnDuty = getDoctorsOnDuty();
+        
+        if (doctorsOnDuty.isEmpty()) {
+            System.out.println("No doctors are currently on duty. Please try again later.");
+            pause();
             return;
         }
-        Doctor selectedDoctor = doctors.get(doctorChoice - 1);
+        
+        // Step 2: Display available doctors on duty and get valid selection
+        Doctor selectedDoctor = null;
+        while (selectedDoctor == null) {
+            System.out.println("Doctors Currently On Duty:");
+            for (int i = 0; i < doctorsOnDuty.size(); i++) {
+                Doctor doctor = doctorsOnDuty.get(i);
+                System.out.println("[" + (i + 1) + "] " + doctor.getName() + " (" + doctor.getSpecialization() + ")");
+            }
+            System.out.print("Select doctor (1-" + doctorsOnDuty.size() + ") or type CANCEL: ");
+            String input = scanner.nextLine().trim();
+            
+            if (input.equalsIgnoreCase("CANCEL")) {
+                System.out.println("Consultation registration cancelled.");
+                pause();
+                return;
+            }
+            
+            try {
+                int doctorChoice = Integer.parseInt(input);
+                if (doctorChoice >= 1 && doctorChoice <= doctorsOnDuty.size()) {
+                    selectedDoctor = doctorsOnDuty.get(doctorChoice - 1);
+                } else {
+                    System.out.println("ERROR: Invalid selection. Please enter a number between 1 and " + doctorsOnDuty.size() + ".");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR: Invalid input. Please enter a valid number or type CANCEL.");
+            }
+        }
 
-        // Step 2: Enter the consultation note
+        // Enter the consultation note
         System.out.print("Enter the consultation issue/notes: ");
         String consultationNote = scanner.nextLine().trim();
 
-        // Step 3: Create the consultation and add it to the consultation list
-        Consultation newConsultation = new Consultation(UUID.randomUUID(), p, selectedDoctor, LocalDate.now(), Consultation.Status.WAITING, consultationNote, LocalTime.now(), null, 0, "", null);
+        // Create the consultation and add it to the consultation list
+        Consultation newConsultation = new Consultation(UUID.randomUUID(), p, selectedDoctor, LocalDate.now(), Consultation.Status.WAITING, consultationNote, LocalTime.now(), null, 0, "", new ArrayList<Prescription>(), new ArrayList<LabTest>());
         consultationList.add(newConsultation);
         System.out.println("Consultation registered successfully.");
         pause();
@@ -343,6 +463,95 @@ public class PatientControl {
             }
         }
     }
+
+    public void patientReport() {
+        while (true) {
+            System.out.println("\n=== REPORT MENU ===");
+            System.out.println("[1] Patient Demographics – Age Distribution");
+            System.out.println("[2] Patient Demographics – Identification Type");
+            System.out.println("[Q] Back to Main Menu");
+            System.out.print("Choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "1":
+                    reportPatientByAgeGroup();
+                    break;
+                case "2":
+                    reportPatientByIdType();
+                    break;
+                case "q":
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    public void reportPatientByAgeGroup() {
+        if (patientQueue.isEmpty()) {
+            System.out.println("No patients found.");
+            pause();
+            return;
+        }
+
+        ui.printReportHeader("Age Distribution of Patients");
+
+        ArrayList<Patient> patients = queueToList();
+        patients.sort(Comparator.comparing(Patient::getDateOfBirth).reversed());
+
+        int under18 = 0, between18And30 = 0, between31And50 = 0, above50 = 0;
+
+        for (Patient p : patients) {
+            int age = Period.between(p.getDateOfBirth(), LocalDate.now()).getYears();
+            if (age < 18) under18++;
+            else if (age <= 30) between18And30++;
+            else if (age <= 50) between31And50++;
+            else above50++;
+        }
+
+        System.out.printf("<18 years      : %d%n", under18);
+        System.out.printf("18 - 30 years  : %d%n", between18And30);
+        System.out.printf("31 - 50 years  : %d%n", between31And50);
+        System.out.printf("51+ years      : %d%n", above50);
+        System.out.println("---------------------------------------\n");
+
+        pause();
+    }
+
+    public void reportPatientByIdType() {
+        if (patientQueue.isEmpty()) {
+            System.out.println("No patients found.");
+            pause();
+            return;
+        }
+
+        ui.printReportHeader("Patient Distribution by Identification Type");
+
+        ArrayList<Patient> patients = queueToList();
+
+        int icCount = 0, passportCount = 0, studentCount = 0;
+
+        for (int i = 0; i < patients.size(); i++) {
+            Patient p = patients.get(i);
+            if (p.getPatientIC() != null && !p.getPatientIC().isEmpty()) {
+                icCount++;
+            } else if (p.getPatientPassport() != null && !p.getPatientPassport().isEmpty()) {
+                passportCount++;
+            } else if (p.getStudentID() != null && !p.getStudentID().isEmpty()) {
+                studentCount++;
+            }
+        }
+
+        System.out.println("--- Patient by Identification Type ---");
+        System.out.printf("Malaysian IC : %d%n", icCount);
+        System.out.printf("Passport     : %d%n", passportCount);
+        System.out.printf("Student ID   : %d%n", studentCount);
+        System.out.println("--------------------------------------\n");
+
+        pause();
+    }
+
 
     // Helper: Convert queue -> ArrayList
     private ArrayList<Patient> queueToList() {
@@ -437,6 +646,225 @@ public class PatientControl {
 
     private String safeLower(String s) {
         return (s == null) ? "" : s.toLowerCase();
+    }
+
+    private ArrayList<Doctor> getDoctorsOnDuty() {
+        ArrayList<Doctor> doctorsOnDuty = new ArrayList<>();
+        LocalDate currentDate = LocalDate.now();
+        LocalTime currentTime = LocalTime.now();
+
+        for (int i = 0; i < doctors.size(); i++) {
+            Doctor doctor = doctors.get(i);
+            UUID doctorId = doctor.getUserID();
+            
+            ListInterface<DutySchedule> doctorSchedules = MainControl.schedules.getValue(doctorId);
+            
+            if (doctorSchedules != null) {
+                for (int j = 0; j < doctorSchedules.size(); j++) {
+                    DutySchedule schedule = doctorSchedules.get(j);
+                    
+                    if (schedule.isValid() && 
+                        schedule.getDateObject().equals(currentDate) &&
+                        isWithinTimeRange(currentTime, schedule.getStartTimeObject(), schedule.getEndTimeObject())) {
+                        doctorsOnDuty.add(doctor);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return doctorsOnDuty;
+    }
+    
+    private boolean isWithinTimeRange(LocalTime currentTime, LocalTime startTime, LocalTime endTime) {
+        return !currentTime.isBefore(startTime) && !currentTime.isAfter(endTime);
+    }
+
+    private void viewConsultationHistory(Patient patient) {
+        System.out.println("\n=== CONSULTATION HISTORY ===");
+        System.out.println("Patient: " + patient.getName());
+        
+        ArrayList<Consultation> patientConsultations = getPatientConsultations(patient);
+        
+        if (patientConsultations.isEmpty()) {
+            System.out.println("No consultation history found for this patient.");
+            pause();
+            return;
+        }
+        
+        // Sort consultations by date (newest first)
+        patientConsultations.sort((c1, c2) -> {
+            int dateCompare = c2.getConsultatonDate().compareTo(c1.getConsultatonDate());
+            if (dateCompare == 0) {
+                return c2.getStartTime().compareTo(c1.getStartTime());
+            }
+            return dateCompare;
+        });
+        
+        int currentPage = 1;
+        String searchQuery = "";
+        ArrayList<Consultation> currentView = new ArrayList<>(patientConsultations);
+        
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
+            if (totalPages == 0) totalPages = 1;
+            
+            displayConsultationHistory(currentView, currentPage, totalPages, searchQuery, patient);
+            
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [Q] Back");
+            System.out.print("Enter choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+            
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) {
+                        currentPage--;
+                    } else {
+                        System.out.println("This is the first page.");
+                        pause();
+                    }
+                    break;
+                case "d":
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                    } else {
+                        System.out.println("This is the last page.");
+                        pause();
+                    }
+                    break;
+                case "s":
+                    System.out.print("Enter search (Notes/Treatment/Doctor): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<Consultation> filtered = filterConsultations(patientConsultations, searchQuery);
+                    if (!filtered.isEmpty()) {
+                        currentView = filtered;
+                        currentPage = 1;
+                    } else {
+                        System.out.println("No results found for: " + searchQuery);
+                        pause();
+                    }
+                    break;
+                case "r":
+                    currentView = new ArrayList<>(patientConsultations);
+                    searchQuery = "";
+                    currentPage = 1;
+                    break;
+                case "q":
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+                    pause();
+            }
+        }
+    }
+    
+    private ArrayList<Consultation> getPatientConsultations(Patient patient) {
+        ArrayList<Consultation> patientConsultations = new ArrayList<>();
+        UUID patientId = patient.getUserID();
+        
+        for (int i = 0; i < consultationList.size(); i++) {
+            Consultation consultation = consultationList.get(i);
+            if (consultation.getPatientId().equals(patientId)) {
+                patientConsultations.add(consultation);
+            }
+        }
+        
+        return patientConsultations;
+    }
+    
+    private ArrayList<Consultation> filterConsultations(ArrayList<Consultation> source, String query) {
+        ArrayList<Consultation> results = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) return results;
+        
+        String q = query.toLowerCase();
+        
+        for (int i = 0; i < source.size(); i++) {
+            Consultation c = source.get(i);
+            String notes = safeLower(c.getNotes());
+            String treatment = safeLower(c.getMedicalTreatment());
+            String doctorName = safeLower(c.getDoctor().getName());
+            
+            if (notes.contains(q) || treatment.contains(q) || doctorName.contains(q)) {
+                results.add(c);
+            }
+        }
+        return results;
+    }
+    
+    private void displayConsultationHistory(ArrayList<Consultation> consultations, int currentPage, 
+                                          int totalPages, String searchQuery, Patient patient) {
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println("CONSULTATION HISTORY - " + patient.getName());
+        System.out.println("=".repeat(80));
+        
+        if (!searchQuery.isEmpty()) {
+            System.out.println("Search: \"" + searchQuery + "\"");
+            System.out.println("-".repeat(80));
+        }
+        
+        System.out.printf("Page %d of %d | Total: %d consultation(s)\n", currentPage, totalPages, consultations.size());
+        System.out.println("-".repeat(80));
+        
+        int startIndex = (currentPage - 1) * PAGE_SIZE;
+        int endIndex = Math.min(startIndex + PAGE_SIZE, consultations.size());
+        
+        if (consultations.isEmpty()) {
+            System.out.println("No consultations found.");
+            return;
+        }
+        
+        for (int i = startIndex; i < endIndex; i++) {
+            Consultation c = consultations.get(i);
+            System.out.printf("\n[%d] Date: %s | Time: %s", 
+                            i + 1, c.getConsultatonDate(), c.getStartTime());
+                            
+            if (c.getEndTime() != null) {
+                System.out.printf(" - %s", c.getEndTime());
+            }
+            
+            // Show status with color indicators
+            System.out.printf(" | Status: %s", getStatusDisplay(c.getStatus()));
+            
+            System.out.printf("\n    Doctor: %s (%s)", 
+                            c.getDoctor().getName(), c.getDoctor().getSpecialization());
+                            
+            if (c.getNotes() != null && !c.getNotes().trim().isEmpty()) {
+                System.out.printf("\n    Notes: %s", 
+                                truncateString(c.getNotes().replace("\n", " "), 60));
+            }
+            
+            if (c.getMedicalTreatment() != null && !c.getMedicalTreatment().trim().isEmpty()) {
+                System.out.printf("\n    Treatment: %s", 
+                                truncateString(c.getMedicalTreatment(), 60));
+            }
+            
+            if (c.getStatus() == Consultation.Status.COMPLETED && c.getTotalPayment() > 0) {
+                System.out.printf("\n    Total Paid: RM %.2f", c.getTotalPayment());
+            }
+            
+            System.out.println("\n" + "-".repeat(80));
+        }
+    }
+    
+    private String getStatusDisplay(Consultation.Status status) {
+        switch (status) {
+            case WAITING:
+                return "WAITING";
+            case IN_PROGRESS:
+                return "IN PROGRESS";
+            case BILLING:
+                return "BILLING";
+            case COMPLETED:
+                return "COMPLETED";
+            default:
+                return status.toString();
+        }
+    }
+    
+    private String truncateString(String str, int maxLength) {
+        if (str == null) return "";
+        return str.length() > maxLength ? str.substring(0, maxLength - 3) + "..." : str;
     }
 
     private void pause() {

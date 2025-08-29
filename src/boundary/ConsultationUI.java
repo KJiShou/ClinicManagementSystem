@@ -1,12 +1,12 @@
 package boundary;
 
-import adt.HashedDictionary;
-import adt.QueueInterface;
-import adt.LinkedQueue;
-import adt.ArrayList;
+import adt.*;
 import entity.Patient;
 import entity.Doctor;
 import entity.User;
+import entity.pharmacyManagement.LabTest;
+import entity.pharmacyManagement.Medicine;
+import entity.pharmacyManagement.Prescription;
 import utility.MessageUI;
 
 import entity.Consultation;
@@ -221,7 +221,7 @@ public class ConsultationUI {
 
         return new Consultation(
                 id, patient, doctor, consultationDate, Consultation.Status.BILLING,
-                notes, startTime, endTime, totalPayment, "medical Treatment",null
+                notes, startTime, endTime, totalPayment, "medical Treatment",null, null
         );
     }
 
@@ -244,6 +244,8 @@ public class ConsultationUI {
         System.out.printf("| %-30s | %-30s |\n", "End Time", consultation.getEndTime() != null ? consultation.getEndTime().format(ARRIVAL_FMT) : "-");
         System.out.printf("| %-30s | %-30s |\n", "Medical Treatment", consultation.getMedicalTreatment());
         System.out.printf("| %-30s | %-30s |\n", "Total Payment", String.format("RM %.2f", consultation.getTotalPayment()));
+
+        // Display Notes
         String notes = consultation.getNotes();
         if (notes != null) {
             notes = notes.trim();
@@ -279,6 +281,188 @@ public class ConsultationUI {
         } else {
             System.out.printf("| %-30s | %-30s |\n", "Notes", "No notes provided.");
         }
+
+        // Display Prescription Count
+        ListInterface<Prescription> prescriptions = consultation.getPrescription();
+        int prescriptionCount = (prescriptions != null) ? prescriptions.size() : 0;
+        System.out.printf("| %-30s | %-30s |\n", "Number of Prescriptions", String.valueOf(prescriptionCount));
+
+        // Display Lab Test Count
+        ArrayList<LabTest> labTests = consultation.getLabTests();
+        int labTestCount = (labTests != null) ? labTests.size() : 0;
+        System.out.printf("| %-30s | %-30s |\n", "Number of Lab Tests", String.valueOf(labTestCount));
+
         System.out.println("+--------------------------------+--------------------------------+");
+
+        // Display Prescription Details
+        if (prescriptions != null && !prescriptions.isEmpty()) {
+            System.out.println("\n=== PRESCRIPTION DETAILS ===");
+
+            for (int i = 0; i < prescriptions.size(); i++) {
+                Prescription prescription = prescriptions.get(i);
+                System.out.println("+--------------------------------+--------------------------------+");
+                System.out.printf("| %-62s |\n", "PRESCRIPTION " + (i + 1));
+                System.out.println("+--------------------------------+--------------------------------+");
+
+                // Medicine details
+                Medicine medicine = prescription.getMedicine();
+                String medicineName = (medicine != null) ? medicine.getName() : "N/A";
+                String medicineBrand = (medicine != null) ? medicine.getBrand() : "N/A";
+                String medicineUnit = (medicine != null) ? medicine.getUnit() : "unit";
+                int prescribedQuantity = (medicine != null) ? medicine.getQuantity() : 0;
+
+                System.out.printf("| %-30s | %-30s |\n", "Medicine Name", medicineName);
+                System.out.printf("| %-30s | %-30s |\n", "Brand", medicineBrand);
+                System.out.printf("| %-30s | %-30s |\n", "Prescribed Quantity", prescribedQuantity + " " + medicineUnit);
+
+                // Prescription details
+                System.out.printf("| %-30s | %-30.2f |\n", "Dosage per Time", prescription.getDosagePerTime());
+                System.out.printf("| %-30s | %-30s |\n", "Times per Day", String.valueOf(prescription.getTimesPerDay()));
+                System.out.printf("| %-30s | %-30s |\n", "Duration (Days)", String.valueOf(prescription.getDays()));
+                System.out.printf("| %-30s | RM %-27.2f |\n", "Price", prescription.getMedicine().getPrice() * prescription.getMedicine().getQuantity());
+
+                // Description with proper text wrapping
+                String description = prescription.getDescription();
+                if (description != null && !description.trim().isEmpty()) {
+                    String[] descLines = description.trim().split("\\R");
+                    boolean firstLine = true;
+
+                    for (String line : descLines) {
+                        if (line.length() <= 30) {
+                            System.out.printf("| %-30s | %-30s |\n", firstLine ? "Description" : "", line);
+                            firstLine = false;
+                        } else {
+                            // Split long lines into 30-character chunks
+                            for (int j = 0; j < line.length(); j += 30) {
+                                String chunk = line.substring(j, Math.min(j + 30, line.length()));
+                                System.out.printf("| %-30s | %-30s |\n", firstLine ? "Description" : "", chunk);
+                                firstLine = false;
+                            }
+                        }
+                    }
+                } else {
+                    System.out.printf("| %-30s | %-30s |\n", "Description", "No description provided.");
+                }
+            }
+            System.out.println("+--------------------------------+--------------------------------+");
+
+            // Display prescription summary
+            System.out.println("\n=== PRESCRIPTION SUMMARY ===");
+            float totalPrescriptionValue = 0.0f;
+            int totalMedicinesCount = prescriptions.size();
+
+            for (int i = 0; i < prescriptions.size(); i++) {
+                Prescription prescription = prescriptions.get(i);
+                Medicine medicine = prescription.getMedicine();
+                if (medicine != null) {
+                    float medicineValue = (float)medicine.getPrice() * medicine.getQuantity();
+                    totalPrescriptionValue += medicineValue;
+                }
+            }
+
+            System.out.println("+--------------------------------+--------------------------------+");
+            System.out.printf("| %-30s | %-30s |\n", "Total Medicines Prescribed", String.valueOf(totalMedicinesCount));
+            System.out.printf("| %-30s | %-30s |\n", "Total Prescription Value", String.format("RM %.2f", totalPrescriptionValue));
+            System.out.println("+--------------------------------+--------------------------------+");
+        } else {
+            System.out.println("\n=== PRESCRIPTION DETAILS ===");
+            System.out.println("No prescriptions found for this consultation.");
+        }
+
+        // Display Lab Test Details
+        if (labTests != null && !labTests.isEmpty()) {
+            System.out.println("\n=== LAB TEST DETAILS ===");
+
+            for (int i = 0; i < labTests.size(); i++) {
+                LabTest labTest = labTests.get(i);
+                System.out.println("+--------------------------------+--------------------------------+");
+                System.out.printf("| %-62s |\n", "LAB TEST " + (i + 1));
+                System.out.println("+--------------------------------+--------------------------------+");
+
+                // Lab Test basic details
+                String testName = (labTest.getName() != null) ? labTest.getName() : "N/A";
+                String testCode = (labTest.getCode() != null) ? labTest.getCode() : "N/A";
+                String referringLab = (labTest.getReferringLab() != null) ? labTest.getReferringLab().getName() : "N/A";
+
+                System.out.printf("| %-30s | %-30s |\n", "Test Name", testName);
+                System.out.printf("| %-30s | %-30s |\n", "Test Code", testCode);
+                System.out.printf("| %-30s | %-30s |\n", "Referring Lab", referringLab);
+                System.out.printf("| %-30s | RM %-27.2f |\n", "Price", labTest.getPrice());
+                System.out.printf("| %-30s | %-30s |\n", "Fasting Required", labTest.isFastingRequired() ? "Yes" : "No");
+
+                // Blood tubes required
+                String bloodTubes = labTest.getBloodTubes();
+                if (bloodTubes != null && !bloodTubes.trim().isEmpty()) {
+                    System.out.printf("| %-30s | %-30s |\n", "Blood Tubes Required", bloodTubes);
+                } else {
+                    System.out.printf("| %-30s | %-30s |\n", "Blood Tubes Required", "Not specified");
+                }
+
+                // Description with proper text wrapping
+                String description = labTest.getDescription();
+                if (description != null && !description.trim().isEmpty()) {
+                    String[] descLines = description.trim().split("\\R");
+                    boolean firstLine = true;
+
+                    for (String line : descLines) {
+                        if (line.length() <= 30) {
+                            System.out.printf("| %-30s | %-30s |\n", firstLine ? "Description" : "", line);
+                            firstLine = false;
+                        } else {
+                            // Split long lines into 30-character chunks
+                            for (int j = 0; j < line.length(); j += 30) {
+                                String chunk = line.substring(j, Math.min(j + 30, line.length()));
+                                System.out.printf("| %-30s | %-30s |\n", firstLine ? "Description" : "", chunk);
+                                firstLine = false;
+                            }
+                        }
+                    }
+                } else {
+                    System.out.printf("| %-30s | %-30s |\n", "Description", "No description provided.");
+                }
+
+                // Patient precautions with proper text wrapping
+                String precautions = labTest.getPatientPrecautions();
+                if (precautions != null && !precautions.trim().isEmpty()) {
+                    String[] precautionLines = precautions.trim().split("\\R");
+                    boolean firstLine = true;
+
+                    for (String line : precautionLines) {
+                        if (line.length() <= 30) {
+                            System.out.printf("| %-30s | %-30s |\n", firstLine ? "Patient Precautions" : "", line);
+                            firstLine = false;
+                        } else {
+                            // Split long lines into 30-character chunks
+                            for (int j = 0; j < line.length(); j += 30) {
+                                String chunk = line.substring(j, Math.min(j + 30, line.length()));
+                                System.out.printf("| %-30s | %-30s |\n", firstLine ? "Patient Precautions" : "", chunk);
+                                firstLine = false;
+                            }
+                        }
+                    }
+                } else {
+                    System.out.printf("| %-30s | %-30s |\n", "Patient Precautions", "None specified.");
+                }
+            }
+            System.out.println("+--------------------------------+--------------------------------+");
+
+            // Display lab test summary
+            System.out.println("\n=== LAB TEST SUMMARY ===");
+            double totalLabTestValue = 0.0;
+            int totalLabTestCount = labTests.size();
+
+            for (int i = 0; i < labTests.size(); i++) {
+                LabTest labTest = labTests.get(i);
+                totalLabTestValue += labTest.getPrice();
+            }
+
+            System.out.println("+--------------------------------+--------------------------------+");
+            System.out.printf("| %-30s | %-30s |\n", "Total Lab Tests Ordered", String.valueOf(totalLabTestCount));
+            System.out.printf("| %-30s | %-30s |\n", "Total Lab Test Value", String.format("RM %.2f", totalLabTestValue));
+            System.out.println("+--------------------------------+--------------------------------+");
+        } else {
+            System.out.println("\n=== LAB TEST DETAILS ===");
+            System.out.println("No lab tests found for this consultation.");
+        }
     }
 }

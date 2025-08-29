@@ -8,6 +8,11 @@ import utility.MessageUI;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.UUID;
@@ -23,8 +28,6 @@ public class PharmacyControl {
     private DictionaryInterface<String, Medicine> meds;
     private DictionaryInterface<String, LabTest> labTests;
     private DictionaryInterface<String, BloodTube> bloodTubeInventory;
-    private DictionaryInterface<String, Integer> medsRecord;
-    private DictionaryInterface<LabTest, Integer> labTestRecord;
     private PharmacyUI UI;
     private MessageUI messageUI;
     private Scanner scanner;
@@ -61,6 +64,12 @@ public class PharmacyControl {
                 case 4:
                     // Stock out Sales Item
                     stockOutItem();
+                    break;
+                case 5:
+                    generateLowStockReport((HashedDictionary<String, Medicine>) meds, 10);
+                    break;
+                case 6:
+                    generateExpiryAlertReport((HashedDictionary<String, Medicine>) meds, 100);
                     break;
                 case 999:
                     return;
@@ -464,6 +473,109 @@ public class PharmacyControl {
 
                 case "q":
                     System.out.println("No medicine selected.");
+                    return null;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    public LabTest chooseLabTest(HashedDictionary<String, LabTest> dict) {
+        if (dict == null || dict.isEmpty()) {
+            System.out.println("No lab tests available to choose from.");
+            return null;
+        }
+
+        ArrayList<LabTest> originalView = dict.valueList();
+        ArrayList<LabTest> currentView = new ArrayList<>(originalView);
+        int currentPage = 1;
+        String searchQuery = "";
+
+        while (true) {
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
+            if (totalPages == 0) totalPages = 1;
+
+            UI.displayLabTestList(currentView, totalItems, currentPage, totalPages, searchQuery);
+
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset | [C] Choose item | [Q] Quit");
+            System.out.print("Enter your choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) currentPage--;
+                    else {
+                        System.out.println("This is the first page.");
+                        pause();
+                    }
+                    break;
+
+                case "d":
+                    if (currentPage < totalPages) currentPage++;
+                    else {
+                        System.out.println("This is the last page.");
+                        pause();
+                    }
+                    break;
+
+                case "s":
+                    System.out.print("Enter search (Name/Tube Needed/Lab): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<LabTest> filtered = filterLabTest(originalView, searchQuery);
+                    if (filtered.isEmpty()) {
+                        System.out.println("No results found for: " + searchQuery);
+                        pause();
+                    } else {
+                        currentView = filtered;
+                        currentPage = 1;
+                    }
+                    break;
+
+                case "r":
+                    currentView = new ArrayList<>(originalView);
+                    searchQuery = "";
+                    currentPage = 1;
+                    break;
+
+                case "c": {
+                    if (currentView.isEmpty()) {
+                        System.out.println("No items to choose from.");
+                        pause();
+                        break;
+                    }
+
+                    int start = (currentPage - 1) * PAGE_SIZE;
+                    int endExclusive = Math.min(start + PAGE_SIZE, totalItems);
+                    int visibleCount = endExclusive - start;
+
+                    System.out.printf("Select item [1-%d] on this page to choose: ", visibleCount);
+                    String raw = scanner.nextLine().trim();
+                    int pick;
+
+                    try {
+                        pick = Integer.parseInt(raw);
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Invalid number.");
+                        pause();
+                        break;
+                    }
+
+                    if (pick < 1 || pick > visibleCount) {
+                        System.out.println("Out of range.");
+                        pause();
+                        break;
+                    }
+
+                    LabTest chosen = currentView.get(start + (pick - 1));
+                    System.out.println("Selected: " + chosen.getName() + 
+                        " - " + (chosen.getReferringLab() != null ? chosen.getReferringLab().getName() : "Unknown Lab"));
+                    return chosen;
+                }
+
+                case "q":
+                    System.out.println("No lab test selected.");
                     return null;
 
                 default:
@@ -1740,63 +1852,112 @@ public class PharmacyControl {
         return (s == null) ? "" : s.toLowerCase();
     }
 
-    public void addMedicineRecord(String medicine, int quantity) {
-        if (medsRecord.contains(medicine)) {
-            medsRecord.add(medicine, quantity + medsRecord.getValue(medicine));
-        } else {
-            medsRecord.add(medicine, quantity);
-        }
+    private static String truncateString(String s, int maxLength) {
+        if (s == null) return "";
+        return s.length() <= maxLength ? s : s.substring(0, maxLength - 3) + "...";
     }
 
-    public ArrayList<Entry<String, Integer>> getTop5SellingMedicines() {
-        if (medsRecord instanceof HashedDictionary<String, Integer> hashedMeds) {
-            ArrayList<Entry<String, Integer>> entryList = new ArrayList<>(hashedMeds.entryList());
-            entryList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+    // 1. LOW STOCK ALERT REPORT (Most Critical)
+    public void generateLowStockReport(HashedDictionary<String, Medicine> medicines, int reorderLevel) {
+        System.out.println("\n=== LOW STOCK ALERT REPORT SUMMARY ===");
+        System.out.println("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        System.out.println("Reorder Level: " + reorderLevel);
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
 
-            ArrayList<Entry<String, Integer>> top5Medicines = new ArrayList<>();
+        ArrayList<Medicine> allMeds = medicines.valueList();
+        int totalMedicines = allMeds.size();
+        int outOfStockCount = 0;
+        int lowStockCount = 0;
+        int adequateStockCount = 0;
 
-            int count = 0;
-            for (Entry<String, Integer> entry : entryList) {
-                if (count >= 5) break;
-
-                top5Medicines.add(entry);
-                count++;
+        for (int i = 0; i < allMeds.size(); i++) {
+            Medicine med = allMeds.get(i);
+            if (med.getQuantity() == 0) {
+                outOfStockCount++;
+            } else if (med.getQuantity() <= reorderLevel) {
+                lowStockCount++;
+            } else {
+                adequateStockCount++;
             }
-
-            return top5Medicines;
         }
-        return new ArrayList<>();
-    }
 
-    public void addLabTestRecord(String labTest, int quantity) {
-        if (medsRecord.contains(labTest)) {
-            medsRecord.add(labTest, quantity + medsRecord.getValue(labTest));
+        System.out.printf("| %-30s | %-10s |%n", "CATEGORY", "COUNT");
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+        System.out.printf("| %-30s | %-10d |%n", "Total Medicines", totalMedicines);
+        System.out.printf("| %-30s | %-10d |%n", "Out of Stock", outOfStockCount);
+        System.out.printf("| %-30s | %-10d |%n", "Low Stock", lowStockCount);
+        System.out.printf("| %-30s | %-10d |%n", "Adequate Stock", adequateStockCount);
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+        
+        int totalRequiringAttention = outOfStockCount + lowStockCount;
+        System.out.printf("Total medicines requiring attention: %d%n", totalRequiringAttention);
+        
+        if (totalRequiringAttention > 0) {
+            System.out.println("WARNING: ACTION REQUIRED - Please restock medicines below reorder level");
         } else {
-            medsRecord.add(labTest, quantity);
+            System.out.println("SUCCESS: All medicines are adequately stocked");
         }
+        pause();
     }
 
-    public ArrayList<Entry<LabTest, Integer>> getTop5SellingLabTests() {
-        if (labTestRecord instanceof HashedDictionary<LabTest, Integer> hashedLabTests) {
-            ArrayList<Entry<LabTest, Integer>> entryList = new ArrayList<>(hashedLabTests.entryList());
-            entryList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+    // 2. EXPIRY ALERT REPORT
+    public void generateExpiryAlertReport(HashedDictionary<String, Medicine> medicines, int daysAhead) {
+        System.out.println("\n=== MEDICINE EXPIRY ALERT REPORT SUMMARY ===");
+        System.out.println("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        System.out.printf("Alert Period: Next %d days%n", daysAhead);
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
 
-            ArrayList<Entry<LabTest, Integer>> top5LabTests = new ArrayList<>();
 
-            int count = 0;
-            for (Entry<LabTest, Integer> entry : entryList) {
-                if (count >= 5) break;
+        Date today = new Date();
+        long cutoffTime = today.getTime() + (daysAhead * 24L * 60L * 60L * 1000L);
+        Date cutoffDate = new Date(cutoffTime);
+        ArrayList<Medicine> allMeds = medicines.valueList();
+        
+        int totalMedicines = allMeds.size();
+        int expiredCount = 0;
+        int expiringCount = 0;
+        int safeCount = 0;
 
-                top5LabTests.add(entry);
-                count++;
+        for (int i = 0; i < allMeds.size(); i++) {
+            Medicine med = allMeds.get(i);
+            if (med.getExpiryDate() != null) {
+                long daysLeft = (med.getExpiryDate().getTime() - today.getTime()) / (24L * 60L * 60L * 1000L);
+                
+                if (daysLeft < 0) {
+                    expiredCount++;
+                } else if (daysLeft <= daysAhead) {
+                    expiringCount++;
+                } else {
+                    safeCount++;
+                }
+            } else {
+                safeCount++; // Treat medicines without expiry date as safe
             }
-
-            return top5LabTests;
         }
-        return new ArrayList<>();
+
+        System.out.printf("| %-30s | %-10s |%n", "CATEGORY", "COUNT");
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+        System.out.printf("| %-30s | %-10d |%n", "Total Medicines", totalMedicines);
+        System.out.printf("| %-30s | %-10d |%n", "Already Expired", expiredCount);
+        System.out.printf("| %-30s | %-10d |%n", "Expiring Soon", expiringCount);
+        System.out.printf("| %-30s | %-10d |%n", "Safe (Not Expiring)", safeCount);
+        System.out.println("+" + "-".repeat(32) + "+" + "-".repeat(12) + "+");
+        
+        int totalRequiringAttention = expiredCount + expiringCount;
+        System.out.printf("Total medicines requiring attention: %d%n", totalRequiringAttention);
+        
+        if (expiredCount > 0) {
+            System.out.println("CRITICAL: " + expiredCount + " medicine(s) have already expired - remove immediately");
+        }
+        if (expiringCount > 0) {
+            System.out.println("WARNING: " + expiringCount + " medicine(s) expiring within " + daysAhead + " days");
+        }
+        if (totalRequiringAttention == 0) {
+            System.out.println("SUCCESS: All medicines are within safe expiry period");
+        }
+        pause();
     }
 
-    // TODO: what report can do
     public DictionaryInterface<String, Medicine> getMeds() {
         return meds;
     }

@@ -10,14 +10,16 @@ public class SalesItem {
     private String description;
     private Company company;
     private Date expiryDate;
+    private int quantity;
 
-    public SalesItem(UUID id, String name, double price, String description, Company company,  Date expiryDate) {
+    public SalesItem(UUID id, String name, double price, String description, Company company,  Date expiryDate, int quantity) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.description = description;
         this.company = company;
         this.expiryDate = expiryDate;
+        this.quantity = quantity;
     }
 
     public UUID getId() {
@@ -65,6 +67,9 @@ public class SalesItem {
     public void setExpiryDate(Date expiryDate) {
         this.expiryDate = expiryDate;
     }
+
+    public int getQuantity() {return  quantity;}
+    public void setQuantity(int quantity) {this.quantity = quantity;}
 
     public String toString() {
         return " Name: " + name + " Price: " + price + " Company: " +company;

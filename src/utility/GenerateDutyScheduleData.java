@@ -27,21 +27,22 @@ public class GenerateDutyScheduleData {
             ListInterface<DutySchedule> doctorSchedules = new ArrayList<>();
 
             switch (i % 4) {
-                case 0: //doctor1
+                case 0: //doctor1 - js
                     doctorSchedules.add(new DutySchedule("2025-08-20", "09:00", "18:00"));
                     doctorSchedules.add(new DutySchedule("2025-08-22", "08:00", "17:00"));
                     doctorSchedules.add(new DutySchedule("2025-08-24", "15:00", "22:00"));
-                    break;
-                case 1: //doctor2
-                    doctorSchedules.add(new DutySchedule("2025-08-21", "09:00", "18:00"));
-                    doctorSchedules.add(new DutySchedule("2025-08-23", "13:00", "20:00"));
-                    doctorSchedules.add(new DutySchedule("2025-08-25", "10:00", "19:00"));
-                    break;
-                case 2: //doctor3
-                    doctorSchedules.add(new DutySchedule("2025-08-26", "08:30", "17:30"));
                     doctorSchedules.add(new DutySchedule("2025-08-27", "14:00", "21:00"));
                     break;
-                case 3: //doctor4
+                case 1: //doctor2 - jy
+                    doctorSchedules.add(new DutySchedule("2025-08-21", "09:00", "18:00"));
+                    doctorSchedules.add(new DutySchedule("2025-08-23", "13:00", "20:00"));
+                    break;
+                case 2: //doctor3 - alex
+                    doctorSchedules.add(new DutySchedule("2025-08-25", "08:30", "17:30"));
+                    doctorSchedules.add(new DutySchedule("2025-08-26", "10:00", "19:00"));
+                    break;
+                case 3: //doctor4 - susan
+                    doctorSchedules.add(new DutySchedule("2025-08-27", "08:00", "14:00"));
                     doctorSchedules.add(new DutySchedule("2025-09-02", "12:30", "21:30"));
                     break;
             }
