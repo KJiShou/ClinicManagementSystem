@@ -61,6 +61,8 @@ public class PrescriptionControl {
                 case 3:
                     editPrescription(prescriptionList);
                     break;
+                case 4:
+                    generateReports();
                 case 999:
                     break;
                 default:
@@ -148,7 +150,7 @@ public class PrescriptionControl {
             return null;
         }
     }
-  
+
     private Medicine createPrescriptionMedicine(Medicine originalMedicine, int prescriptionQuantity) {
         Medicine prescriptionMedicine = new Medicine(
                 originalMedicine.getId(),
@@ -268,6 +270,80 @@ public class PrescriptionControl {
         } else {
             System.out.println("Delete cancelled.");
         }
+    }
+
+    public void generateReports() {
+        System.out.println("\n\n+==================================================================================+");
+        System.out.println("|                           PRESCRIPTION SUMMARY REPORT                            |");
+        System.out.println("+==================================================================================+");
+
+        int totalPrescriptions = prescriptions.size();
+        int totalQuantityAll = 0;
+
+        // ArrayList to track medicine names, prescription count and quantity count
+        ArrayList<String> medicineNames = new ArrayList<>();
+        ArrayList<Integer> prescriptionCounts = new ArrayList<>();
+        ArrayList<Integer> quantityCounts = new ArrayList<>();
+
+        // Iterate through prescriptions
+        for (int i = 0; i < prescriptions.size(); i++) {
+            Prescription p = prescriptions.get(i);
+            Medicine med = p.getMedicine();
+            String medName = med.getName();
+
+            //  Sums up total quantity for all prescribed meds
+            int quantity = med.getQuantity();
+            totalQuantityAll += quantity;
+
+            //  Look inside medicineNames to find the index of medName.
+            int index = medicineNames.indexOf(medName);
+
+            //  If not found, create a new meds to track
+            //  E.g.    medicineNames       ["Panadol", "Strepsils"]
+            //          prescriptionCounts  [2, 1]
+            //          quantityCounts      [7, 3]
+            if (index == -1) {
+                medicineNames.add(medName);
+                prescriptionCounts.add(1);
+                quantityCounts.add(quantity);
+            } else {
+                //  If found, tambah into existing index of meds
+                //  E.g.    medicineNames       ["Panadol", "Strepsils"]
+                //          prescriptionCounts  [3 (2 + 1), 1]
+                //          quantityCounts      [11 (7 + 4), 3]
+                prescriptionCounts.set(index, prescriptionCounts.get(index) + 1);
+                quantityCounts.set(index, quantityCounts.get(index) + quantity);
+            }
+        }
+
+        // Find most prescribed medicine
+        int maxIndex = 0;
+        for (int i = 1; i < prescriptionCounts.size(); i++) {
+            if (prescriptionCounts.get(i) > prescriptionCounts.get(maxIndex)) {
+                maxIndex = i;
+            }
+        }
+
+        // Print summary report
+        System.out.printf("| %-40s | %-25d             |\n", "Total Prescriptions", totalPrescriptions);
+        System.out.printf("| %-40s | %-25s   (%d times) |\n", "Most Prescribed Medicine",
+                medicineNames.get(maxIndex), prescriptionCounts.get(maxIndex));
+        System.out.printf("| %-40s | %-25d             |\n", "Total Quantity (" + medicineNames.get(maxIndex) + ")",
+                quantityCounts.get(maxIndex));
+        System.out.printf("| %-40s | %-25d             |\n", "Total Quantity (All)", totalQuantityAll);
+        System.out.println("+----------------------------------------------------------------------------------+");
+
+        // Print detailed usage report
+        System.out.println("\n+=======================================================+");
+        System.out.println("|               PRESCRIPTION USAGE REPORT               |");
+        System.out.println("+=======================================================+");
+        System.out.printf("| %-25s | %-12s | %-9s |\n", "Medicine", "Prescriptions", "Units");
+        System.out.println("+-------------------------------------------------------+");
+        for (int i = 0; i < medicineNames.size(); i++) {
+            System.out.printf("| %-25s | %-12d  | %-9d |\n",
+                    medicineNames.get(i), prescriptionCounts.get(i), quantityCounts.get(i));
+        }
+        System.out.println("+-------------------------------------------------------+");
     }
 
     // Validation helper methods

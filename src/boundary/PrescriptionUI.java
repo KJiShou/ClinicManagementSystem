@@ -27,6 +27,7 @@ public class PrescriptionUI {
         choiceQueue.enqueue("Add Prescription");
         choiceQueue.enqueue("View Prescriptions");
         choiceQueue.enqueue("Edit Existing Prescription");
+        choiceQueue.enqueue("Prescription Reports");
 
         MessageUI messageUI = new MessageUI();
 
