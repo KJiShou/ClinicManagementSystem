@@ -59,7 +59,7 @@ public class MainControl {
         PrescriptionControl prescriptionControl = new PrescriptionControl(medicines, pharmacy);
         //prescriptionControl.main();
 
-        ConsultationControl consultationControl = new ConsultationControl(consultations, prescriptionControl, scheduleControl, pharmacy);
+        ConsultationControl consultationControl = new ConsultationControl(consultations, patients, doctors, prescriptionControl, scheduleControl, pharmacy);
         //consultationControl.main();
 
         AppointmentControl appointmentControl = new AppointmentControl(patients, doctors, appointments);
@@ -83,7 +83,7 @@ public class MainControl {
                     break;
                 case 2:
                     // Consultation
-                    consultationControl.viewConsultation();
+                    consultationControl.main();
                     break;
                 case 3:
                     // Pharmacy
