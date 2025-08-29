@@ -2,6 +2,7 @@
 package boundary;
 
 import adt.*;
+import entity.Patient;
 import entity.pharmacyManagement.LabTest;
 import entity.pharmacyManagement.Medicine;
 import entity.pharmacyManagement.Prescription;
@@ -371,29 +372,135 @@ public class ConsultationUI {
             return null;
         }
 
+        // Convert to ArrayList for easier handling
+        ArrayList<Consultation> consultationList = new ArrayList<>();
+        for (int i = 0; i < consultations.size(); i++) {
+            consultationList.add(consultations.get(i));
+        }
+
+        ArrayList<Consultation> currentView = new ArrayList<>(consultationList);
+        int currentPage = 1;
+        String searchQuery = "";
+
         while (true) {
-            System.out.println("\nAvailable Consultations:");
-            for (int i = 0; i < consultations.size(); i++) {
-                Consultation cons = consultations.get(i);
-                System.out.printf("%2d. Patient: %-20s | Doctor: %-20s | Status: %-10s%n",
-                        (i + 1), cons.getPatient().getName(), cons.getDoctor().getName(), cons.getStatus());
-            }
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + pageSize - 1) / pageSize;
+            if (totalPages == 0) totalPages = 1;
 
-            System.out.printf("Select consultation (1-%d) or 0 to cancel: ", consultations.size());
+            displayConsultationSelectionList(currentView, totalItems, currentPage, totalPages, searchQuery);
 
-            try {
-                int choice = Integer.parseInt(scanner.nextLine().trim());
-                if (choice == 0) {
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset |");
+            System.out.println("Or enter consultation number to select | [Q] Cancel");
+            System.out.print("Choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) {
+                        currentPage--;
+                    } else {
+                        System.out.println("This is the first page.");
+                        pause();
+                    }
+                    break;
+                case "d":
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                    } else {
+                        System.out.println("This is the last page.");
+                        pause();
+                    }
+                    break;
+                case "s":
+                    System.out.print("Enter search (Patient Name/Doctor Name): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<Consultation> filtered = filterConsultations(consultationList, searchQuery);
+                    if (!filtered.isEmpty()) {
+                        currentView = filtered;
+                        currentPage = 1;
+                    } else {
+                        System.out.println("No results found for: " + searchQuery);
+                        pause();
+                    }
+                    break;
+                case "r":
+                    currentView = new ArrayList<>(consultationList);
+                    searchQuery = "";
+                    currentPage = 1;
+                    break;
+                case "q":
                     return null;
-                }
-                if (choice >= 1 && choice <= consultations.size()) {
-                    return consultations.get(choice - 1);
-                }
-                System.out.println("Invalid selection. Please try again.");
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number.");
+                default:
+                    try {
+                        int choice = Integer.parseInt(input);
+                        if (choice >= 1 && choice <= currentView.size()) {
+                            return currentView.get(choice - 1);
+                        } else {
+                            System.out.println("Invalid choice. Please select from the displayed consultations.");
+                            pause();
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Please enter a valid number or command.");
+                        pause();
+                    }
             }
         }
+    }
+
+    private ArrayList<Consultation> filterConsultations(ArrayList<Consultation> consultations, String searchQuery) {
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
+            return new ArrayList<>(consultations);
+        }
+
+        String query = searchQuery.toLowerCase();
+        ArrayList<Consultation> filtered = new ArrayList<>();
+
+        for (int i = 0; i < consultations.size(); i++) {
+            Consultation consultation = consultations.get(i);
+            boolean matches = false;
+
+            // Search by patient
+            if (consultation.getPatient().getName() != null && consultation.getPatient().getName().toLowerCase().contains(query)) {
+                matches = true;
+            }
+
+            // Search by doctor
+            if (!matches && consultation.getDoctor().getName() != null && consultation.getDoctor().getName().toLowerCase().contains(query)) {
+                matches = true;
+            }
+
+            if (matches) {
+                filtered.add(consultation);
+            }
+        }
+
+        return filtered;
+    }
+
+    public void displayConsultationSelectionList(ArrayList<Consultation> consultations, int totalItems, int currentPage, int totalPages, String searchQuery) {
+        int start = (currentPage - 1) * pageSize;
+        int end   = Math.min(totalItems, start + pageSize);
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
+
+        if(!(searchQuery == null || searchQuery.isEmpty())) {
+            System.out.println("Search query: " + searchQuery);
+        }
+
+        // Header
+        System.out.printf("Page %d/%d%n", currentPage, totalPages);
+        System.out.println("+-----+------------------------------------------+------------------------------------------+--------------------------------+----------------------+");
+        System.out.printf("| %-3s | %-40s | %-40s | %-30s | %-20s |\n", "No.", "Patient", "Doctor", "Status", "Total Payment");
+        System.out.println("+-----+------------------------------------------+------------------------------------------+--------------------------------+----------------------+");
+
+        // Rows
+        for (int i = start; i < end; i++) {
+            Consultation consultation = consultations.get(i);
+
+            System.out.printf("| %-3d | %-40s | %-40s | %-30s | RM %-17.2f |\n", i+1, consultation.getPatient().getName(), consultation.getDoctor().getName(), consultation.status == Consultation.Status.IN_PROGRESS ? "IN PROGRESS":consultation.status.toString(), consultation.getTotalPayment());
+        }
+
+        System.out.println("+-----+------------------------------------------+------------------------------------------+--------------------------------+----------------------+");
+        System.out.println();  // blank line between pages
     }
 
     public void displayMessage(String message) {

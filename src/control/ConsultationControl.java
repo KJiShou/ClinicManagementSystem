@@ -209,7 +209,7 @@ public class ConsultationControl {
         LocalTime endTime;
         do {
             try {
-                System.out.print("Enter Start Time (HH:MM, 24H format): ");
+                System.out.print("Enter End Time (HH:MM, 24H format): ");
                 endTime = LocalTime.parse(scanner.nextLine());
             } catch (Exception e) {
                 System.out.println("Invalid time format, try again.\n");
@@ -244,35 +244,145 @@ public class ConsultationControl {
             return null;
         }
 
+        ArrayList<Patient> currentView = new ArrayList<>(patients);
+        int currentPage = 1;
+        String searchQuery = "";
+
         while (true) {
-            System.out.printf("Available Patients (1-%d):\n", patients.size());
-            for (int i = 0; i < Math.min(patients.size(), 10); i++) {
-                Patient patient = patients.get(i);
-                System.out.printf("[%d] %s (IC: %s)\n",
-                        i + 1,
-                        patient.getName(),
-                        patient.getPatientIC() != null ? patient.getPatientIC() : "N/A");
-            }
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + PAGE_SIZE - 1) / PAGE_SIZE;
+            if (totalPages == 0) totalPages = 1;
 
-            if (patients.size() > 10) {
-                System.out.println("... and " + (patients.size() - 10) + " more patients");
-            }
+            displayPatientList(currentView, totalItems, currentPage, totalPages, searchQuery);
 
-            System.out.printf("Select patient (1-%d) or 0 to cancel: ", patients.size());
+            System.out.println("Press: [A] Prev | [D] Next | [S] Search | [R] Reset |");
+            System.out.println("Or enter patient number to select | [Q] Cancel");
+            System.out.print("Choice: ");
+            String input = scanner.nextLine().trim().toLowerCase();
 
-            try {
-                int choice = Integer.parseInt(scanner.nextLine().trim());
-                if (choice == 0) {
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) {
+                        currentPage--;
+                    } else {
+                        System.out.println("This is the first page.");
+                        UI.pause();
+                    }
+                    break;
+                case "d":
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                    } else {
+                        System.out.println("This is the last page.");
+                        UI.pause();
+                    }
+                    break;
+                case "s":
+                    System.out.print("Enter search (Name/IC/Phone): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<Patient> filtered = filterPatients(patients, searchQuery);
+                    if (!filtered.isEmpty()) {
+                        currentView = filtered;
+                        currentPage = 1;
+                    } else {
+                        System.out.println("No results found for: " + searchQuery);
+                        UI.pause();
+                    }
+                    break;
+                case "r":
+                    currentView = new ArrayList<>(patients);
+                    searchQuery = "";
+                    currentPage = 1;
+                    break;
+                case "q":
                     return null;
-                }
-                if (choice >= 1 && choice <= patients.size()) {
-                    return patients.get(choice - 1);
-                }
-                System.out.println("Invalid selection.");
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number.");
+                default:
+                    try {
+                        int choice = Integer.parseInt(input);
+                        if (choice >= 1 && choice <= currentView.size()) {
+                            return currentView.get(choice - 1);
+                        } else {
+                            System.out.println("Invalid choice. Please select from the displayed patients.");
+                            UI.pause();
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Please enter a valid number or command.");
+                        UI.pause();
+                    }
             }
         }
+    }
+
+    private void displayPatientList(ArrayList<Patient> patients, int totalItems, int currentPage, int totalPages, String searchQuery) {
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println("                            PATIENT SELECTION");
+        System.out.println("=".repeat(80));
+        
+        if (!searchQuery.isEmpty()) {
+            System.out.printf("Search results for: \"%s\"\n", searchQuery);
+            System.out.println("-".repeat(80));
+        }
+        
+        System.out.printf("Page %d of %d | Total patients: %d\n", currentPage, totalPages, totalItems);
+        System.out.println("-".repeat(80));
+        
+        if (patients.isEmpty()) {
+            System.out.println("No patients found.");
+            System.out.println("=".repeat(80));
+            return;
+        }
+        
+        int start = (currentPage - 1) * PAGE_SIZE;
+        int end = Math.min(start + PAGE_SIZE, patients.size());
+        
+        System.out.printf("%-4s | %-25s | %-15s | %-20s\n", "No.", "Name", "IC", "Phone");
+        System.out.println("-".repeat(80));
+        
+        for (int i = start; i < end; i++) {
+            Patient patient = patients.get(i);
+            System.out.printf("%-4d | %-25s | %-15s | %-20s\n",
+                    i + 1,
+                    truncateString(patient.getName(), 25),
+                    patient.getPatientIC() != null ? patient.getPatientIC() : "N/A",
+                    patient.getPhone() != null ? patient.getPhone() : "N/A");
+        }
+        
+        System.out.println("=".repeat(80));
+    }
+
+    private ArrayList<Patient> filterPatients(ArrayList<Patient> patients, String searchQuery) {
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
+            return new ArrayList<>(patients);
+        }
+        
+        String query = searchQuery.toLowerCase();
+        ArrayList<Patient> filtered = new ArrayList<>();
+        
+        for (int i = 0; i < patients.size(); i++) {
+            Patient patient = patients.get(i);
+            boolean matches = false;
+            
+            // Search by name
+            if (patient.getName() != null && patient.getName().toLowerCase().contains(query)) {
+                matches = true;
+            }
+            
+            // Search by IC
+            if (!matches && patient.getPatientIC() != null && patient.getPatientIC().toLowerCase().contains(query)) {
+                matches = true;
+            }
+            
+            // Search by phone
+            if (!matches && patient.getPhone() != null && patient.getPhone().contains(query)) {
+                matches = true;
+            }
+            
+            if (matches) {
+                filtered.add(patient);
+            }
+        }
+        
+        return filtered;
     }
 
     private Doctor selectDoctor() {
