@@ -80,12 +80,8 @@ public class Appointment {
         switch (status) {
             case SCHEDULED:
                 return "SCHEDULED";
-            case CONFIRMED:
-                return "CONFIRMED";
             case CANCELLED:
                 return "CANCELLED";
-            case COMPLETED:
-                return "COMPLETED";
             default:
                 return status != null ? status.toString() : "N/A";
         }
@@ -96,6 +92,7 @@ public class Appointment {
                 "\nPatient ID      : " + getPatientId() +
                 "\nDoctor ID       : " + getDoctorId() +
                 "\nStaff ID        : " + (staff != null ? getStaffId() : "N/A") +
+                "\nCreated By      : " + (staff != null ? staff.getName() + " (" + staff.getAccount() + ")" : "N/A") +
                 "\nDate            : " + appointmentDate +
                 "\nAppointmentType : " + appointmentType +
                 "\nStart Time      : " + startTime +
@@ -106,8 +103,6 @@ public class Appointment {
     
     public enum Status {
         SCHEDULED,
-        CONFIRMED,
-        CANCELLED,
-        COMPLETED
+        CANCELLED
     }
 }

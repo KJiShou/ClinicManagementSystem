@@ -342,6 +342,7 @@ public class DutyScheduleControl {
         System.out.println("+-----+----------------------+------------+");
         System.out.println("Summary: " + doctor.getName()
                 + " consulted " + consCount + " patients.");
+        ui.pause();
     }
 
 

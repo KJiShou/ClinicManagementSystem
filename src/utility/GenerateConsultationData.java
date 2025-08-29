@@ -2,11 +2,13 @@
 package utility;
 
 import adt.ArrayList;
+import adt.DictionaryInterface;
 import adt.ListInterface;
 import entity.Consultation;
 import entity.Doctor;
 import entity.Patient;
 import entity.pharmacyManagement.LabTest;
+import entity.pharmacyManagement.Medicine;
 import entity.pharmacyManagement.Prescription;
 import entity.pharmacyManagement.SalesItem;
 
@@ -23,7 +25,36 @@ public class GenerateConsultationData {
         return LocalTime.parse(timeString, TIME_FORMATTER);
     }
 
-    public static ListInterface<Consultation> createSampleConsultation(ListInterface<Doctor> doctors, ArrayList<Patient> patients) throws ParseException {        ListInterface<Consultation> consultations = new ArrayList<>();
+    private static ArrayList<Prescription> createPrescriptionList(DictionaryInterface<String, Medicine> medicines, String... medicineKeys) {
+        ArrayList<Prescription> prescriptions = new ArrayList<>();
+        for (String key : medicineKeys) {
+            Medicine medicine = medicines.getValue(key);
+            if (medicine != null) {
+                prescriptions.add(new Prescription(
+                    UUID.randomUUID(),
+                    "Take as directed by doctor",
+                    1.0f, // dosagePerTime
+                    2, // timesPerDay
+                    7, // days
+                    medicine
+                ));
+            }
+        }
+        return prescriptions;
+    }
+
+    private static ArrayList<LabTest> createLabTestList(DictionaryInterface<String, LabTest> labTests, String... labTestKeys) {
+        ArrayList<LabTest> testList = new ArrayList<>();
+        for (String key : labTestKeys) {
+            LabTest test = labTests.getValue(key);
+            if (test != null) {
+                testList.add(test);
+            }
+        }
+        return testList;
+    }
+
+    public static ListInterface<Consultation> createSampleConsultation(ListInterface<Doctor> doctors, ArrayList<Patient> patients, DictionaryInterface<String, Medicine> medicines, DictionaryInterface<String, LabTest> labTests) throws ParseException {        ListInterface<Consultation> consultations = new ArrayList<>();
 
         LocalDate today = LocalDate.now();
         LocalDate yesterday = today.minusDays(1);
@@ -52,8 +83,8 @@ public class GenerateConsultationData {
                 parseTime("12:30"),
                 50.00f,
                 "medical treatment",
-                new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createPrescriptionList(medicines, "Paracetamol|500 mg|2027-12-31", "Chlorpheniramine|4 mg|2027-12-31"),
+                createLabTestList(labTests, "Full Blood Count")
         ));
 
         consultations.add(new Consultation(
@@ -67,7 +98,7 @@ public class GenerateConsultationData {
                 parseTime("10:00"),
                 35.50f,
                 "medical treatment",
-                new ArrayList<Prescription>(),
+                createPrescriptionList(medicines, "Paracetamol|500 mg|2027-12-31", "Ibuprofen|400 mg|2027-12-31"),
                 new ArrayList<LabTest>()
         ));
 
@@ -83,7 +114,7 @@ public class GenerateConsultationData {
                 75.00f,
                 "medical treatment",
                 new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createLabTestList(labTests, "Full Blood Count", "Lipid Profile")
         ));
 
         consultations.add(new Consultation(
@@ -97,8 +128,8 @@ public class GenerateConsultationData {
                 ip1End,
                 150.00f,
                 "medical treatment",
-                new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createPrescriptionList(medicines, "Losartan|50 mg|2027-12-31", "Amlodipine|10 mg|2027-12-31"),
+                createLabTestList(labTests, "Lipid Profile", "HbA1c")
         ));
 
         consultations.add(new Consultation(
@@ -112,8 +143,8 @@ public class GenerateConsultationData {
                 parseTime("14:00"),
                 180.25f,
                 "medical treatment",
-                new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createPrescriptionList(medicines, "Cetirizine|10 mg|2027-12-31", "Bilastine|20 mg|2027-12-31"),
+                createLabTestList(labTests, "Total IgE")
         ));
 
         consultations.add(new Consultation(
@@ -127,8 +158,8 @@ public class GenerateConsultationData {
                 parseTime("09:45"),
                 105.00f,
                 "medical treatment",
-                new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createPrescriptionList(medicines, "Children's Paracetamol (Syrup)|120 mg/5ml|2027-12-31"),
+                createLabTestList(labTests, "Full Blood Count")
         ));
 
         consultations.add(new Consultation(
@@ -142,7 +173,7 @@ public class GenerateConsultationData {
                 w2End,
                 60.00f,
                 "medical treatment",
-                new ArrayList<Prescription>(),
+                createPrescriptionList(medicines, "Ibuprofen|400 mg|2027-12-31", "Diclofenac Gel|1%|2027-12-31"),
                 new ArrayList<LabTest>()
         ));
 
@@ -157,7 +188,7 @@ public class GenerateConsultationData {
                 ip2End,
                 250.00f,
                 "medical treatment",
-                new ArrayList<Prescription>(),
+                createPrescriptionList(medicines, "Alprazolam|0.5 mg|2027-12-31"),
                 new ArrayList<LabTest>()
         ));
 
@@ -172,7 +203,7 @@ public class GenerateConsultationData {
                 parseTime("16:30"),
                 90.00f,
                 "medical treatment",
-                new ArrayList<Prescription>(),
+                createPrescriptionList(medicines, "Hydrocortisone Cream|1%|2027-12-31", "Chlorpheniramine|4 mg|2027-12-31"),
                 new ArrayList<LabTest>()
         ));
 
@@ -188,7 +219,7 @@ public class GenerateConsultationData {
                 85.75f,
                 "medical treatment",
                 new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createLabTestList(labTests, "Lipid Profile", "HbA1c", "Fasting Blood Sugar")
         ));
 
         consultations.add(new Consultation(
@@ -203,7 +234,7 @@ public class GenerateConsultationData {
                 75.00f,
                 "Blood pressure monitoring, general examination",
                 new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createLabTestList(labTests, "Full Blood Count", "Lipid Profile")
         ));
 
         consultations.add(new Consultation(
@@ -217,8 +248,8 @@ public class GenerateConsultationData {
                 parseTime("11:15"),
                 120.50f,
                 "Diabetes consultation, medication review",
-                new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createPrescriptionList(medicines, "Metformin|500 mg|2027-12-31", "Gliclazide MR|30 mg|2027-12-31"),
+                createLabTestList(labTests, "HbA1c", "Fasting Blood Sugar")
         ));
 
         consultations.add(new Consultation(
@@ -232,7 +263,7 @@ public class GenerateConsultationData {
                 parseTime("14:30"),
                 95.25f,
                 "Prescribed pain relief, lifestyle advice",
-                new ArrayList<Prescription>(),
+                createPrescriptionList(medicines, "Paracetamol|500 mg|2027-12-31", "Ibuprofen|400 mg|2027-12-31"),
                 new ArrayList<LabTest>()
         ));
 
@@ -247,7 +278,7 @@ public class GenerateConsultationData {
                 parseTime("16:00"),
                 85.00f,
                 "Dermatology consultation, topical treatment",
-                new ArrayList<Prescription>(),
+                createPrescriptionList(medicines, "Hydrocortisone Cream|1%|2027-12-31", "Betamethasone Cream|0.1%|2027-12-31"),
                 new ArrayList<LabTest>()
         ));
 
@@ -263,7 +294,7 @@ public class GenerateConsultationData {
                 150.00f,
                 "Comprehensive health screening",
                 new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createLabTestList(labTests, "Full Blood Count", "Lipid Profile", "HbA1c", "Liver Function Test")
         ));
 
         consultations.add(new Consultation(
@@ -277,8 +308,8 @@ public class GenerateConsultationData {
                 parseTime("17:15"),
                 110.75f,
                 "Antibiotics prescribed, rest advised",
-                new ArrayList<Prescription>(),
-                new ArrayList<LabTest>()
+                createPrescriptionList(medicines, "Amoxicillin|500 mg|2027-12-31", "Paracetamol|500 mg|2027-12-31"),
+                createLabTestList(labTests, "Full Blood Count")
         ));
 
         return consultations;

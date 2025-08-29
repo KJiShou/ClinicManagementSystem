@@ -33,10 +33,12 @@ public class GenerateDutyScheduleData {
                     doctorSchedules.add(new DutySchedule("2025-08-22", "08:00", "17:00"));
                     doctorSchedules.add(new DutySchedule("2025-08-24", "15:00", "22:00"));
                     doctorSchedules.add(new DutySchedule("2025-08-27", "14:00", "21:00"));
+                    doctorSchedules.add(new DutySchedule("2025-08-29", "14:00", "21:00"));
                     break;
                 case 1: //doctor2 - jy
                     doctorSchedules.add(new DutySchedule("2025-08-21", "09:00", "18:00"));
                     doctorSchedules.add(new DutySchedule("2025-08-23", "13:00", "20:00"));
+                    doctorSchedules.add(new DutySchedule("2025-08-29", "13:00", "20:00"));
                     break;
                 case 2: //doctor3 - alex
                     doctorSchedules.add(new DutySchedule("2025-08-25", "08:30", "17:30"));
@@ -49,7 +51,6 @@ public class GenerateDutyScheduleData {
             }
 
             scheduleDict.add(doctor.getUserID(), doctorSchedules);
-            System.out.println("Created " + doctorSchedules.size() + " schedules for doctor: " + doctor.getName());
         }
         return scheduleDict;
     }

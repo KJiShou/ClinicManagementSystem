@@ -4,6 +4,7 @@ package control;
 import adt.*;
 import boundary.PrescriptionUI;
 import entity.pharmacyManagement.*;
+import entity.Consultation;
 import utility.MessageUI;
 
 import java.io.IOException;
@@ -16,14 +17,16 @@ public class PrescriptionControl {
 
     private DictionaryInterface<String, Medicine> meds;
     private ListInterface<Prescription> prescriptions;
+    private ListInterface<Consultation> consultationList;
     private PrescriptionUI ui;
     private Scanner scanner;
     private ArrayList<Medicine> medicineList;
     private PharmacyControl pharmacyControl;
 
-    public PrescriptionControl(DictionaryInterface<String, Medicine> medicines, PharmacyControl pharmacyControl) {
+    public PrescriptionControl(DictionaryInterface<String, Medicine> medicines, PharmacyControl pharmacyControl, ListInterface<Consultation> consultationList) {
         meds = medicines;
         this.prescriptions = new ArrayList<>();
+        this.consultationList = consultationList;
         this.ui = new PrescriptionUI();
         this.scanner = new Scanner(System.in);
         this.pharmacyControl = pharmacyControl;
@@ -34,8 +37,8 @@ public class PrescriptionControl {
 
     // Overloaded constructor to accept existing prescription list
     public PrescriptionControl(DictionaryInterface<String, Medicine> medicines, PharmacyControl pharmacyControl,
-                               ListInterface<Prescription> existingPrescriptions) {
-        this(medicines, pharmacyControl);
+                               ListInterface<Consultation> consultationList, ListInterface<Prescription> existingPrescriptions) {
+        this(medicines, pharmacyControl, consultationList);
         this.prescriptions = existingPrescriptions;
     }
 
@@ -278,7 +281,30 @@ public class PrescriptionControl {
         System.out.println("|                           PRESCRIPTION SUMMARY REPORT                            |");
         System.out.println("+==================================================================================+");
 
-        int totalPrescriptions = prescriptions.size();
+        // First, collect all prescriptions from consultation list
+        ArrayList<Prescription> allPrescriptions = new ArrayList<>();
+        
+        if (consultationList != null) {
+            for (int i = 0; i < consultationList.size(); i++) {
+                Consultation consultation = consultationList.get(i);
+                ArrayList<Prescription> consultationPrescriptions = consultation.getPrescription();
+                
+                if (consultationPrescriptions != null) {
+                    for (int j = 0; j < consultationPrescriptions.size(); j++) {
+                        allPrescriptions.add(consultationPrescriptions.get(j));
+                    }
+                }
+            }
+        }
+        
+        // Also include standalone prescriptions if any
+        if (prescriptions != null) {
+            for (int i = 0; i < prescriptions.size(); i++) {
+                allPrescriptions.add(prescriptions.get(i));
+            }
+        }
+
+        int totalPrescriptions = allPrescriptions.size();
         int totalQuantityAll = 0;
 
         // ArrayList to track medicine names, prescription count and quantity count
@@ -286,9 +312,9 @@ public class PrescriptionControl {
         ArrayList<Integer> prescriptionCounts = new ArrayList<>();
         ArrayList<Integer> quantityCounts = new ArrayList<>();
 
-        // Iterate through prescriptions
-        for (int i = 0; i < prescriptions.size(); i++) {
-            Prescription p = prescriptions.get(i);
+        // Iterate through all collected prescriptions
+        for (int i = 0; i < allPrescriptions.size(); i++) {
+            Prescription p = allPrescriptions.get(i);
             Medicine med = p.getMedicine();
             String medName = med.getName();
 
@@ -317,20 +343,27 @@ public class PrescriptionControl {
             }
         }
 
-        // Find most prescribed medicine
-        int maxIndex = 0;
-        for (int i = 1; i < prescriptionCounts.size(); i++) {
-            if (prescriptionCounts.get(i) > prescriptionCounts.get(maxIndex)) {
-                maxIndex = i;
-            }
-        }
-
         // Print summary report
         System.out.printf("| %-40s | %-25d             |\n", "Total Prescriptions", totalPrescriptions);
-        System.out.printf("| %-40s | %-25s   (%d times) |\n", "Most Prescribed Medicine",
-                medicineNames.get(maxIndex), prescriptionCounts.get(maxIndex));
-        System.out.printf("| %-40s | %-25d             |\n", "Total Quantity (" + medicineNames.get(maxIndex) + ")",
-                quantityCounts.get(maxIndex));
+        
+        if (medicineNames.size() > 0) {
+            // Find most prescribed medicine
+            int maxIndex = 0;
+            for (int i = 1; i < prescriptionCounts.size(); i++) {
+                if (prescriptionCounts.get(i) > prescriptionCounts.get(maxIndex)) {
+                    maxIndex = i;
+                }
+            }
+            
+            System.out.printf("| %-40s | %-25s   (%d times) |\n", "Most Prescribed Medicine",
+                    medicineNames.get(maxIndex), prescriptionCounts.get(maxIndex));
+            System.out.printf("| %-40s | %-25d             |\n", "Total Quantity (" + medicineNames.get(maxIndex) + ")",
+                    quantityCounts.get(maxIndex));
+        } else {
+            System.out.printf("| %-40s | %-25s             |\n", "Most Prescribed Medicine", "None");
+            System.out.printf("| %-40s | %-25d             |\n", "Total Quantity (Most Prescribed)", 0);
+        }
+        
         System.out.printf("| %-40s | %-25d             |\n", "Total Quantity (All)", totalQuantityAll);
         System.out.println("+----------------------------------------------------------------------------------+");
 
@@ -345,6 +378,7 @@ public class PrescriptionControl {
                     medicineNames.get(i), prescriptionCounts.get(i), quantityCounts.get(i));
         }
         System.out.println("+-------------------------------------------------------+");
+        pause();
     }
 
     // Validation helper methods
@@ -443,6 +477,14 @@ public class PrescriptionControl {
 
     public void setPrescriptions(ListInterface<Prescription> prescriptions) {
         this.prescriptions = prescriptions;
+    }
+
+    public ListInterface<Consultation> getConsultationList() {
+        return consultationList;
+    }
+
+    public void setConsultationList(ListInterface<Consultation> consultationList) {
+        this.consultationList = consultationList;
     }
 
     private void pause() {

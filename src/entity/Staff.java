@@ -12,11 +12,47 @@ public class Staff extends User {
     public Staff(UUID id, String name, String address, Gender gender, String phone, String email, String dateOfBirth,
                  String position, String department, String account, String password, Role role) {
         super(id, name, address, gender, phone, email, dateOfBirth);
-        this.position = position;
-        this.department = department;
-        this.account = account;
+        
+        // Validation for Staff-specific fields
+        if (position == null || position.trim().isEmpty()) {
+            throw new IllegalArgumentException("Position is required for staff");
+        }
+        
+        if (department == null || department.trim().isEmpty()) {
+            throw new IllegalArgumentException("Department is required for staff");
+        }
+        
+        if (account == null || account.trim().isEmpty()) {
+            throw new IllegalArgumentException("Account is required for staff");
+        }
+        
+        if (password == null || password.length() < 4) {
+            throw new IllegalArgumentException("Password must be at least 4 characters long");
+        }
+        
+        if (role == null) {
+            throw new IllegalArgumentException("Role is required for staff");
+        }
+        
+        // Validate account format (alphanumeric and underscore only)
+        if (!account.matches("^[a-zA-Z0-9_]{3,20}$")) {
+            throw new IllegalArgumentException("Account must be 3-20 characters containing only letters, numbers, and underscores");
+        }
+        
+        // Validate password strength
+        if (!isPasswordValid(password)) {
+            throw new IllegalArgumentException("Password must contain at least one letter and one number");
+        }
+        
+        this.position = position.trim();
+        this.department = department.trim();
+        this.account = account.trim().toLowerCase();
         this.password = password;
         this.role = role;
+    }
+    
+    private boolean isPasswordValid(String password) {
+        return password.matches(".*[a-zA-Z].*") && password.matches(".*\\d.*");
     }
 
     // Getters & Setters

@@ -40,9 +40,9 @@ public class MainControl {
         bloodTubes = GeneratePharmacyData.createBloodTubeInventory();
         patients = GeneratePatientData.createSamplePatients();
         doctors = GenerateDoctorData.createSampleDoctors();
-        consultations = GenerateConsultationData.createSampleConsultation(doctors, patients);
-        appointments = GenerateAppointmentData.createSampleAppointments(doctors, patients);
         staff = GenerateStaffData.createSampleStaff();
+        consultations = GenerateConsultationData.createSampleConsultation(doctors, patients, medicines, labTests);
+        appointments = GenerateAppointmentData.createSampleAppointments(doctors, patients, staff);
         authControl = new AuthenticationControl(staff);
         schedules = GenerateDutyScheduleData.createSampleDutySchedulesDictionary(doctors);
         UI = new MainUI();
@@ -57,25 +57,25 @@ public class MainControl {
         DutyScheduleControl scheduleControl = new DutyScheduleControl(doctors, schedules, consultations);
         //scheduleControl.main();
 
-        PrescriptionControl prescriptionControl = new PrescriptionControl(medicines, pharmacy);
+        PrescriptionControl prescriptionControl = new PrescriptionControl(medicines, pharmacy, consultations);
         //prescriptionControl.main();
 
         ConsultationControl consultationControl = new ConsultationControl(consultations, patients, doctors, prescriptionControl, scheduleControl, pharmacy);
         //consultationControl.main();
 
-        AppointmentControl appointmentControl = new AppointmentControl(patients, doctors, appointments);
+        AppointmentControl appointmentControl = new AppointmentControl(patients, doctors, appointments, authControl, schedules);
         //appointmentControl.main();
 
         StaffControl staffControl = new StaffControl(staff, authControl);
         DoctorControl doctorControl = new DoctorControl(doctors, authControl);
-        // Check if user is logged in, if not, show login screen
+        while (true) {
+            // Check if user is logged in, if not, show login screen
         if (!authControl.isLoggedIn()) {
             if (!authControl.login()) {
                 System.out.println("Login failed. Exiting system.");
                 return;
             }
         }
-        while (true) {
             Integer choice = UI.mainMenu();
             switch (choice) {
                 case 1:
@@ -105,6 +105,9 @@ public class MainControl {
                 case 7:
                     // Doctor Management
                     doctorControl.main();
+                    break;
+                case 8:
+                    authControl.logout();
                     break;
                 case 999:
                     authControl.logout();
