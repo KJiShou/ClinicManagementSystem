@@ -42,19 +42,18 @@ public class GenerateDutyScheduleData {
                     doctorSchedules.add(new DutySchedule("2025-08-23", "13:00", "20:00"));
                     doctorSchedules.add(new DutySchedule("2025-08-29", "13:00", "20:00"));
                     doctorSchedules.add(new DutySchedule(LocalDate.now().toString(), "09:00", "18:00"));
-                    doctorSchedules.add(new DutySchedule(LocalDate.now().minusDays(1).toString(), "09:00", "18:00"));
                     break;
                 case 2: //doctor3 - alex
                     doctorSchedules.add(new DutySchedule("2025-08-25", "08:30", "17:30"));
                     doctorSchedules.add(new DutySchedule("2025-08-26", "10:00", "19:00"));
                     doctorSchedules.add(new DutySchedule(LocalDate.now().toString(), "09:00", "18:00"));
-
+                    doctorSchedules.add(new DutySchedule(LocalDate.now().minusDays(1).toString(), "09:00", "18:00"));
                     break;
                 case 3: //doctor4 - susan
                     doctorSchedules.add(new DutySchedule("2025-08-27", "08:00", "14:00"));
                     doctorSchedules.add(new DutySchedule("2025-09-02", "12:30", "21:30"));
                     doctorSchedules.add(new DutySchedule(LocalDate.now().toString(), "09:00", "18:00"));
-
+                    doctorSchedules.add(new DutySchedule(LocalDate.now().minusDays(1).toString(), "09:00", "18:00"));
                     break;
             }
 
