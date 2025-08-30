@@ -144,12 +144,16 @@ public class PatientUI {
         } while (dob.isEmpty());
 
         // Optional fields
-        System.out.print("Patient IC (leave blank if none): ");
-        String patientIC = scanner.nextLine().trim();
-        if (patientIC.equalsIgnoreCase("CANCEL")) return null;
-        if (!patientIC.isEmpty() && !patientIC.matches("\\d{12}")) {
-            System.out.println("Warning: IC should be 12 digits. Storing as entered.");
-        }
+        String patientIC;
+        do {
+            System.out.print("Patient IC (leave blank if none): ");
+            patientIC = scanner.nextLine().trim();
+            if (patientIC.equalsIgnoreCase("CANCEL")) return null;
+            if (!patientIC.isEmpty() && !patientIC.matches("\\d{12}")) {
+                System.out.println("Error: IC must be exactly 12 digits. Please try again.");
+                patientIC = "";
+            }
+        } while (!patientIC.matches("\\d{12}"));
 
         System.out.print("Patient Passport (leave blank if none): ");
         String patientPassport = scanner.nextLine().trim();
