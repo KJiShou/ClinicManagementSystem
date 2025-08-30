@@ -188,18 +188,33 @@ public class ConsultationControl {
         UUID id = UUID.randomUUID();
 
         Patient patient = selectPatient();
+        if (patient == null) {
+            return;
+        }
         Doctor doctor = selectDoctor();
+        if (doctor == null) {
+            return;
+        }
 
         LocalDate consultationDate = LocalDate.now();
 
-        System.out.print("Enter Notes: ");
+        System.out.print("Enter Notes (or 'cancel' to exit): ");
         String notes = scanner.nextLine();
+        if ("cancel".equalsIgnoreCase(notes.trim())) {
+            System.out.println("Operation cancelled.");
+            return;
+        }
 
         LocalTime startTime;
         do {
             try {
-                System.out.print("Enter Start Time (HH:MM, 24H format): ");
-                startTime = LocalTime.parse(scanner.nextLine());
+                System.out.print("Enter Start Time (HH:MM, 24H format) or 'cancel' to exit: ");
+                String startTimeInput = scanner.nextLine();
+                if ("cancel".equalsIgnoreCase(startTimeInput.trim())) {
+                    System.out.println("Operation cancelled.");
+                    return;
+                }
+                startTime = LocalTime.parse(startTimeInput);
             } catch (Exception e) {
                 System.out.println("Invalid time format, try again.\n");
                 startTime = null;
@@ -209,8 +224,13 @@ public class ConsultationControl {
         LocalTime endTime;
         do {
             try {
-                System.out.print("Enter End Time (HH:MM, 24H format): ");
-                endTime = LocalTime.parse(scanner.nextLine());
+                System.out.print("Enter End Time (HH:MM, 24H format) or 'cancel' to exit: ");
+                String endTimeInput = scanner.nextLine();
+                if ("cancel".equalsIgnoreCase(endTimeInput.trim())) {
+                    System.out.println("Operation cancelled.");
+                    return;
+                }
+                endTime = LocalTime.parse(endTimeInput);
             } catch (Exception e) {
                 System.out.println("Invalid time format, try again.\n");
                 endTime = null;
@@ -220,9 +240,17 @@ public class ConsultationControl {
         float totalPayment = 0;
         do {
             try {
-                System.out.print("Enter Total Payment: RM");
-                totalPayment = scanner.nextFloat();
-            } catch (Exception e) {
+                System.out.print("Enter Total Payment (or 'cancel' to exit) : RM  ");
+                String paymentInput = scanner.nextLine();
+                if ("cancel".equalsIgnoreCase(paymentInput.trim())) {
+                    System.out.println("Operation cancelled.");
+                    return;
+                }
+                totalPayment = Float.parseFloat(paymentInput);
+                if (totalPayment <= 0) {
+                    System.out.println("Amount must be greater than 0, try again.\n");
+                }
+            } catch (NumberFormatException e) {
                 System.out.println("Invalid amount, try again.\n");
             }
         } while (totalPayment <= 0);
