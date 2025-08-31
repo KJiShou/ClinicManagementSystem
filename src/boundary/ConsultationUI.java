@@ -62,7 +62,7 @@ public class ConsultationUI {
             HashedDictionary<Consultation, Integer> arrivalIndex,
             boolean showWaitingTime // only true for WAITING section
     ) {
-        String header = String.format("%s  ·  %d", title, totalCount);
+        String header = String.format("%s    %d", title, totalCount);
         String bar = repeat('-', Math.max(6, header.length() + 4));
 
         System.out.println(bar);
