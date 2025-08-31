@@ -198,6 +198,43 @@ public class ConsultationControl {
 
         LocalDate consultationDate = LocalDate.now();
 
+        Consultation.Status status = null;
+        do {
+            try {
+                System.out.println("\nSelect status:");
+                System.out.println("1. WAITING");
+                System.out.println("2. IN PROGRESS");
+                System.out.println("3. BILLING");
+                System.out.println("4. COMPLETED");
+                System.out.println("0. Cancel");
+
+                System.out.print("Enter status choice: ");
+                int statusChoice = Integer.parseInt(scanner.nextLine().trim());
+                switch (statusChoice) {
+                    case 1:
+                        status = Consultation.Status.WAITING;
+                        break;
+                    case 2:
+                        status = Consultation.Status.IN_PROGRESS;
+                        break;
+                    case 3:
+                        status = Consultation.Status.BILLING;
+                        break;
+                    case 4:
+                        status = Consultation.Status.COMPLETED;
+                        break;
+                    case 0:
+                        System.out.println("Operation cancelled.");
+                        return;
+                    default:
+                        System.out.println("Invalid number, try again.");
+                        break;
+                }
+            } catch (Exception e) {
+                System.out.println("Invalid input, try again.");
+            }
+        } while (status == null);
+
         System.out.print("Enter Notes (or 'cancel' to exit): ");
         String notes = scanner.nextLine();
         if ("cancel".equalsIgnoreCase(notes.trim())) {
@@ -256,7 +293,7 @@ public class ConsultationControl {
         } while (totalPayment <= 0);
 
         Consultation newConsultation = new Consultation(
-                id, patient, doctor, consultationDate, Consultation.Status.BILLING,
+                id, patient, doctor, consultationDate, status,
                 notes, startTime, endTime, totalPayment, "medical Treatment",null, null);
 
         consultationList.add(newConsultation);
