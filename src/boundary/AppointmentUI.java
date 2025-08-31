@@ -267,23 +267,151 @@ public class AppointmentUI {
             return null;
         }
 
+        ArrayList<Appointment> currentView = new ArrayList<>(appointments);
+        int currentPage = 1;
+        String searchQuery = "";
+        final int APPOINTMENT_PAGE_SIZE = 8;
+
         while (true) {
-            displayAppointmentSchedule(appointments, 1, 1, "", null);
-            System.out.printf("Select appointment (1-%d) or 0 to cancel: ", appointments.size());
-            
-            try {
-                int choice = Integer.parseInt(scanner.nextLine().trim());
-                if (choice == 0) {
+            int totalItems = currentView.size();
+            int totalPages = (totalItems + APPOINTMENT_PAGE_SIZE - 1) / APPOINTMENT_PAGE_SIZE;
+            if (totalPages == 0) totalPages = 1;
+
+            // Calculate display range
+            int startIndex = (currentPage - 1) * APPOINTMENT_PAGE_SIZE;
+            int endIndex = Math.min(startIndex + APPOINTMENT_PAGE_SIZE, totalItems);
+
+            // Display header
+            System.out.println("\n" + "=".repeat(100));
+            System.out.printf("APPOINTMENT SELECTION - Page %d/%d (%d appointments)\n", currentPage, totalPages, totalItems);
+            if (!searchQuery.isEmpty()) {
+                System.out.println("Search: \"" + searchQuery + "\"");
+            }
+            System.out.println("=".repeat(100));
+
+            // Display appointments
+            System.out.printf("%-4s %-12s %-10s %-20s %-20s %-15s %-15s\n", 
+                            "No.", "Date", "Time", "Patient", "Doctor", "Type", "Status");
+            System.out.println("-".repeat(100));
+
+            for (int i = startIndex; i < endIndex; i++) {
+                Appointment apt = currentView.get(i);
+                String patientName = truncateString(apt.getPatient().getName(), 18);
+                String doctorName = truncateString("Dr. " + apt.getDoctor().getName(), 18);
+                String type = truncateString(apt.getAppointmentType(), 13);
+                String status = apt.getStatusDisplay();
+
+                System.out.printf("%-4d %-12s %-10s %-20s %-20s %-15s %-15s\n",
+                                i + 1,
+                                apt.getFormattedDate(),
+                                apt.getFormattedStartTime(),
+                                patientName,
+                                doctorName,
+                                type,
+                                status);
+            }
+
+            System.out.println("-".repeat(100));
+            System.out.printf("Showing %d-%d of %d appointments\n", startIndex + 1, endIndex, totalItems);
+
+            // Navigation options
+            System.out.println("\nNavigation:");
+            System.out.println("[A] Previous Page | [D] Next Page | [S] Search | [R] Reset Search");
+            System.out.println("Enter appointment number to select | [Q] Cancel");
+            System.out.print("Choice: ");
+
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            switch (input) {
+                case "a":
+                    if (currentPage > 1) {
+                        currentPage--;
+                    } else {
+                        System.out.println("This is the first page.");
+                    }
+                    break;
+                case "d":
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                    } else {
+                        System.out.println("This is the last page.");
+                    }
+                    break;
+                case "s":
+                    System.out.print("Enter search (Patient/Doctor/Type/Date): ");
+                    searchQuery = scanner.nextLine().trim();
+                    ArrayList<Appointment> filtered = filterAppointments(appointments, searchQuery);
+                    if (!filtered.isEmpty()) {
+                        currentView = filtered;
+                        currentPage = 1;
+                        System.out.println("Found " + filtered.size() + " matching appointments.");
+                    } else {
+                        System.out.println("No results found for: " + searchQuery);
+                    }
+                    break;
+                case "r":
+                    currentView = new ArrayList<>(appointments);
+                    searchQuery = "";
+                    currentPage = 1;
+                    System.out.println("Search cleared. Showing all appointments.");
+                    break;
+                case "q":
                     return null;
-                }
-                if (choice >= 1 && choice <= appointments.size()) {
-                    return appointments.get(choice - 1);
-                }
-                System.out.println("Invalid selection.");
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number.");
+                default:
+                    try {
+                        int choice = Integer.parseInt(input);
+                        if (choice >= 1 && choice <= currentView.size()) {
+                            Appointment selectedAppointment = currentView.get(choice - 1);
+                            
+                            // Show appointment details for confirmation
+                            System.out.println("\n=== SELECTED APPOINTMENT ===");
+                            System.out.println("Date: " + selectedAppointment.getFormattedDate());
+                            System.out.println("Time: " + selectedAppointment.getFormattedStartTime() + " - " + selectedAppointment.getFormattedEndTime());
+                            System.out.println("Patient: " + selectedAppointment.getPatient().getName());
+                            System.out.println("Doctor: Dr. " + selectedAppointment.getDoctor().getName());
+                            System.out.println("Type: " + selectedAppointment.getAppointmentType());
+                            System.out.println("Status: " + selectedAppointment.getStatusDisplay());
+                            if (selectedAppointment.getDescription() != null && !selectedAppointment.getDescription().isEmpty()) {
+                                System.out.println("Notes: " + selectedAppointment.getDescription());
+                            }
+                            System.out.print("\nConfirm selection? (Y/N): ");
+                            
+                            String confirm = scanner.nextLine().trim().toUpperCase();
+                            if (confirm.equals("Y")) {
+                                return selectedAppointment;
+                            } else {
+                                System.out.println("Selection cancelled.");
+                            }
+                        } else {
+                            System.out.println("Invalid appointment number. Please enter 1-" + currentView.size());
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please use navigation keys or enter an appointment number.");
+                    }
             }
         }
+    }
+
+    public ArrayList<Appointment> filterAppointments(ArrayList<Appointment> source, String query) {
+        ArrayList<Appointment> results = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) return results;
+
+        String q = query.toLowerCase();
+
+        for (int i = 0; i < source.size(); i++) {
+            Appointment apt = source.get(i);
+            String patientName = apt.getPatient().getName().toLowerCase();
+            String doctorName = apt.getDoctor().getName().toLowerCase();
+            String appointmentType = apt.getAppointmentType().toLowerCase();
+            String date = apt.getFormattedDate().toLowerCase();
+            String description = apt.getDescription() != null ? apt.getDescription().toLowerCase() : "";
+
+            if (patientName.contains(q) || doctorName.contains(q) || 
+                appointmentType.contains(q) || date.contains(q) || description.contains(q)) {
+                results.add(apt);
+            }
+        }
+        return results;
     }
 
     private String truncateString(String str, int maxLength) {
