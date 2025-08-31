@@ -78,12 +78,30 @@ public class PatientControl {
 
     // Register new patient
     public Patient registerPatient() {
-        Patient newPatient = ui.getPatientDetails(); // returns null if user typed CANCEL
-
+        Patient newPatient = ui.getPatientDetails();
         if (newPatient == null) {
             ui.displayMessage("Registration cancelled. Returning to Main Menu...");
             pause();
             return null;
+        }
+
+        // 🔍 Duplicate check moved here
+        if (newPatient.getPatientIC() != null && !newPatient.getPatientIC().isEmpty()) {
+            Patient existing = findPatientByICOrPassport(newPatient.getPatientIC());
+            if (existing != null) {
+                ui.displayError("A patient with this IC already exists: " + existing.getName());
+                pause();
+                return null;
+            }
+        }
+
+        if (newPatient.getPatientPassport() != null && !newPatient.getPatientPassport().isEmpty()) {
+            Patient existing = findPatientByICOrPassport(newPatient.getPatientPassport());
+            if (existing != null) {
+                ui.displayError("A patient with this Passport already exists: " + existing.getName());
+                pause();
+                return null;
+            }
         }
 
         patientQueue.enqueue(newPatient);
